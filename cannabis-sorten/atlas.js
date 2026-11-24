@@ -34,13 +34,21 @@ function draw() {
   el('page').textContent=matches.length?'Seite '+(page+1)+' von '+format(Math.ceil(matches.length/size)):'';
 }
 function search() {
-  const words=normalize(el('q').value).trim().split(/\s+/);
+  const query=normalize(el('q').value).trim();
+  const words=query.split(/\s+/);
   const breeder=el('breeder').value, type=el('type').value;
-  matches=[];
+  const ranked=[[],[],[],[]];
   for (const [name,items] of catalog) {
     const hits=items.filter(({row,terms})=>(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&words.every(w=>terms.includes(w)));
-    if(hits.length) matches.push([name,hits]);
+    if (!hits.length) continue;
+    const normalizedName=normalize(name);
+    let rank=3;
+    if (!query || normalizedName===query) rank=0;
+    else if (normalizedName.startsWith(query)) rank=1;
+    else if (words.every(word=>normalizedName.includes(word))) rank=2;
+    ranked[rank].push([name,hits]);
   }
+  matches=ranked.flat();
   page=0;
   el('status').textContent=matches.length?format(matches.length)+' Sortennamen gefunden':'Keine Treffer. Ändere den Suchbegriff oder setze die Filter zurück.';
   draw();
