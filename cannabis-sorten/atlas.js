@@ -11,6 +11,26 @@ function node(tag,text) {
   e.textContent = text;
   return e;
 }
+const sortennamen = new Map();
+function sortenlink(name, text) {
+  const url = new URL(location.pathname, location.origin);
+  url.searchParams.set('sorte', name);
+  url.hash = 'register';
+  const link = node('a', text);
+  link.href = url.href;
+  return link;
+}
+function elternlinien(first, second) {
+  const line = node('p', 'Elternlinien: ');
+  const parents = [first, second].filter(Boolean);
+  if (!parents.length) line.append('Keine Angabe');
+  parents.forEach((parent, i) => {
+    if (i) line.append(' × ');
+    const name = sortennamen.get(parent.toLowerCase());
+    line.append(name ? sortenlink(name, parent) : parent);
+  });
+  return line;
+}
 function draw() {
   const results = el('results');
   results.replaceChildren();
@@ -21,9 +41,12 @@ function draw() {
     detail.append(title);
     detail.addEventListener('toggle',() => {
       if (!detail.open || detail.children.length>1) return;
+      const linkRow = node('p', '');
+      linkRow.append(sortenlink(name, 'Direktlink zu dieser Sorte'));
+      detail.append(linkRow);
       for (const {row:[,original,breeder,type,p1,p2,bank]} of items) {
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),node('p','Elternlinien: '+([p1,p2].filter(Boolean).join(' × ')||'Keine Angabe')),node('p','Katalog: '+bank));
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','Katalog: '+bank));
         detail.append(card);
       }
     });
@@ -34,6 +57,11 @@ function draw() {
   el('page').textContent=matches.length?'Seite '+(page+1)+' von '+format(Math.ceil(matches.length/size)):'';
 }
 function search() {
+  const url = new URL(location.href);
+  if (url.searchParams.has('sorte')) {
+    url.searchParams.delete('sorte');
+    history.replaceState(null, '', url);
+  }
   const query=normalize(el('q').value).trim();
   const words=query.split(/\s+/);
   const breeder=el('breeder').value, type=el('type').value;
@@ -72,6 +100,19 @@ async function start() {
   for(const b of [...breeders].sort(collator.compare)) el('breeder').add(new Option(b,b));
   for(const t of [...types].sort()) el('type').add(new Option(labels[t]||t,t||'unknown'));
   el('total').textContent=format(rows.length)+' Katalogeinträge';
+  for (const [key, [name]] of groups) sortennamen.set(key, name);
+  const requested = new URL(location.href).searchParams.get('sorte');
+  if (requested) {
+    const group = groups.get(requested.toLowerCase());
+    el('q').value = group ? group[0] : requested;
+    if (group) {
+      matches = [group];
+      el('status').textContent = group[0] + ' · ' + format(group[1].length) + (group[1].length===1?' Katalogeintrag':' Katalogeinträge');
+      draw();
+      el('results').firstElementChild.open = true;
+      return;
+    }
+  }
   search();
 }
 el('q').oninput=()=>{clearTimeout(timer);timer=setTimeout(search,120)};
