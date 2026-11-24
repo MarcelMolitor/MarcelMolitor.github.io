@@ -11,6 +11,51 @@ function node(tag,text) {
   e.textContent = text;
   return e;
 }
+const savedKey = 'molitor-sortenatlas-merkliste-v1';
+function readSaved() {
+  try {
+    const values = JSON.parse(localStorage.getItem(savedKey));
+    return new Set(Array.isArray(values) ? values.filter(v => typeof v === 'string') : []);
+  } catch { return new Set(); }
+}
+let saved = readSaved();
+function showSavedCount() {
+  el('saved-count').textContent = '(' + format(saved.size) + ')';
+}
+showSavedCount();
+function savedButton(name) {
+  const button = node('button', '');
+  const key = name.toLowerCase();
+  function refresh() {
+    button.setAttribute('aria-pressed', String(saved.has(key)));
+    button.textContent = saved.has(key) ? 'Gemerkt ✓' : 'Sorte merken';
+  }
+  refresh();
+  button.onclick = () => {
+    if (saved.has(key)) saved.delete(key);
+    else saved.add(key);
+    let persisted = true;
+    try { localStorage.setItem(savedKey, JSON.stringify([...saved])); }
+    catch { persisted = false; }
+    refresh();
+    showSavedCount();
+    if (el('saved-only').checked) {
+      search();
+      el('saved-only').focus();
+    }
+    if (!persisted) el('status').textContent += ' Die Merkliste gilt nur für diese Sitzung.';
+  };
+  return button;
+}
+window.addEventListener('storage', event => {
+  if (event.key !== savedKey && event.key !== null) return;
+  saved = readSaved();
+  showSavedCount();
+  if (el('saved-only').checked) search();
+  else for (const button of el('results').querySelectorAll('.sortenaktionen button')) {
+    button.replaceWith(savedButton(button.closest('details').dataset.name));
+  }
+});
 const sortennamen = new Map();
 function sortenlink(name, text) {
   const url = new URL(location.pathname, location.origin);
@@ -38,11 +83,13 @@ function draw() {
     const detail = document.createElement('details');
     const title = node('summary',name);
     title.append(node('span',items.length===1?'1 Eintrag':format(items.length)+' Einträge'));
+    detail.dataset.name = name;
     detail.append(title);
     detail.addEventListener('toggle',() => {
       if (!detail.open || detail.children.length>1) return;
       const linkRow = node('p', '');
-      linkRow.append(sortenlink(name, 'Direktlink zu dieser Sorte'));
+      linkRow.className = 'sortenaktionen';
+      linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'));
       detail.append(linkRow);
       for (const {row:[,original,breeder,type,p1,p2,bank]} of items) {
         const card = document.createElement('article');
@@ -67,6 +114,7 @@ function search() {
   const breeder=el('breeder').value, type=el('type').value;
   const ranked=[[],[],[],[]];
   for (const [name,items] of catalog) {
+    if (el('saved-only').checked && !saved.has(name.toLowerCase())) continue;
     const hits=items.filter(({row,terms})=>(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&words.every(w=>terms.includes(w)));
     if (!hits.length) continue;
     const normalizedName=normalize(name);
@@ -79,8 +127,10 @@ function search() {
   matches=ranked.flat();
   page=0;
   el('status').textContent=matches.length?format(matches.length)+' Sortennamen gefunden':'Keine Treffer. Ändere den Suchbegriff oder setze die Filter zurück.';
+  if (el('saved-only').checked && !saved.size) el('status').textContent = 'Deine Merkliste ist leer. Öffne eine Sorte im Register und wähle „Sorte merken“.';
   draw();
 }
+el('saved-only').onchange=search;
 async function start() {
   const response=await fetch('katalog.json.gz');
   if(!response.ok) throw Error(response.status);
