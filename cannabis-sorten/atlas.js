@@ -39,6 +39,7 @@ function savedButton(name) {
     catch { persisted = false; }
     refresh();
     showSavedCount();
+    syncComparison();
     if (el('saved-only').checked) {
       search();
       el('saved-only').focus();
@@ -51,6 +52,7 @@ window.addEventListener('storage', event => {
   if (event.key !== savedKey && event.key !== null) return;
   saved = readSaved();
   showSavedCount();
+  syncComparison();
   if (el('saved-only').checked) search();
   else for (const button of el('results').querySelectorAll('.sortenaktionen button')) {
     button.replaceWith(savedButton(button.closest('details').dataset.name));
@@ -75,6 +77,71 @@ function elternlinien(first, second) {
     line.append(name ? sortenlink(name, parent) : parent);
   });
   return line;
+}
+let comparisonGroups = new Map();
+const sides = ['a', 'b'];
+function syncComparison() {
+  const keys = [...saved].filter(key => comparisonGroups.has(key));
+  const ready = keys.length >= 2;
+  el('vergleich-hilfe').hidden = ready;
+  el('vergleich-inhalt').hidden = !ready;
+  if (!ready) return;
+  const selected = sides.map(side => el('sorte-' + side).value);
+  sides.forEach((side, i) => {
+    if (!keys.includes(selected[i]) || selected[0] === selected[1]) {
+      selected[i] = keys.find(key => key !== selected[1-i]);
+    }
+    const select = el('sorte-' + side);
+    select.replaceChildren(...keys.map(key => new Option(comparisonGroups.get(key)[0], key)));
+    select.value = selected[i];
+  });
+  refreshComparison();
+}
+function refreshComparison() {
+  for (const [i, side] of sides.entries()) {
+    const select = el('sorte-' + side);
+    const other = el('sorte-' + sides[1-i]).value;
+    for (const option of select.options) option.disabled = option.value === other;
+    const variants = el('eintrag-' + side);
+    if (variants.dataset.group === select.value) continue;
+    const items = comparisonGroups.get(select.value)[1];
+    variants.replaceChildren(...items.map(({row}, index) =>
+      new Option(row[1] + ' · ' + row[2] + ' · ' + row[6] + ' (' + (index+1) + ')', String(index))));
+    variants.dataset.group = select.value;
+  }
+  drawComparison();
+}
+function drawComparison() {
+  const rows = sides.map(side => {
+    const group = comparisonGroups.get(el('sorte-' + side).value);
+    return group[1][el('eintrag-' + side).selectedIndex].row;
+  });
+  const table = el('vergleich-tabelle');
+  const head = document.createElement('tr');
+  for (const title of ['Merkmal', ...rows.map(row => row[0])]) {
+    const th = node('th', title);
+    th.scope = 'col';
+    head.append(th);
+  }
+  table.tHead.replaceChildren(head);
+  const body = table.tBodies[0];
+  body.replaceChildren();
+  for (const [label, value] of [
+    ['Variante', row => row[1]], ['Züchter', row => row[2]],
+    ['Katalogtyp', row => labels[row[3]] || row[3]],
+    ['Elternlinien', row => row.slice(4,6).filter(Boolean).join(' × ')],
+    ['Katalog', row => row[6]]
+  ]) {
+    const tr = body.insertRow();
+    const th = node('th', label);
+    th.scope = 'row';
+    tr.append(th);
+    for (const row of rows) tr.insertCell().textContent = value(row) || 'Keine Angabe';
+  }
+}
+for (const side of sides) {
+  el('sorte-' + side).onchange = refreshComparison;
+  el('eintrag-' + side).onchange = drawComparison;
 }
 function draw() {
   const results = el('results');
@@ -151,6 +218,8 @@ async function start() {
   for(const t of [...types].sort()) el('type').add(new Option(labels[t]||t,t||'unknown'));
   el('total').textContent=format(rows.length)+' Katalogeinträge';
   for (const [key, [name]] of groups) sortennamen.set(key, name);
+  comparisonGroups = groups;
+  syncComparison();
   const requested = new URL(location.href).searchParams.get('sorte');
   if (requested) {
     const group = groups.get(requested.toLowerCase());
