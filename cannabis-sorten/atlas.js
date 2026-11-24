@@ -111,6 +111,12 @@ function refreshComparison() {
   }
   drawComparison();
 }
+const percent = new Intl.NumberFormat('de-DE', {maximumFractionDigits: 4});
+function gehalt(value) {
+  if (!value) return 'Keine belastbare Katalogangabe';
+  if (value[0] === 'avg') return percent.format(value[1]) + ' % (Katalogmittel)';
+  return value.map(n => percent.format(n)).join('–') + ' %';
+}
 function drawComparison() {
   const rows = sides.map(side => {
     const group = comparisonGroups.get(el('sorte-' + side).value);
@@ -130,6 +136,7 @@ function drawComparison() {
     ['Variante', row => row[1]], ['Züchter', row => row[2]],
     ['Katalogtyp', row => labels[row[3]] || row[3]],
     ['Elternlinien', row => row.slice(4,6).filter(Boolean).join(' × ')],
+    ['THC laut Katalog', row => gehalt(row[8])], ['CBD laut Katalog', row => gehalt(row[9])],
     ['Terpene laut Katalog', row => row[7] || 'Keine Angabe'], ['Katalog', row => row[6]]
   ]) {
     const tr = body.insertRow();
@@ -158,9 +165,9 @@ function draw() {
       linkRow.className = 'sortenaktionen';
       linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'));
       detail.append(linkRow);
-      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes]} of items) {
+      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd]} of items) {
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','Terpene laut Katalog: '+(terpenes || 'Keine Angabe')),node('p','Katalog: '+bank));
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine Angabe')),node('p','Katalog: '+bank));
         detail.append(card);
       }
     });
@@ -211,7 +218,7 @@ async function start() {
   for(const row of rows) {
     const [name,,breeder,type]=row, key=name.toLowerCase();
     if(!groups.has(key)) groups.set(key,[name,[]]);
-    groups.get(key)[1].push({row,terms:normalize(row.join(' '))});
+    groups.get(key)[1].push({row,terms:normalize(row.slice(0,8).join(' '))});
     if (row[7]) for (const name of row[7].split(', ')) terpenes.add(name);
     breeders.add(breeder); types.add(type);
   }
