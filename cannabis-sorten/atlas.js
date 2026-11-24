@@ -130,7 +130,7 @@ function drawComparison() {
     ['Variante', row => row[1]], ['Züchter', row => row[2]],
     ['Katalogtyp', row => labels[row[3]] || row[3]],
     ['Elternlinien', row => row.slice(4,6).filter(Boolean).join(' × ')],
-    ['Katalog', row => row[6]]
+    ['Terpene laut Katalog', row => row[7] || 'Keine Angabe'], ['Katalog', row => row[6]]
   ]) {
     const tr = body.insertRow();
     const th = node('th', label);
@@ -158,9 +158,9 @@ function draw() {
       linkRow.className = 'sortenaktionen';
       linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'));
       detail.append(linkRow);
-      for (const {row:[,original,breeder,type,p1,p2,bank]} of items) {
+      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes]} of items) {
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','Katalog: '+bank));
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','Terpene laut Katalog: '+(terpenes || 'Keine Angabe')),node('p','Katalog: '+bank));
         detail.append(card);
       }
     });
@@ -179,10 +179,11 @@ function search() {
   const query=normalize(el('q').value).trim();
   const words=query.split(/\s+/);
   const breeder=el('breeder').value, type=el('type').value;
+  const terpene = el('terpene').value;
   const ranked=[[],[],[],[]];
   for (const [name,items] of catalog) {
     if (el('saved-only').checked && !saved.has(name.toLowerCase())) continue;
-    const hits=items.filter(({row,terms})=>(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&words.every(w=>terms.includes(w)));
+    const hits=items.filter(({row,terms})=>(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&(!terpene || (row[7] && (terpene==='*' || row[7].split(', ').includes(terpene))))&&words.every(w=>terms.includes(w)));
     if (!hits.length) continue;
     const normalizedName=normalize(name);
     let rank=3;
@@ -206,15 +207,17 @@ async function start() {
   const json = signature[0]===31 && signature[1]===139
     ? new Response(payload.stream().pipeThrough(new DecompressionStream('gzip')))
     : new Response(payload);
-  const rows=await json.json(), groups=new Map(), breeders=new Set(), types=new Set();
+  const rows=await json.json(), groups=new Map(), breeders=new Set(), types=new Set(), terpenes=new Set();
   for(const row of rows) {
     const [name,,breeder,type]=row, key=name.toLowerCase();
     if(!groups.has(key)) groups.set(key,[name,[]]);
     groups.get(key)[1].push({row,terms:normalize(row.join(' '))});
+    if (row[7]) for (const name of row[7].split(', ')) terpenes.add(name);
     breeders.add(breeder); types.add(type);
   }
   catalog=[...groups.values()].sort((a,b)=>collator.compare(a[0],b[0]));
   for(const b of [...breeders].sort(collator.compare)) el('breeder').add(new Option(b,b));
+  for (const name of [...terpenes].sort(collator.compare)) el('terpene').add(new Option(name,name));
   for(const t of [...types].sort()) el('type').add(new Option(labels[t]||t,t||'unknown'));
   el('total').textContent=format(rows.length)+' Katalogeinträge';
   for (const [key, [name]] of groups) sortennamen.set(key, name);
@@ -235,7 +238,7 @@ async function start() {
   search();
 }
 el('q').oninput=()=>{clearTimeout(timer);timer=setTimeout(search,120)};
-el('breeder').onchange=el('type').onchange=search;
+el('breeder').onchange=el('type').onchange=el('terpene').onchange=search;
 el('filters').onreset=()=>setTimeout(search);
 el('filters').onsubmit=e=>{e.preventDefault();search()};
 el('example').onclick=()=>{el('filters').reset();el('q').value='Blue Dream';search()};
