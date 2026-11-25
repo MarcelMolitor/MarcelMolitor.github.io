@@ -5,7 +5,7 @@
 <h2>Im Verhältnis zur Bevölkerung</h2>
 <p>Am 31. Dezember 2024 lebten 83.577.140 Menschen in Deutschland. Dieser Stichtag vor Beginn des Berichtsjahres ist die Bevölkerungsbasis der PKS 2025.</p>
 <div class="pop-grid"><article><h3>Wer stellt welchen Anteil?</h3>
-<label for="share-offense">Tatverdächtige vergleichen für</label><select id="share-offense"></select>
+<label for="share-offense">Tatverdächtige vergleichen für</label><select id="share-offense"></select><p class="share-action"><a data-direct="bevoelkerung" href="#bevoelkerung">Direktlink zum Delikt</a> <button type="button" data-copy="bevoelkerung">Link kopieren</button> <span role="status"></span></p>
 <table><thead><tr><th scope="col">Staatsangehörigkeit</th><th scope="col">Bevölkerung</th><th scope="col">Tatverdächtige</th></tr></thead>
 <tbody><tr><th scope="row">Deutsch</th><td>85,2 %<small>71.184.865</small></td><td id="share-de"></td></tr>
 <tr><th scope="row">Nichtdeutsch</th><td>14,8 %<small>12.392.275</small></td><td id="share-nd"></td></tr></tbody></table>
@@ -18,7 +18,7 @@
 <section class="wrap section nat" id="nationalitaeten"><h2>Nichtdeutsche Tatverdächtige nach Staatsangehörigkeit</h2>
 <p>Wähle ein Delikt, um zu sehen, wie viele Tatverdächtige die Polizei je Staatsangehörigkeit erfasst hat. Der Prozentwert bezieht sich auf alle nichtdeutschen Tatverdächtigen beim gewählten Delikt.</p>
 <div class="controls"><label>Delikt<select id="nat-offense"></select></label><label>Staatsangehörigkeit suchen<input id="nat-query" type="search" placeholder="z. B. Italien"></label><label>Reihenfolge<select id="nat-sort"><option value="alpha">Alphabetisch</option><option value="count">Häufigste zuerst</option></select></label></div>
-<table><caption id="nat-caption"></caption><thead><tr><th scope="col">Staatsangehörigkeit</th><th scope="col">Anzahl</th><th scope="col">Anteil</th></tr></thead><tbody id="nat-body"></tbody></table>
+<p class="share-action"><a data-direct="nationalitaeten" href="#nationalitaeten">Direktlink zum Delikt</a> <button type="button" data-copy="nationalitaeten">Link kopieren</button> <span role="status"></span></p><table><caption id="nat-caption"></caption><thead><tr><th scope="col">Staatsangehörigkeit</th><th scope="col">Anzahl</th><th scope="col">Anteil</th></tr></thead><tbody id="nat-body"></tbody></table>
 <p id="nat-status" role="status"></p><button id="nat-more">Weitere anzeigen</button>
 <p>„Staatenlos“, „Ungeklärt“ und „Ohne Angabe“ sind eigene Kategorien. Personen mit deutscher und einer weiteren Staatsangehörigkeit zählt das BKA als deutsch. Die Tabelle enthält auch Personen ohne Wohnsitz in Deutschland. Für einen Vergleich je 100.000 wären je Staatsangehörigkeit passende Angaben zu Wohnsitz und Alter erforderlich.</p>
 <a href="https://www.bka.de/SharedDocs/Downloads/DE/Publikationen/PolizeilicheKriminalstatistik/2025/Bund/Tatverdaechtige/BU-TV-22-T62-TV-Staatsangehoerigkeiten_xls.xlsx?__blob=publicationFile">Bundeskriminalamt · PKS 2025, Bundestabelle T62 (Excel)</a></section>

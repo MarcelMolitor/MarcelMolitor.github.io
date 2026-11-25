@@ -31,6 +31,10 @@ function render() {
     row.innerHTML = '<div><h3></h3><div class="small"></div></div><div><div class="line"><span><b></b> Deutsch</span><span><b></b> Nichtdeutsch</span></div><div class="bar" aria-hidden="true"><span></span></div><div class="line"><small></small><small></small></div></div>';
     row.querySelector('h3').textContent = name;
     row.querySelector('.small').textContent = 'PKS ' + key + ' · ' + number.format(total) + ' Tatverdächtige';
+    const detail = document.createElement('a');
+    detail.href = offenseUrl(key, 'bevoelkerung').href;
+    detail.textContent = 'Im Bevölkerungsvergleich öffnen';
+    row.querySelector('.small').after(detail);
     row.querySelector('.bar span').style.width = (100 * german / total) + '%';
     [german, foreign].forEach((n, i) => {
       row.querySelectorAll('b')[i].textContent = percent.format(n / total);
@@ -62,12 +66,7 @@ function showShares() {
     el(id).replaceChildren(percent.format(count / total), absolute);
   }
 }
-shareSelector.addEventListener('change', showShares);
-el('basis').addEventListener('change', () => {
-  shareSelector.value = dataset.rows[el('basis').value === 'alle' ? 0 : 1][0];
-  showShares();
-});
-showShares();
+
 
 const rates = new Map([
   ['890000', [1813, 4788]],
@@ -75,16 +74,15 @@ const rates = new Map([
 ]);
 const rateSelector = el('rate-offense');
 for (const [key, name] of choices) {
-  if (rates.has(key)) rateSelector.add(new Option(name, key));
+  rateSelector.add(new Option(name, key));
 }
 function showRates() {
-  const [german, foreign] = rates.get(rateSelector.value);
-  el('rate-de').textContent = number.format(german);
-  el('rate-nd').textContent = number.format(foreign);
+  const pair = rates.get(rateSelector.value);
+  el('rate-de').textContent = pair ? number.format(pair[0]) : 'Keine Angabe im Atlas';
+  el('rate-nd').textContent = pair ? number.format(pair[1]) : 'Keine Angabe im Atlas';
 }
 el('rate-source').href = dataset.source;
-rateSelector.addEventListener('change', showRates);
-showRates();
+
 
 const natOffense = el('nat-offense');
 const natSearch = el('nat-query');
@@ -114,8 +112,55 @@ function renderNationalities() {
   el('nat-status').textContent = matches.length ? Math.min(natLimit,matches.length) + ' von ' + matches.length + ' Einträgen angezeigt' : 'Keine passende Staatsangehörigkeit gefunden.';
   el('nat-more').hidden = natLimit >= matches.length;
 }
-for (const [control,event] of [[natOffense,'change'],[natSort,'change'],[natSearch,'input']]) {
+for (const [control,event] of [[natSort,'change'],[natSearch,'input']]) {
   control.addEventListener(event, () => { natLimit = 12; renderNationalities(); });
 }
 el('nat-more').addEventListener('click', () => { natLimit += 30; renderNationalities(); });
-renderNationalities();
+
+function offenseUrl(key, section) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('delikt', key);
+  url.hash = section;
+  return url;
+}
+function displayOffense(key) {
+  if (!choices.some(([code]) => code === key)) key = dataset.rows[1][0];
+  for (const select of [shareSelector, natOffense, rateSelector]) select.value = key;
+  if (key === dataset.rows[0][0] || key === dataset.rows[1][0]) {
+    el('basis').value = key === dataset.rows[0][0] ? 'alle' : 'ohne';
+    summary();
+  }
+  natLimit = 12;
+  showShares();
+  showRates();
+  renderNationalities();
+  for (const link of document.querySelectorAll('[data-direct]')) {
+    link.href = offenseUrl(key, link.dataset.direct).href;
+    link.parentElement.querySelector('[role=status]').textContent = '';
+  }
+}
+function chooseOffense(key, section) {
+  const url = offenseUrl(key, section);
+  if (url.href !== location.href) history.pushState(null, '', url);
+  displayOffense(key);
+}
+for (const select of [shareSelector, natOffense, rateSelector]) {
+  select.addEventListener('change', () => chooseOffense(select.value, select.closest('section').id));
+}
+el('basis').addEventListener('change', () => chooseOffense(dataset.rows[el('basis').value === 'alle' ? 0 : 1][0], 'start'));
+for (const button of document.querySelectorAll('[data-copy]')) {
+  button.addEventListener('click', async () => {
+    const status = button.parentElement.querySelector('[role=status]');
+    try {
+      await navigator.clipboard.writeText(offenseUrl(shareSelector.value, button.dataset.copy).href);
+      status.textContent = 'Link kopiert.';
+    } catch {
+      status.textContent = 'Zum Kopieren das Linkmenü am Direktlink öffnen.';
+    }
+  });
+}
+function restoreOffense() {
+  displayOffense(new URL(location.href).searchParams.get('delikt'));
+}
+window.addEventListener('popstate', restoreOffense);
+restoreOffense();
