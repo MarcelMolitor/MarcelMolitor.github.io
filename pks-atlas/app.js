@@ -40,9 +40,22 @@ const rates = new Map([
 ]);
 let limit = 8;
 
+const sexModes = ['sex', 'sex-de', 'sex-nd'];
+function sexPair(key, year, group = 'sex') {
+  const [dm, dw, nm, nw] = sexCounts[key][year];
+  if (group === 'sex-de') return [dm, dw];
+  if (group === 'sex-nd') return [nm, nw];
+  return [dm + nm, dw + nw];
+}
+function sexText(key, group) {
+  const [m, w] = sexPair(key, 2025, group);
+  return [m, w].map((n, i) => number.format(n) + ' ' + ['männlich', 'weiblich'][i] +
+    ' (' + percent.format(n / (m + w)) + ')').join(' · ');
+}
 function summary() {
-  const [, , total, foreign] = dataset.rows[el('basis').value === 'alle' ? 0 : 1];
+  const [key, , total, foreign] = dataset.rows[el('basis').value === 'alle' ? 0 : 1];
   const german = total - foreign;
+  el('head-sex').textContent = sexText(key);
   el('headline').textContent = number.format(total);
   el('headbar').style.width = (100 * german / total) + '%';
   for (const [id, label, value] of [['headd', 'Deutsch', german], ['headn', 'Nichtdeutsch', foreign]]) {
@@ -63,7 +76,8 @@ function syncCountry(name) {
   for (const select of countrySelects) select.value = country === null ? '' : String(country);
   const selected = country !== null;
   el('year-metric').querySelector('[value="rate"]').disabled = selected;
-  if (selected && el('year-metric').value === 'rate') el('year-metric').value = 'count';
+  for (const mode of sexModes) el('year-metric').querySelector('[value="' + mode + '"]').disabled = selected;
+  if (selected && ['rate', ...sexModes].includes(el('year-metric').value)) el('year-metric').value = 'count';
   el('year-first').textContent = selected ? name : 'Deutsch';
   el('year-second').hidden = selected;
   el('country-sources').hidden = !selected;
@@ -117,7 +131,16 @@ function render() {
     const rateLine = document.createElement('p');
     rateLine.className = 'small';
     rateLine.textContent = 'Je 100.000 Einwohner ab 8 Jahren: Deutsch ' + number.format(deRate) + ' · Nichtdeutsch ' + number.format(ndRate);
-    row.lastElementChild.append(rateLine);
+    const sexDetail = document.createElement('details');
+    const toggle = document.createElement('summary');
+    toggle.textContent = 'Männlich / weiblich';
+    sexDetail.append(toggle);
+    for (const [label, group] of [['Insgesamt','sex'], ['Deutsch','sex-de'], ['Nichtdeutsch','sex-nd']]) {
+      const line = document.createElement('p');
+      line.textContent = label + ' · ' + sexText(key, group);
+      sexDetail.append(line);
+    }
+    row.lastElementChild.append(rateLine, sexDetail);
     el('rows').append(row);
   }
   el('more').hidden = limit >= matches.length;
@@ -141,7 +164,9 @@ function showShares() {
   for (const [id, count] of [['share-de', total - foreign], ['share-nd', foreign]]) {
     const absolute = document.createElement('small');
     absolute.textContent = number.format(count);
-    el(id).replaceChildren(percent.format(count / total), absolute);
+    const split = document.createElement('small');
+    split.textContent = sexText(shareSelector.value, id === 'share-de' ? 'sex-de' : 'sex-nd');
+    el(id).replaceChildren(percent.format(count / total), absolute, split);
   }
 }
 
@@ -182,6 +207,7 @@ function renderNationalities() {
   const [, label, , denominator] = choices.find(([code]) => code === natOffense.value);
   const matches = filteredNationalities();
   el('nat-csv').disabled = matches.length === 0;
+  el('nat-sex').textContent = 'Alle nichtdeutschen Tatverdächtigen · ' + label + ' · ' + sexText(natOffense.value, 'sex-nd');
   el('nat-caption').textContent = label + ' · ' + number.format(denominator) + ' nichtdeutsche Tatverdächtige';
   const body = el('nat-body');
   body.replaceChildren();
@@ -236,6 +262,11 @@ for (const [key, name] of choices) yearSelector.add(new Option(name, key));
 function showYears() {
   const key = yearSelector.value;
   const mode = el('year-metric').value;
+  const bySex = sexModes.includes(mode);
+  const labels = bySex ? ['Männlich', 'Weiblich'] : country === null ? ['Deutsch', 'Nichtdeutsch'] : [countryYears.names[country]];
+  el('year-first').textContent = labels[0];
+  el('year-second').hidden = labels.length < 2;
+  el('year-second').textContent = labels[1] || '';
   const body = el('year-body');
   body.replaceChildren();
   el('year-caption').textContent = yearSelector.selectedOptions[0].text + ' · ' + el('year-metric').selectedOptions[0].text;
@@ -247,13 +278,14 @@ function showYears() {
     header.textContent = year;
     row.append(header);
     const counts = country === null ? [de, nd] : [countryYears.rows[key][Number(year) - 2020][country]];
-    const values = mode === 'rate' ? [deRate, ndRate] : counts.map(n =>
+    const split = bySex ? sexPair(key, year, mode) : null;
+    const values = bySex ? split.map(n => 100 * n / (split[0] + split[1])) : mode === 'rate' ? [deRate, ndRate] : counts.map(n =>
       mode === 'share' && n !== null ? 100 * n / (de + nd) : n);
     points.push({year, values});
-    for (const value of values) {
+    for (const [i, value] of values.entries()) {
       const cell = row.insertCell();
       cell.textContent = value === null ? 'Nicht separat ausgewiesen' :
-        mode === 'share' ? percent.format(value / 100) : number.format(value);
+        bySex ? number.format(split[i]) + ' (' + percent.format(value / 100) + ')' : mode === 'share' ? percent.format(value / 100) : number.format(value);
       if (mode === 'share' && value !== null) addDenominator(cell, 'aller Tatverdächtigen dieses Delikts');
     }
   }
@@ -262,7 +294,7 @@ function showYears() {
     share: 'Bezugsgröße ist die Summe der deutschen und nichtdeutschen Tatverdächtigen dieses Delikts im jeweiligen Jahr.',
     rate: 'Ansässige Tatverdächtige je 100.000 Einwohner derselben Staatsangehörigkeitsgruppe, jeweils ab acht Jahren. Ab 2024 beruhen die Bevölkerungszahlen auf dem Zensus 2022, zuvor auf dem Zensus 2011. Raten vor und nach diesem Wechsel sind nur eingeschränkt vergleichbar.'
   };
-  el('year-note').textContent = notes[mode] + (country === null ? '' : ' T62 enthält auch Personen ohne Wohnsitz in Deutschland. Daraus lässt sich keine vergleichbare Rate je 100.000 für einzelne Staatsangehörigkeiten ableiten.');
+  el('year-note').textContent = (bySex ? 'Das Diagramm zeigt die Anteile innerhalb der gewählten Gruppe. Die Tabelle nennt auch die Personenzahlen.' : notes[mode]) + (country === null ? '' : ' T62 enthält für einzelne Staatsangehörigkeiten keine Aufschlüsselung nach Geschlecht und umfasst auch Personen ohne Wohnsitz in Deutschland. Daraus lässt sich keine vergleichbare Rate je 100.000 für einzelne Staatsangehörigkeiten ableiten.');
   const breaks = {
     '131000': 'Ab 2022 umfasst der PKS-Schlüssel die neu gegliederten §§ 176–176e StGB.',
     '897000': '2020 wurde der Schlüssel als Computerkriminalität geführt. Seit 2021 verwendet das BKA die geänderte Kategorie Cybercrime.',
@@ -280,7 +312,7 @@ function showYears() {
   if (cannabis) mark('2024', 'Cannabis-Teillegalisierung');
   if (breaks[key]) mark(key === '131000' ? '2022' : '2021', 'geänderte Deliktsdefinition');
   el('chart-title').textContent = el('year-caption').textContent;
-  drawYearChart(points, country === null ? ['Deutsch', 'Nichtdeutsch'] : [countryYears.names[country]], mode, markers);
+  drawYearChart(points, labels, bySex ? 'share' : mode, markers);
 }
 el('year-metric').addEventListener('change', () => chooseOffense(yearSelector.value, 'jahresvergleich'));
 
@@ -325,7 +357,7 @@ for (const button of document.querySelectorAll('[data-copy]')) {
 function restoreOffense() {
   const params = new URL(location.href).searchParams;
   const metric = params.get('kennzahl');
-  el('year-metric').value = ['count', 'share', 'rate'].includes(metric) ? metric : 'count';
+  el('year-metric').value = ['count', 'share', 'rate', ...sexModes].includes(metric) ? metric : 'count';
   syncCountry(params.get('staat'));
   render();
   displayOffense(params.get('delikt'));
@@ -334,7 +366,7 @@ for (const select of countrySelects) {
   select.addEventListener('change', () => {
     const name = select.value === '' ? null : countryYears.names[Number(select.value)];
     const url = offenseUrl(yearSelector.value, select.closest('section').id);
-    if (name !== null && el('year-metric').value === 'rate') url.searchParams.set('kennzahl', 'count');
+    if (name !== null && ['rate', ...sexModes].includes(el('year-metric').value)) url.searchParams.set('kennzahl', 'count');
     if (name === null) url.searchParams.delete('staat');
     else url.searchParams.set('staat', name);
     history.pushState(null, '', url);
