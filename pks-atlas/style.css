@@ -37,3 +37,6 @@ main > section[hidden]{display:none}
   .year-workspace select { text-overflow: ellipsis; }
   .year-workspace .year-figure { margin: 0; }
 }
+
+.hero { padding-block: clamp(18px, 2.5vw, 36px); }
+.section, .method { padding-block: clamp(24px, 2.5vw, 36px); }

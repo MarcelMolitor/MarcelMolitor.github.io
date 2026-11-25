@@ -231,9 +231,9 @@ function renderNationalities() {
           limit: natLimit, scroll: window.scrollY, name}}, '', location.href);
         history.pushState(null, '', url);
         restoreOffense();
-        showActiveView();
+        syncNavigation();
         el('year-heading').focus({preventScroll: true});
-        window.scrollTo({top: 0, behavior: 'instant'});
+        el('year-heading').scrollIntoView({behavior: 'instant'});
       });
       heading.append(link);
     } else {
@@ -409,14 +409,14 @@ for (const select of countrySelects) {
 window.addEventListener('popstate', () => {
   restoreOffense();
   const saved = history.state?.natReturn;
-  if (!saved || location.hash !== '#nationalitaeten') return;
+  if (!saved) return;
   natSearch.value = saved.search;
   natSort.value = saved.sort;
   natLimit = saved.limit;
   renderNationalities();
-  showActiveView();
+  syncNavigation();
   requestAnimationFrame(() => {
-    if (location.hash !== '#nationalitaeten') return;
+    if (history.state?.natReturn?.name !== saved.name) return;
     Array.from(el('nat-body').querySelectorAll('a')).find(a => a.textContent === saved.name)?.focus({preventScroll: true});
     window.scrollTo({top: saved.scroll, behavior: 'instant'});
   });
@@ -431,24 +431,16 @@ function resetMenu() {
 wideNavigation.addEventListener('change', resetMenu);
 
 // Hashes also serve existing shared links to individual analyses.
-function showActiveView() {
-  const sections = Array.from(document.querySelectorAll('main > section'));
-  const target = sections.find(section => section.id && '#' + section.id === location.hash);
-  const overview = !target || target.id === 'atlas-auswahl';
-  for (const section of sections) {
-    const onHome = section.classList.contains('hero') || section.id === 'atlas-auswahl';
-    section.hidden = overview ? !onHome : section !== target;
-  }
+function syncNavigation() {
   resetMenu();
   for (const link of menu.querySelectorAll('a')) {
-    if (link.hash === (overview ? '#start' : location.hash)) link.setAttribute('aria-current', 'page');
+    if (link.hash === (location.hash || '#start')) link.setAttribute('aria-current', 'location');
     else link.removeAttribute('aria-current');
   }
-  if (target?.id === 'jahresvergleich') showYears();
 }
-window.addEventListener('hashchange', showActiveView);
+window.addEventListener('hashchange', syncNavigation);
 menu.querySelector('nav').addEventListener('click', resetMenu);
-showActiveView();
+syncNavigation();
 
 let chartWidth = 0;
 new ResizeObserver(([entry]) => {
