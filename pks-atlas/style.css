@@ -45,3 +45,29 @@ main > section[hidden]{display:none}
 .population-picker select { width: 100%; min-width: 0; text-overflow: ellipsis; }
 .population .pop-grid { margin-top: 14px; }
 .pop-grid h3 + p { margin: -6px 0 12px; }
+
+.hero-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 20px;
+}
+.hero-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-underline-offset: 4px;
+}
+:where(a, button, summary, select, input):focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 3px;
+}
+#opfer > p { max-width: 78ch; }
+#opfer .fold { margin: 0; border-top: 1px solid #becdc6; }
+#opfer summary { padding-block: 12px; }
+#opfer details[open] { padding-bottom: 12px; }
+#opfer th { hyphens: auto; }
+#opfer td { white-space: nowrap; }
+@media (max-width: 380px) {
+  #opfer table { font-size: .85rem; }
+  #opfer th, #opfer td { padding-inline: 2px; }
+}
