@@ -1,0 +1,121 @@
+const el = id => document.getElementById(id);
+const number = new Intl.NumberFormat('de-DE');
+const percent = new Intl.NumberFormat('de-DE', {style:'percent', minimumFractionDigits:1, maximumFractionDigits:1});
+const categories = dataset.rows.slice(2);
+let limit = 8;
+
+function summary() {
+  const [, , total, foreign] = dataset.rows[el('basis').value === 'alle' ? 0 : 1];
+  const german = total - foreign;
+  el('headline').textContent = number.format(total);
+  el('headbar').style.width = (100 * german / total) + '%';
+  for (const [id, label, value] of [['headd', 'Deutsch', german], ['headn', 'Nichtdeutsch', foreign]]) {
+    el(id).innerHTML = '<b>' + percent.format(value / total) + ' ' + label + '</b><br>' + number.format(value);
+  }
+}
+
+function render() {
+  const term = el('query').value.trim().toLocaleLowerCase('de');
+  const matches = categories.filter(([key, name]) => (key + ' ' + name).toLocaleLowerCase('de').includes(term));
+  const sort = el('order').value;
+  matches.sort((a,b) => {
+    if (sort === 'alpha') return a[1].localeCompare(b[1], 'de');
+    if (sort === 'share') return b[3]/b[2] - a[3]/a[2];
+    return b[2] - a[2];
+  });
+  el('rows').replaceChildren();
+  for (const [key, name, total, foreign] of matches.slice(0, limit)) {
+    const german = total - foreign;
+    const row = document.createElement('article');
+    row.className = 'row';
+    row.innerHTML = '<div><h3></h3><div class="small"></div></div><div><div class="line"><span><b></b> Deutsch</span><span><b></b> Nichtdeutsch</span></div><div class="bar" aria-hidden="true"><span></span></div><div class="line"><small></small><small></small></div></div>';
+    row.querySelector('h3').textContent = name;
+    row.querySelector('.small').textContent = 'PKS ' + key + ' · ' + number.format(total) + ' Tatverdächtige';
+    row.querySelector('.bar span').style.width = (100 * german / total) + '%';
+    [german, foreign].forEach((n, i) => {
+      row.querySelectorAll('b')[i].textContent = percent.format(n / total);
+      row.querySelectorAll('small')[i].textContent = number.format(n);
+    });
+    el('rows').append(row);
+  }
+  el('more').hidden = limit >= matches.length;
+  el('count').textContent = matches.length ? Math.min(limit, matches.length) + ' von ' + matches.length + ' Delikten und Deliktsgruppen angezeigt' : 'Kein Treffer. Versuche einen anderen Namen oder PKS-Schlüssel.';
+}
+el('source').href = dataset.source;
+el('sourceNote').textContent = dataset.title + '. Die Anteile sind auf eine Nachkommastelle gerundet.';
+el('basis').addEventListener('change', summary);
+for (const [id, event] of [['query','input'], ['order','change']]) {
+  el(id).addEventListener(event, () => { limit = 8; render(); });
+}
+el('more').addEventListener('click', () => {limit += 8; render();});
+summary();
+render();
+
+const shareSelector = el('share-offense');
+const choices = [dataset.rows[1], dataset.rows[0], ...categories.slice().sort((a,b) => a[1].localeCompare(b[1],'de'))];
+for (const [key, name] of choices) shareSelector.add(new Option(name, key));
+function showShares() {
+  const [, , total, foreign] = choices.find(([key]) => key === shareSelector.value);
+  for (const [id, count] of [['share-de', total - foreign], ['share-nd', foreign]]) {
+    const absolute = document.createElement('small');
+    absolute.textContent = number.format(count);
+    el(id).replaceChildren(percent.format(count / total), absolute);
+  }
+}
+shareSelector.addEventListener('change', showShares);
+el('basis').addEventListener('change', () => {
+  shareSelector.value = dataset.rows[el('basis').value === 'alle' ? 0 : 1][0];
+  showShares();
+});
+showShares();
+
+const rates = new Map([
+  ['890000', [1813, 4788]],
+  ['892000', [158, 628]]
+]);
+const rateSelector = el('rate-offense');
+for (const [key, name] of choices) {
+  if (rates.has(key)) rateSelector.add(new Option(name, key));
+}
+function showRates() {
+  const [german, foreign] = rates.get(rateSelector.value);
+  el('rate-de').textContent = number.format(german);
+  el('rate-nd').textContent = number.format(foreign);
+}
+el('rate-source').href = dataset.source;
+rateSelector.addEventListener('change', showRates);
+showRates();
+
+const natOffense = el('nat-offense');
+const natSearch = el('nat-query');
+const natSort = el('nat-sort');
+for (const [key, name] of choices) natOffense.add(new Option(name, key));
+let natLimit = 12;
+function renderNationalities() {
+  const key = natOffense.value;
+  const [, label, , denominator] = choices.find(([code]) => code === key);
+  const values = nationalities.rows[key];
+  const term = natSearch.value.toLocaleLowerCase('de').trim();
+  const matches = nationalities.names.map((name, i) => [name, values[i]])
+    .filter(([name]) => name.toLocaleLowerCase('de').includes(term));
+  matches.sort(([a,x],[b,y]) => (natSort.value === 'count' ? y-x : 0) || a.localeCompare(b,'de'));
+  el('nat-caption').textContent = label + ' · ' + number.format(denominator) + ' nichtdeutsche Tatverdächtige';
+  const body = el('nat-body');
+  body.replaceChildren();
+  for (const [name, count] of matches.slice(0, natLimit)) {
+    const row = body.insertRow();
+    const heading = document.createElement('th');
+    heading.scope = 'row';
+    heading.textContent = name;
+    row.append(heading);
+    row.insertCell().textContent = number.format(count);
+    row.insertCell().textContent = count && count / denominator < 0.001 ? '< 0,1 %' : percent.format(count / denominator);
+  }
+  el('nat-status').textContent = matches.length ? Math.min(natLimit,matches.length) + ' von ' + matches.length + ' Einträgen angezeigt' : 'Keine passende Staatsangehörigkeit gefunden.';
+  el('nat-more').hidden = natLimit >= matches.length;
+}
+for (const [control,event] of [[natOffense,'change'],[natSort,'change'],[natSearch,'input']]) {
+  control.addEventListener(event, () => { natLimit = 12; renderNationalities(); });
+}
+el('nat-more').addEventListener('click', () => { natLimit += 30; renderNationalities(); });
+renderNationalities();
