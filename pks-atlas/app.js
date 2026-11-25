@@ -173,12 +173,8 @@ function showShares() {
 
 
 
-const rateSelector = el('rate-offense');
-for (const [key, name] of choices) {
-  rateSelector.add(new Option(name, key));
-}
 function showRates() {
-  const pair = rates.get(rateSelector.value);
+  const pair = rates.get(shareSelector.value);
   el('rate-de').textContent = pair ? number.format(pair[0]) : 'Keine Angabe im Atlas';
   el('rate-nd').textContent = pair ? number.format(pair[1]) : 'Keine Angabe im Atlas';
 }
@@ -350,7 +346,7 @@ el('year-metric').addEventListener('change', () => chooseOffense(yearSelector.va
 
 function displayOffense(key) {
   if (!choices.some(([code]) => code === key)) key = dataset.rows[1][0];
-  for (const select of [shareSelector, natOffense, rateSelector, yearSelector]) select.value = key;
+  for (const select of [shareSelector, natOffense, yearSelector]) select.value = key;
   if (key === dataset.rows[0][0] || key === dataset.rows[1][0]) {
     el('basis').value = key === dataset.rows[0][0] ? 'alle' : 'ohne';
     summary();
@@ -371,7 +367,7 @@ function chooseOffense(key, section) {
   displayOffense(key);
   render();
 }
-for (const select of [shareSelector, natOffense, rateSelector, yearSelector]) {
+for (const select of [shareSelector, natOffense, yearSelector]) {
   select.addEventListener('change', () => chooseOffense(select.value, select.closest('section').id));
 }
 el('basis').addEventListener('change', () => chooseOffense(dataset.rows[el('basis').value === 'alle' ? 0 : 1][0], 'start'));

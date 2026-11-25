@@ -40,3 +40,8 @@ main > section[hidden]{display:none}
 
 .hero { padding-block: clamp(18px, 2.5vw, 36px); }
 .section, .method { padding-block: clamp(24px, 2.5vw, 36px); }
+
+.population-picker { display: grid; gap: 4px; max-width: 42rem; margin-top: 16px; }
+.population-picker select { width: 100%; min-width: 0; text-overflow: ellipsis; }
+.population .pop-grid { margin-top: 14px; }
+.pop-grid h3 + p { margin: -6px 0 12px; }
