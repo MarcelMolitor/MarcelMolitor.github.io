@@ -164,9 +164,10 @@ function showShares() {
   for (const [id, count] of [['share-de', total - foreign], ['share-nd', foreign]]) {
     const absolute = document.createElement('small');
     absolute.textContent = number.format(count);
-    const split = document.createElement('small');
-    split.textContent = sexText(shareSelector.value, id === 'share-de' ? 'sex-de' : 'sex-nd');
-    el(id).replaceChildren(percent.format(count / total), absolute, split);
+    const german = id === 'share-de';
+    el(german ? 'share-sex-de' : 'share-sex-nd').textContent = (german ? 'Deutsch · ' : 'Nichtdeutsch · ') +
+      sexText(shareSelector.value, german ? 'sex-de' : 'sex-nd');
+    el(id).replaceChildren(percent.format(count / total), absolute);
   }
 }
 
@@ -220,7 +221,7 @@ function renderNationalities() {
     row.insertCell().textContent = number.format(count);
     const shareCell = row.insertCell();
     shareCell.textContent = count && count / denominator < 0.001 ? '< 0,1 %' : percent.format(count / denominator);
-    addDenominator(shareCell, 'der nichtdeutschen Tatverdächtigen');
+
   }
   el('nat-status').textContent = matches.length ? Math.min(natLimit,matches.length) + ' von ' + matches.length + ' Einträgen angezeigt' : 'Keine passende Staatsangehörigkeit gefunden.';
   el('nat-more').hidden = natLimit >= matches.length;
@@ -376,3 +377,26 @@ for (const select of countrySelects) {
 }
 window.addEventListener('popstate', restoreOffense);
 restoreOffense();
+
+// Hashes also serve existing shared links to individual analyses.
+function showActiveView() {
+  const sections = Array.from(document.querySelectorAll('main > section'));
+  const target = sections.find(section => section.id && '#' + section.id === location.hash);
+  const overview = !target || target.id === 'atlas-auswahl';
+  for (const section of sections) {
+    const onHome = section.classList.contains('hero') || section.id === 'atlas-auswahl';
+    section.hidden = overview ? !onHome : section !== target;
+  }
+  const menu = document.querySelector('.view-menu');
+  menu.open = false;
+  for (const link of menu.querySelectorAll('a')) {
+    if (link.hash === (overview ? '#start' : location.hash)) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+  if (target?.id === 'jahresvergleich') showYears();
+}
+window.addEventListener('hashchange', showActiveView);
+document.querySelector('.view-menu nav').addEventListener('click', () => {
+  document.querySelector('.view-menu').open = false;
+});
+showActiveView();
