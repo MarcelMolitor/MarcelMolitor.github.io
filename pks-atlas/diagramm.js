@@ -65,17 +65,44 @@ function drawYearChart(points, series, metric, breaks, basis, requestedYear, onY
     }
     hit.addEventListener('click', activate);
     hit.addEventListener('keydown', event => {
-      if (event.key === 'Enter' || event.key === ' ') {
+      const destinations = {ArrowLeft: Math.max(0, i - 1), ArrowRight: Math.min(points.length - 1, i + 1), Home: 0, End: points.length - 1};
+      if (Object.hasOwn(destinations, event.key)) {
+        event.preventDefault();
+        const target = destinations[event.key];
+        hits[target].focus();
+        select(target);
+        onYearChange(points[target].year);
+      } else if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
         activate();
       }
     });
     return hit;
   });
+  const changeNumber = new Intl.NumberFormat('de-DE', {maximumFractionDigits: 2});
   function select(index) {
     const point = points[index];
     hits.forEach((hit, i) => hit.setAttribute('aria-pressed', String(i === index)));
     detail.textContent = point.year + ' · ' + point.details.join(' · ') + '. ' + basis;
+    const prior = points[index - 1];
+    if (!prior || Number(prior.year) + 1 !== Number(point.year)) return;
+
+    const unit = metric === 'share' ? 'Prozentpunkte' : metric === 'rate' ? 'je 100.000' : 'Personen';
+    const changes = series.map((label, i) => {
+      const value = point.values[i], previousValue = prior.values[i];
+      if (!Number.isFinite(value) || !Number.isFinite(previousValue)) return label + ' ohne Vergleichswert';
+      const delta = value - previousValue;
+      if (delta === 0) return label + ' unverändert';
+      const magnitude = Math.abs(delta);
+      const amount = magnitude < 0.01 ? 'unter 0,01' : changeNumber.format(magnitude);
+      const displayUnit = magnitude === 1 && metric === 'count' ? 'Person' : magnitude === 1 && metric === 'share' ? 'Prozentpunkt' : unit;
+      return label + ' ' + amount + ' ' + displayUnit + (delta > 0 ? ' mehr' : ' weniger');
+    });
+    const comparison = document.createElement('span');
+    comparison.style.display = 'block';
+    comparison.textContent = 'Gegenüber ' + prior.year + ': ' + changes.join(' · ') + '.';
+    if (breaks.has(point.year)) comparison.textContent += ' Vergleich eingeschränkt (' + breaks.get(point.year).join(', ') + ').';
+    detail.append(comparison);
   }
   const previous = points.findIndex(p => p.year === requestedYear);
   select(previous < 0 ? points.length - 1 : previous);
