@@ -68,9 +68,12 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div></section>
 <section class="ecs-news" id="ecs-news" aria-labelledby="ecs-news-heading">
 <h2 id="ecs-news-heading">Neues aus der ECS-Forschung</h2>
-<p>Die drei neuesten Treffer aus Europe PMC. Die Studientitel werden automatisch ins Deutsche übersetzt.</p>
-<ul id="ecs-papers" hidden></ul>
-<p id="ecs-status" role="status"></p>
+<p id="ecs-status">Gespeicherte Auswahl aus PubMed · Stand 25. November 2026</p>
+<ul id="ecs-papers">
+<li><small>18.11.2026 · Neurobiology of Disease</small><a href="https://pubmed.ncbi.nlm.nih.gov/43051379/">Modulation des Endocannabinoid-Systems durch Ernährung, körperliche Aktivität und das Mikrobiom bei Multipler Sklerose</a><details><summary>Originaltitel anzeigen</summary><p lang="en">Modulation of the endocannabinoid system through diet, physical activity and microbiome in the new era of multiple sclerosis.</p></details></li>
+<li><small>12.10.2026 · Annual Review of Pharmacology and Toxicology</small><a href="https://pubmed.ncbi.nlm.nih.gov/42862946/">Endocannabinoid-Signalübertragung und Stimmungsregulation</a><details><summary>Originaltitel anzeigen</summary><p lang="en">Endocannabinoid Signaling and Mood Regulation.</p></details></li>
+<li><small>11.09.2026 · Clinical Therapeutics</small><a href="https://pubmed.ncbi.nlm.nih.gov/42728140/">Das Endocannabinoid-System ist kein limitierender Faktor mehr: Warum Politik und Stigmatisierung die cannabinoidbasierte Medizin weiter verzögern</a><details><summary>Originaltitel anzeigen</summary><p lang="en">The Endocannabinoid System is No Longer the Limiting Factor: Why Policy and Stigma Continue to Delay Cannabinoid-Based Medicine.</p></details></li>
+</ul>
 <a href="https://europepmc.org/search?query=SRC%3AMED%20AND%20(TITLE%3Aendocannabinoid*%20OR%20TITLE%3Aanandamide%20OR%20TITLE%3A%222-arachidonoylglycerol%22)%20sort_date%3Ay">Alle Treffer bei Europe PMC ansehen ↗</a>
 </section>
 <script>
@@ -114,7 +117,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   }
   const status = document.getElementById('ecs-status');
   const list = document.getElementById('ecs-papers');
-  status.textContent = 'Publikationen werden geladen …';
+  const incoming = document.createDocumentFragment();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10000);
   try {
@@ -133,14 +136,16 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       const published = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split('-').reverse().join('.') : paper.pubYear;
       meta.textContent = [published, paper.journalTitle].filter(Boolean).join(' · ');
       item.append(meta, link);
-      list.append(item);
+      incoming.append(item);
       link.lang = 'en';
       void showGermanTitle(link, item, paper.id);
     }
-    list.hidden = !list.children.length;
-    status.textContent = list.hidden ? 'Zurzeit liegen keine Treffer vor.' : '';
+    if (incoming.children.length) {
+      list.replaceChildren(incoming);
+      status.textContent = 'Neueste Publikationen aus der Europe-PMC-Titelsuche · Titel automatisch übersetzt, soweit verfügbar.';
+    }
   } catch {
-    status.textContent = 'Die Publikationen lassen sich gerade nicht laden. Die vollständige Suche ist unten verlinkt.';
+    // Die gespeicherte Auswahl bleibt sichtbar.
   } finally {
     clearTimeout(timer);
   }
