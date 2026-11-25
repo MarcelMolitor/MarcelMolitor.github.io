@@ -2,6 +2,42 @@ const el = id => document.getElementById(id);
 const number = new Intl.NumberFormat('de-DE');
 const percent = new Intl.NumberFormat('de-DE', {style:'percent', minimumFractionDigits:1, maximumFractionDigits:1});
 const categories = dataset.rows.slice(2);
+const rates = new Map([
+  ['111000', [11, 37]],
+  ['131000', [15, 20]],
+  ['210000', [21, 98]],
+  ['222000', [128, 510]],
+  ['224000', [322, 985]],
+  ['230000', [238, 588]],
+  ['232200', [61, 101]],
+  ['232300', [157, 445]],
+  ['232400', [23, 41]],
+  ['510000', [250, 760]],
+  ['511000', [87, 140]],
+  ['515000', [51, 280]],
+  ['621000', [34, 84]],
+  ['650000', [6, 4]],
+  ['673000', [231, 371]],
+  ['716400', [3, 12]],
+  ['725000', [2, 435]],
+  ['726200', [33, 58]],
+  ['730000', [113, 270]],
+  ['890000', [1813, 4788]],
+  ['892000', [158, 628]],
+  ['892500', [2, 10]],
+  ['893000', [28, 58]],
+  ['897000', [28, 72]],
+  ['897100', [21, 55]],
+  ['898000', [24, 51]],
+  ['899000', [160, 499]],
+  ['------', [1814, 5131]],
+  ['****00', [292, 1097]],
+  ['***100', [6, 18]],
+  ['***300', [12, 43]],
+  ['*26*00', [174, 748]],
+  ['435*00', [7, 20]],
+  ['*90*00', [1, 19]]
+]);
 let limit = 8;
 
 function summary() {
@@ -40,6 +76,11 @@ function render() {
       row.querySelectorAll('b')[i].textContent = percent.format(n / total);
       row.querySelectorAll('small')[i].textContent = number.format(n);
     });
+    const [deRate, ndRate] = rates.get(key);
+    const rateLine = document.createElement('p');
+    rateLine.className = 'small';
+    rateLine.textContent = 'Je 100.000 Einwohner ab 8 Jahren: Deutsch ' + number.format(deRate) + ' · Nichtdeutsch ' + number.format(ndRate);
+    row.lastElementChild.append(rateLine);
     el('rows').append(row);
   }
   el('more').hidden = limit >= matches.length;
@@ -68,10 +109,7 @@ function showShares() {
 }
 
 
-const rates = new Map([
-  ['890000', [1813, 4788]],
-  ['892000', [158, 628]]
-]);
+
 const rateSelector = el('rate-offense');
 for (const [key, name] of choices) {
   rateSelector.add(new Option(name, key));
@@ -81,7 +119,7 @@ function showRates() {
   el('rate-de').textContent = pair ? number.format(pair[0]) : 'Keine Angabe im Atlas';
   el('rate-nd').textContent = pair ? number.format(pair[1]) : 'Keine Angabe im Atlas';
 }
-el('rate-source').href = dataset.source;
+
 
 
 const natOffense = el('nat-offense');
