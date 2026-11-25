@@ -50,12 +50,40 @@ function summary() {
   }
 }
 
+const countrySelects = [el('compare-country'), el('year-country')];
+const countryOptions = countryYears.names.map((name, index) => [name, index])
+  .sort(([a], [b]) => a.localeCompare(b, 'de'));
+for (const select of countrySelects) {
+  for (const [name, index] of countryOptions) select.add(new Option(name, index));
+}
+let country = null;
+function syncCountry(name) {
+  const index = countryYears.names.indexOf(name);
+  country = index < 0 ? null : index;
+  for (const select of countrySelects) select.value = country === null ? '' : String(country);
+  const selected = country !== null;
+  el('year-metric').querySelector('[value="rate"]').disabled = selected;
+  if (selected && el('year-metric').value === 'rate') el('year-metric').value = 'count';
+  el('year-first').textContent = selected ? name : 'Deutsch';
+  el('year-second').hidden = selected;
+  el('country-sources').hidden = !selected;
+  el('comparison-key').style.display = selected ? 'none' : '';
+  el('comparison-note').hidden = !selected;
+  el('order').querySelector('[value="share"]').textContent = selected ? 'Anteil am Delikt' : 'Anteil Nichtdeutsche';
+}
 function render() {
   const term = el('query').value.trim().toLocaleLowerCase('de');
   const matches = categories.filter(([key, name]) => (key + ' ' + name).toLocaleLowerCase('de').includes(term));
   const sort = el('order').value;
   matches.sort((a,b) => {
     if (sort === 'alpha') return a[1].localeCompare(b[1], 'de');
+    if (country !== null) {
+      const value = ([key, , total]) => {
+        const n = countryYears.rows[key][5][country];
+        return n === null ? -1 : sort === 'share' ? n / total : n;
+      };
+      return value(b) - value(a);
+    }
     if (sort === 'share') return b[3]/b[2] - a[3]/a[2];
     return b[2] - a[2];
   });
@@ -71,6 +99,15 @@ function render() {
     detail.href = offenseUrl(key, 'bevoelkerung').href;
     detail.textContent = 'Im Bevölkerungsvergleich öffnen';
     row.querySelector('.small').after(detail);
+    if (country !== null) {
+      const count = countryYears.rows[key][5][country];
+      detail.href = offenseUrl(key, 'jahresvergleich').href;
+      detail.textContent = 'Im Jahresvergleich öffnen';
+      row.lastElementChild.textContent = count === null ? 'Für 2025 nicht separat ausgewiesen' :
+        countryYears.names[country] + ' · ' + number.format(count) + ' Tatverdächtige · ' + percent.format(count / total) + ' am Delikt';
+      el('rows').append(row);
+      continue;
+    }
     row.querySelector('.bar span').style.width = (100 * german / total) + '%';
     [german, foreign].forEach((n, i) => {
       row.querySelectorAll('b')[i].textContent = percent.format(n / total);
@@ -202,6 +239,10 @@ function showYears() {
     let values = [number.format(de), number.format(nd)];
     if (mode === 'share') values = [de, nd].map(n => percent.format(n / (de + nd)));
     if (mode === 'rate') values = [number.format(deRate), number.format(ndRate)];
+    if (country !== null) {
+      const n = countryYears.rows[key][Number(year) - 2020][country];
+      values = [n === null ? 'Nicht separat ausgewiesen' : mode === 'share' ? percent.format(n / (de + nd)) : number.format(n)];
+    }
     for (const value of values) row.insertCell().textContent = value;
   }
   const notes = {
@@ -209,7 +250,7 @@ function showYears() {
     share: 'Bezugsgröße ist die Summe der deutschen und nichtdeutschen Tatverdächtigen dieses Delikts im jeweiligen Jahr.',
     rate: 'Ansässige Tatverdächtige je 100.000 Einwohner derselben Staatsangehörigkeitsgruppe, jeweils ab acht Jahren. Ab 2024 beruhen die Bevölkerungszahlen auf dem Zensus 2022, zuvor auf dem Zensus 2011. Raten vor und nach diesem Wechsel sind nur eingeschränkt vergleichbar.'
   };
-  el('year-note').textContent = notes[mode];
+  el('year-note').textContent = notes[mode] + (country === null ? '' : ' T62 enthält auch Personen ohne Wohnsitz in Deutschland. Daraus lässt sich keine vergleichbare Rate je 100.000 für einzelne Staatsangehörigkeiten ableiten.');
   const breaks = {
     '131000': 'Ab 2022 umfasst der PKS-Schlüssel die neu gegliederten §§ 176–176e StGB.',
     '897000': '2020 wurde der Schlüssel als Computerkriminalität geführt. Seit 2021 verwendet das BKA die geänderte Kategorie Cybercrime.',
@@ -259,7 +300,21 @@ for (const button of document.querySelectorAll('[data-copy]')) {
   });
 }
 function restoreOffense() {
-  displayOffense(new URL(location.href).searchParams.get('delikt'));
+  const params = new URL(location.href).searchParams;
+  syncCountry(params.get('staat'));
+  render();
+  displayOffense(params.get('delikt'));
+}
+for (const select of countrySelects) {
+  select.addEventListener('change', () => {
+    const name = select.value === '' ? null : countryYears.names[Number(select.value)];
+    const url = offenseUrl(yearSelector.value, select.closest('section').id);
+    if (name === null) url.searchParams.delete('staat');
+    else url.searchParams.set('staat', name);
+    history.pushState(null, '', url);
+    limit = 8;
+    restoreOffense();
+  });
 }
 window.addEventListener('popstate', restoreOffense);
 restoreOffense();
