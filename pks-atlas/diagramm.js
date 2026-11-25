@@ -1,5 +1,5 @@
 // The table and the chart receive the same values, including gaps in T62.
-function drawYearChart(points, series, metric, breaks, basis) {
+function drawYearChart(points, series, metric, breaks, basis, requestedYear, onYearChange) {
   const svg = document.getElementById('year-chart');
   const legend = document.getElementById('chart-legend');
   svg.replaceChildren();
@@ -59,11 +59,15 @@ function drawYearChart(points, series, metric, breaks, basis) {
     const end = Math.min(width, x(i) + half);
     const hit = add('rect', {x: start, y: 17, width: end - start, height: 187,
       class: 'year-hit', tabindex: 0, role: 'button', 'aria-label': 'Jahreswert ' + p.year});
-    hit.addEventListener('click', () => select(i));
+    function activate() {
+      select(i);
+      onYearChange(p.year);
+    }
+    hit.addEventListener('click', activate);
     hit.addEventListener('keydown', event => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        select(i);
+        activate();
       }
     });
     return hit;
@@ -71,10 +75,9 @@ function drawYearChart(points, series, metric, breaks, basis) {
   function select(index) {
     const point = points[index];
     hits.forEach((hit, i) => hit.setAttribute('aria-pressed', String(i === index)));
-    detail.dataset.year = point.year;
     detail.textContent = point.year + ' · ' + point.details.join(' · ') + '. ' + basis;
   }
-  const previous = points.findIndex(p => p.year === detail.dataset.year);
+  const previous = points.findIndex(p => p.year === requestedYear);
   select(previous < 0 ? points.length - 1 : previous);
   document.getElementById('chart-events').textContent = Array.from(breaks, ([year, labels]) => '† ' + year + ' · ' + labels.join(' und ')).join('  /  ');
 }

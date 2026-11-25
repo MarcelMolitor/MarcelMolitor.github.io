@@ -273,6 +273,7 @@ function offenseUrl(key, section) {
   const url = new URL(window.location.href);
   url.searchParams.set('delikt', key);
   url.searchParams.set('kennzahl', el('year-metric').value);
+  if (section !== 'jahresvergleich') url.searchParams.delete('jahr');
   url.hash = section;
   return url;
 }
@@ -340,7 +341,16 @@ function showYears() {
   if (cannabis) mark('2024', 'Cannabis-Teillegalisierung');
   if (breaks[key]) mark(key === '131000' ? '2022' : '2021', 'geänderte Deliktsdefinition');
   el('chart-title').textContent = el('year-metric').selectedOptions[0].text;
-  drawYearChart(points, labels, bySex ? 'share' : mode, markers, basis);
+  const requestedYear = new URL(location.href).searchParams.get('jahr');
+  drawYearChart(points, labels, bySex ? 'share' : mode, markers, basis, requestedYear, year => {
+    const url = offenseUrl(key, 'jahresvergleich');
+    url.searchParams.set('jahr', year);
+    history.replaceState(history.state, '', url);
+    const direct = document.querySelector('[data-direct="jahresvergleich"]');
+    direct.href = url.href;
+    direct.parentElement.querySelector('[role=status]').textContent = '';
+    syncNavigation();
+  });
 }
 el('year-metric').addEventListener('change', () => chooseOffense(yearSelector.value, 'jahresvergleich'));
 
