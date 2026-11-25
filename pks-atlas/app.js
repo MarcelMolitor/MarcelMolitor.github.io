@@ -89,14 +89,18 @@ const natSearch = el('nat-query');
 const natSort = el('nat-sort');
 for (const [key, name] of choices) natOffense.add(new Option(name, key));
 let natLimit = 12;
-function renderNationalities() {
-  const key = natOffense.value;
-  const [, label, , denominator] = choices.find(([code]) => code === key);
-  const values = nationalities.rows[key];
+function filteredNationalities() {
+  const values = nationalities.rows[natOffense.value];
   const term = natSearch.value.toLocaleLowerCase('de').trim();
   const matches = nationalities.names.map((name, i) => [name, values[i]])
     .filter(([name]) => name.toLocaleLowerCase('de').includes(term));
   matches.sort(([a,x],[b,y]) => (natSort.value === 'count' ? y-x : 0) || a.localeCompare(b,'de'));
+  return matches;
+}
+function renderNationalities() {
+  const [, label, , denominator] = choices.find(([code]) => code === natOffense.value);
+  const matches = filteredNationalities();
+  el('nat-csv').disabled = matches.length === 0;
   el('nat-caption').textContent = label + ' · ' + number.format(denominator) + ' nichtdeutsche Tatverdächtige';
   const body = el('nat-body');
   body.replaceChildren();
@@ -116,6 +120,26 @@ for (const [control,event] of [[natSort,'change'],[natSearch,'input']]) {
   control.addEventListener(event, () => { natLimit = 12; renderNationalities(); });
 }
 el('nat-more').addEventListener('click', () => { natLimit += 30; renderNationalities(); });
+
+el('nat-csv').addEventListener('click', () => {
+  const [key, offense, , denominator] = choices.find(([code]) => code === natOffense.value);
+  const source = el('nat-source').href;
+  const rows = [['Berichtsjahr', 'PKS-Schlüssel', 'Delikt', 'Staatsangehörigkeit', 'Tatverdächtige',
+    'Nichtdeutsche Tatverdächtige beim gewählten Delikt insgesamt', 'Anteil in Prozent', 'Quelle (BKA T62)']];
+  for (const [name, count] of filteredNationalities()) {
+    const share = (100 * count / denominator).toFixed(4).replace('.', ',');
+    rows.push([2025, key, offense, name, count, denominator, share, source]);
+  }
+  const csv = rows.map(row => row.map(value => '"' + String(value).replaceAll('"', '""') + '"').join(';')).join('\r\n');
+  const url = URL.createObjectURL(new Blob(['\uFEFF', csv, '\r\n'], {type:'text/csv;charset=utf-8'}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'PKS-2025-' + key.replaceAll('*', 'x') + '-Staatsangehoerigkeiten.csv';
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+});
 
 function offenseUrl(key, section) {
   const url = new URL(window.location.href);
