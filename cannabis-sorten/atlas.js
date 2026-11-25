@@ -67,14 +67,23 @@ function sortenlink(name, text) {
   link.href = url.href;
   return link;
 }
+function parentLabel(value) {
+  return /(?:Ã.|Â.){3}/u.test(value) ? 'Elternname in der Quelle unleserlich' : value;
+}
+function datenquelle() {
+  const link = node('a', 'Quelldatensatz ansehen');
+  link.href = 'https://github.com/Shannon-Goddard/ci-strains-pro/blob/80fbe5d40fac8dda5120f50b946f069c4961f253/raw-data.csv';
+  return link;
+}
 function elternlinien(first, second) {
   const line = node('p', 'Elternlinien: ');
   const parents = [first, second].filter(Boolean);
   if (!parents.length) line.append('Keine Angabe');
   parents.forEach((parent, i) => {
     if (i) line.append(' × ');
-    const name = sortennamen.get(parent.toLowerCase());
-    line.append(name ? sortenlink(name, parent) : parent);
+    const label = parentLabel(parent);
+    const name = label === parent && sortennamen.get(parent.toLowerCase());
+    line.append(name ? sortenlink(name, parent) : label);
   });
   return line;
 }
@@ -113,7 +122,7 @@ function refreshComparison() {
 }
 const percent = new Intl.NumberFormat('de-DE', {maximumFractionDigits: 4});
 function gehalt(value) {
-  if (!value) return 'Keine belastbare Katalogangabe';
+  if (!value) return 'Keine belegte Angabe';
   if (value[0] === 'avg') return percent.format(value[1]) + ' % (Katalogmittel)';
   return value.map(n => percent.format(n)).join('–') + ' %';
 }
@@ -135,15 +144,15 @@ function drawComparison() {
   for (const [label, value] of [
     ['Variante', row => row[1]], ['Züchter', row => row[2]],
     ['Katalogtyp', row => labels[row[3]] || row[3]],
-    ['Elternlinien', row => row.slice(4,6).filter(Boolean).join(' × ')],
+    ['Elternlinien', row => row.slice(4,6).filter(Boolean).map(parentLabel).join(' × ')],
     ['THC laut Katalog', row => gehalt(row[8])], ['CBD laut Katalog', row => gehalt(row[9])],
-    ['Terpene laut Katalog', row => row[7] || 'Keine Angabe'], ['Katalog', row => row[6]]
+    ['Terpene laut Katalog', row => row[7] || 'Keine belegte Angabe'], ['Katalog', row => row[6]], ['Datenquelle', datenquelle]
   ]) {
     const tr = body.insertRow();
     const th = node('th', label);
     th.scope = 'row';
     tr.append(th);
-    for (const row of rows) tr.insertCell().textContent = value(row) || 'Keine Angabe';
+    for (const row of rows) tr.insertCell().append(value(row) || 'Keine Angabe');
   }
 }
 for (const side of sides) {
@@ -167,7 +176,7 @@ function draw() {
       detail.append(linkRow);
       for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd]} of items) {
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine Angabe')),node('p','Katalog: '+bank));
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle());
         detail.append(card);
       }
     });
