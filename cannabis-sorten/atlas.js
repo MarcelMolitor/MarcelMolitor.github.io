@@ -159,6 +159,38 @@ for (const side of sides) {
   el('sorte-' + side).onchange = refreshComparison;
   el('eintrag-' + side).onchange = drawComparison;
 }
+// A photo documents one breeder's cultivar. Match the original listing and catalog too.
+const cultivarPhotos = [
+  {name: 'Blueberry', original: 'Blueberry', breeder: 'Dutch Passion', catalog: 'Dutch Passion',
+    file: 'blueberry-dutch-passion', source: 'Blueberry_(Dutch_Passion)_02.jpg'},
+  {name: 'White Widow', original: 'White Widow', breeder: 'Dutch Passion', catalog: 'Dutch Passion',
+    file: 'white-widow-dutch-passion', source: 'White_Widow_(Dutch_Passion),_29_day_of_bloom,_v._2.jpg'},
+  {name: 'White Widow', original: 'Green House Seeds White Widow', breeder: 'Green House Seed Co.', catalog: 'The Attitude Seedbank',
+    file: 'white-widow-green-house', source: 'White_Widow_(Green_House_Seeds)_01.jpg'}
+];
+function listingPhoto(row) {
+  return cultivarPhotos.find(photo => photo.name === row[0] && photo.original === row[1] &&
+    photo.breeder === row[2] && photo.catalog === row[6]);
+}
+function photoFigure(photo) {
+  const figure = document.createElement('figure');
+  figure.className = 'sortenfoto';
+  const image = document.createElement('img');
+  image.width = 800;
+  image.height = 600;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.alt = 'Blühende Pflanze der Sorte ' + photo.name + ' von ' + photo.breeder;
+  image.src = 'bilder/' + photo.file + '.webp';
+  const source = node('a', 'Originalfoto');
+  source.href = 'https://commons.wikimedia.org/wiki/File:' + encodeURIComponent(photo.source);
+  const license = node('a', 'CC BY-SA 3.0');
+  license.href = 'https://creativecommons.org/licenses/by-sa/3.0/';
+  const caption = node('figcaption', photo.name + ' · ' + photo.breeder + ' · Foto von Yuri Che. ');
+  caption.append(source, ' · ', license, ' · Verkleinert und als WebP gespeichert.');
+  figure.append(image, caption);
+  return figure;
+}
 function draw() {
   const results = el('results');
   results.replaceChildren();
@@ -181,9 +213,12 @@ function draw() {
         return label + ': ' + format(count) + ' von ' + format(items.length);
       });
       detail.append(node('p', 'Katalogeinträge mit Angabe · ' + coverage.join(' · ')));
-      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd]} of items) {
+      const cards = items.map(({row}) => ({row, photo: listingPhoto(row)}));
+      cards.sort((a, b) => Number(Boolean(b.photo)) - Number(Boolean(a.photo)));
+      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd], photo} of cards) {
         const card = document.createElement('article');
         card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle());
+        if (photo) card.insertBefore(photoFigure(photo), card.children[2]);
         detail.append(card);
       }
     });

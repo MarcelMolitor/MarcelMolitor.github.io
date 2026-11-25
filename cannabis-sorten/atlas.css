@@ -13,3 +13,7 @@
 #vergleich-tabelle caption{text-align:left;color:var(--muted);padding:6px 0}
 #vergleich-tabelle th,#vergleich-tabelle td{text-align:left;vertical-align:top;padding:9px 6px;overflow-wrap:anywhere;border-bottom:1px solid var(--line)}
 @media(max-width:600px){.vergleich-auswahl{grid-template-columns:1fr}#vergleich-tabelle{font-size:.84rem}}
+
+.sortenfoto{margin:14px 0;max-width:36rem}
+.sortenfoto img{display:block;width:100%;height:auto;border-radius:8px}
+.sortenfoto figcaption{margin-top:6px;color:var(--muted);font-size:.85rem;line-height:1.5;overflow-wrap:anywhere}
