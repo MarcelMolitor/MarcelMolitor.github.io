@@ -104,7 +104,7 @@ function render() {
       detail.href = offenseUrl(key, 'jahresvergleich').href;
       detail.textContent = 'Im Jahresvergleich öffnen';
       row.lastElementChild.textContent = count === null ? 'Für 2025 nicht separat ausgewiesen' :
-        countryYears.names[country] + ' · ' + number.format(count) + ' Tatverdächtige · ' + percent.format(count / total) + ' am Delikt';
+        countryYears.names[country] + ' · ' + number.format(count) + ' Tatverdächtige · ' + percent.format(count / total) + ' aller Tatverdächtigen dieses Delikts';
       el('rows').append(row);
       continue;
     }
@@ -172,6 +172,12 @@ function filteredNationalities() {
   matches.sort(([a,x],[b,y]) => (natSort.value === 'count' ? y-x : 0) || a.localeCompare(b,'de'));
   return matches;
 }
+function addDenominator(cell, label) {
+  const note = document.createElement('small');
+  note.className = 'denom';
+  note.textContent = label;
+  cell.append(note);
+}
 function renderNationalities() {
   const [, label, , denominator] = choices.find(([code]) => code === natOffense.value);
   const matches = filteredNationalities();
@@ -186,7 +192,9 @@ function renderNationalities() {
     heading.textContent = name;
     row.append(heading);
     row.insertCell().textContent = number.format(count);
-    row.insertCell().textContent = count && count / denominator < 0.001 ? '< 0,1 %' : percent.format(count / denominator);
+    const shareCell = row.insertCell();
+    shareCell.textContent = count && count / denominator < 0.001 ? '< 0,1 %' : percent.format(count / denominator);
+    addDenominator(shareCell, 'der nichtdeutschen Tatverdächtigen');
   }
   el('nat-status').textContent = matches.length ? Math.min(natLimit,matches.length) + ' von ' + matches.length + ' Einträgen angezeigt' : 'Keine passende Staatsangehörigkeit gefunden.';
   el('nat-more').hidden = natLimit >= matches.length;
@@ -219,6 +227,7 @@ el('nat-csv').addEventListener('click', () => {
 function offenseUrl(key, section) {
   const url = new URL(window.location.href);
   url.searchParams.set('delikt', key);
+  url.searchParams.set('kennzahl', el('year-metric').value);
   url.hash = section;
   return url;
 }
@@ -230,20 +239,23 @@ function showYears() {
   const body = el('year-body');
   body.replaceChildren();
   el('year-caption').textContent = yearSelector.selectedOptions[0].text + ' · ' + el('year-metric').selectedOptions[0].text;
+  const points = [];
   for (const [year, [de, nd, deRate, ndRate]] of Object.entries(jahresdaten[key])) {
     const row = body.insertRow();
     const header = document.createElement('th');
     header.scope = 'row';
     header.textContent = year;
     row.append(header);
-    let values = [number.format(de), number.format(nd)];
-    if (mode === 'share') values = [de, nd].map(n => percent.format(n / (de + nd)));
-    if (mode === 'rate') values = [number.format(deRate), number.format(ndRate)];
-    if (country !== null) {
-      const n = countryYears.rows[key][Number(year) - 2020][country];
-      values = [n === null ? 'Nicht separat ausgewiesen' : mode === 'share' ? percent.format(n / (de + nd)) : number.format(n)];
+    const counts = country === null ? [de, nd] : [countryYears.rows[key][Number(year) - 2020][country]];
+    const values = mode === 'rate' ? [deRate, ndRate] : counts.map(n =>
+      mode === 'share' && n !== null ? 100 * n / (de + nd) : n);
+    points.push({year, values});
+    for (const value of values) {
+      const cell = row.insertCell();
+      cell.textContent = value === null ? 'Nicht separat ausgewiesen' :
+        mode === 'share' ? percent.format(value / 100) : number.format(value);
+      if (mode === 'share' && value !== null) addDenominator(cell, 'aller Tatverdächtigen dieses Delikts');
     }
-    for (const value of values) row.insertCell().textContent = value;
   }
   const notes = {
     count: 'Anzahl der erfassten Personen je Berichtsjahr. Dieselbe Person kann in mehreren Jahren vorkommen.',
@@ -259,8 +271,18 @@ function showYears() {
   };
   const cannabis = ['------', '890000', '730000'].includes(key);
   el('year-break').textContent = cannabis ? 'Die Teillegalisierung von Cannabis im April 2024 änderte, welche Handlungen strafbar waren. Das betrifft Rauschgiftdelikte und die Gesamtzahlen, besonders beim Vergleich 2023–2025.' : (breaks[key] || '');
+  const markers = new Map();
+  function mark(year, label) {
+    if (!markers.has(year)) markers.set(year, []);
+    markers.get(year).push(label);
+  }
+  if (mode === 'rate') mark('2024', 'neue Zensusbasis');
+  if (cannabis) mark('2024', 'Cannabis-Teillegalisierung');
+  if (breaks[key]) mark(key === '131000' ? '2022' : '2021', 'geänderte Deliktsdefinition');
+  el('chart-title').textContent = el('year-caption').textContent;
+  drawYearChart(points, country === null ? ['Deutsch', 'Nichtdeutsch'] : [countryYears.names[country]], mode, markers);
 }
-el('year-metric').addEventListener('change', showYears);
+el('year-metric').addEventListener('change', () => chooseOffense(yearSelector.value, 'jahresvergleich'));
 
 function displayOffense(key) {
   if (!choices.some(([code]) => code === key)) key = dataset.rows[1][0];
@@ -283,6 +305,7 @@ function chooseOffense(key, section) {
   const url = offenseUrl(key, section);
   if (url.href !== location.href) history.pushState(null, '', url);
   displayOffense(key);
+  render();
 }
 for (const select of [shareSelector, natOffense, rateSelector, yearSelector]) {
   select.addEventListener('change', () => chooseOffense(select.value, select.closest('section').id));
@@ -301,6 +324,8 @@ for (const button of document.querySelectorAll('[data-copy]')) {
 }
 function restoreOffense() {
   const params = new URL(location.href).searchParams;
+  const metric = params.get('kennzahl');
+  el('year-metric').value = ['count', 'share', 'rate'].includes(metric) ? metric : 'count';
   syncCountry(params.get('staat'));
   render();
   displayOffense(params.get('delikt'));
@@ -309,6 +334,7 @@ for (const select of countrySelects) {
   select.addEventListener('change', () => {
     const name = select.value === '' ? null : countryYears.names[Number(select.value)];
     const url = offenseUrl(yearSelector.value, select.closest('section').id);
+    if (name !== null && el('year-metric').value === 'rate') url.searchParams.set('kennzahl', 'count');
     if (name === null) url.searchParams.delete('staat');
     else url.searchParams.set('staat', name);
     history.pushState(null, '', url);
