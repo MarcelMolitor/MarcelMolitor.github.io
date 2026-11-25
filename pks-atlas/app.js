@@ -185,9 +185,45 @@ function offenseUrl(key, section) {
   url.hash = section;
   return url;
 }
+const yearSelector = el('year-offense');
+for (const [key, name] of choices) yearSelector.add(new Option(name, key));
+function showYears() {
+  const key = yearSelector.value;
+  const mode = el('year-metric').value;
+  const body = el('year-body');
+  body.replaceChildren();
+  el('year-caption').textContent = yearSelector.selectedOptions[0].text + ' · ' + el('year-metric').selectedOptions[0].text;
+  for (const [year, [de, nd, deRate, ndRate]] of Object.entries(jahresdaten[key])) {
+    const row = body.insertRow();
+    const header = document.createElement('th');
+    header.scope = 'row';
+    header.textContent = year;
+    row.append(header);
+    let values = [number.format(de), number.format(nd)];
+    if (mode === 'share') values = [de, nd].map(n => percent.format(n / (de + nd)));
+    if (mode === 'rate') values = [number.format(deRate), number.format(ndRate)];
+    for (const value of values) row.insertCell().textContent = value;
+  }
+  const notes = {
+    count: 'Anzahl der erfassten Personen je Berichtsjahr. Dieselbe Person kann in mehreren Jahren vorkommen.',
+    share: 'Bezugsgröße ist die Summe der deutschen und nichtdeutschen Tatverdächtigen dieses Delikts im jeweiligen Jahr.',
+    rate: 'Ansässige Tatverdächtige je 100.000 Einwohner derselben Staatsangehörigkeitsgruppe, jeweils ab acht Jahren. Ab 2024 beruhen die Bevölkerungszahlen auf dem Zensus 2022, zuvor auf dem Zensus 2011. Raten vor und nach diesem Wechsel sind nur eingeschränkt vergleichbar.'
+  };
+  el('year-note').textContent = notes[mode];
+  const breaks = {
+    '131000': 'Ab 2022 umfasst der PKS-Schlüssel die neu gegliederten §§ 176–176e StGB.',
+    '897000': '2020 wurde der Schlüssel als Computerkriminalität geführt. Seit 2021 verwendet das BKA die geänderte Kategorie Cybercrime.',
+    '232300': '2021 wurde der Straftatbestand Bedrohung erweitert. Der Jahreswert umfasst damit unterschiedliche Rechtslagen.',
+    '230000': 'Die Erweiterung des Straftatbestands Bedrohung 2021 betrifft auch diese Deliktsgruppe.'
+  };
+  const cannabis = ['------', '890000', '730000'].includes(key);
+  el('year-break').textContent = cannabis ? 'Die Teillegalisierung von Cannabis im April 2024 änderte, welche Handlungen strafbar waren. Das betrifft Rauschgiftdelikte und die Gesamtzahlen, besonders beim Vergleich 2023–2025.' : (breaks[key] || '');
+}
+el('year-metric').addEventListener('change', showYears);
+
 function displayOffense(key) {
   if (!choices.some(([code]) => code === key)) key = dataset.rows[1][0];
-  for (const select of [shareSelector, natOffense, rateSelector]) select.value = key;
+  for (const select of [shareSelector, natOffense, rateSelector, yearSelector]) select.value = key;
   if (key === dataset.rows[0][0] || key === dataset.rows[1][0]) {
     el('basis').value = key === dataset.rows[0][0] ? 'alle' : 'ohne';
     summary();
@@ -195,6 +231,7 @@ function displayOffense(key) {
   natLimit = 12;
   showShares();
   showRates();
+  showYears();
   renderNationalities();
   for (const link of document.querySelectorAll('[data-direct]')) {
     link.href = offenseUrl(key, link.dataset.direct).href;
@@ -206,7 +243,7 @@ function chooseOffense(key, section) {
   if (url.href !== location.href) history.pushState(null, '', url);
   displayOffense(key);
 }
-for (const select of [shareSelector, natOffense, rateSelector]) {
+for (const select of [shareSelector, natOffense, rateSelector, yearSelector]) {
   select.addEventListener('change', () => chooseOffense(select.value, select.closest('section').id));
 }
 el('basis').addEventListener('change', () => chooseOffense(dataset.rows[el('basis').value === 'alle' ? 0 : 1][0], 'start'));
