@@ -89,6 +89,7 @@ function render() {
   const term = el('query').value.trim().toLocaleLowerCase('de');
   const matches = categories.filter(([key, name]) => (key + ' ' + name).toLocaleLowerCase('de').includes(term));
   const sort = el('order').value;
+  const groupTotal = country === null ? dataset.rows[0][2] : countryYears.rows['------'][5][country];
   matches.sort((a,b) => {
     if (sort === 'alpha') return a[1].localeCompare(b[1], 'de');
     if (country !== null) {
@@ -109,6 +110,15 @@ function render() {
     row.innerHTML = '<div><h3></h3><div class="small"></div></div><div><div class="line"><span><b></b> Deutsch</span><span><b></b> Nichtdeutsch</span></div><div class="bar" aria-hidden="true"><span></span></div><div class="line"><small></small><small></small></div></div>';
     row.querySelector('h3').textContent = name;
     row.querySelector('.small').textContent = 'PKS ' + key + ' · ' + number.format(total) + ' Tatverdächtige';
+    const groupCount = country === null ? total : countryYears.rows[key][5][country];
+    if (groupCount !== null && groupTotal > 0) {
+      const fraction = groupCount / groupTotal;
+      const share = fraction > 0 && fraction < 0.001 ? '< 0,1 %' : percent.format(fraction);
+      const population = country === null ? 'aller Tatverdächtigen' : 'der Gruppe „' + countryYears.names[country] + '“';
+      const shareLine = document.createElement('div');
+      shareLine.textContent = share + ' ' + population + ' (' + number.format(groupCount) + ' von ' + number.format(groupTotal) + ')';
+      row.firstElementChild.append(shareLine);
+    }
     const detail = document.createElement('a');
     detail.href = offenseUrl(key, 'bevoelkerung').href;
     detail.textContent = 'Im Bevölkerungsvergleich öffnen';
