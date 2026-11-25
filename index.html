@@ -43,6 +43,7 @@ header{padding:12px 0}.nav{gap:12px}.navlinks{gap:16px}
 
 .visual.language{background:#594632;color:#f0ddbd}
 @media(min-width:1100px){.projects{grid-template-columns:repeat(3,minmax(0,1fr))}.projects .body{padding:22px}.projects h3{font-size:28px}.projects .visual .word{font-size:42px}.projects .visual .caption{font-size:9px}}
+.ecs-news{margin-top:3rem;border-top:1px solid var(--line);padding-top:1.5rem;scroll-margin-top:5rem}.ecs-news h2{margin:0}.ecs-news ul{padding:0;list-style:none}.ecs-news li{padding:.85rem 0;border-top:1px solid var(--line);overflow-wrap:anywhere}.ecs-news small{display:block;color:var(--muted);margin-bottom:.3rem}.ecs-news a{text-underline-offset:.2em}.ecs-news li a{font-weight:600}#ecs-status:empty{display:none}@media(max-width:420px){.nav{flex-wrap:wrap}.navlinks{gap:12px}}
 </style>
 </head>
 <body>
@@ -51,7 +52,7 @@ header{padding:12px 0}.nav{gap:12px}.navlinks{gap:16px}
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->
 <a class="skip" href="#projekte">Direkt zur Auswahl</a>
-<header><nav class="wrap nav" aria-label="Hauptnavigation"><a class="logo" href="#">MOLITOR</a><div class="navlinks"><a href="#projekte">Projekte</a><a href="/ueber-mich/">Über mich</a></div></nav></header>
+<header><nav class="wrap nav" aria-label="Hauptnavigation"><a class="logo" href="#">MOLITOR</a><div class="navlinks"><a href="#projekte">Projekte</a><a href="#ecs-news">ECS-News</a><a href="/ueber-mich/">Über mich</a></div></nav></header>
 <main class="wrap">
 <section class="home-intro" id="ueber" aria-labelledby="titel">
 <div class="intro-heading"><div class="eyebrow">Hallo, ich bin Marcel Molitor.</div><h1 id="titel">Neugier wird <em>digital.</em></h1></div>
@@ -65,6 +66,47 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <article class="card"><div class="visual blue" aria-hidden="true"><span class="index">04 / SELBSTREFLEXION</span><span class="word">Tonus Check</span><span class="caption">Interaktiver Fragebogen</span></div><div class="body"><span class="tag">ECS · Selbstreflexion</span><h3>Endocannabinoid Tonus Check</h3><p>Ein experimenteller Fragebogen zur Selbstbeobachtung rund um das Endocannabinoidsystem.</p><a class="cardlink" href="https://marcelmolitor.github.io/ecs-tonus-check/">Tonus Check öffnen <span aria-hidden="true">↗</span></a></div></article>
 <article class="card"><div class="visual language" aria-hidden="true"><span class="index">05 / SPRACHE</span><svg viewBox="0 0 550 205"><g fill="none" stroke="#d9bc94" opacity=".35" stroke-width="2"><path d="M50 55h170v70H100l-28 23v-23H50ZM330 80h170v70h-22v23l-28-23H330Z"/><path d="M240 88h70m-12-12 12 12-12 12M310 125h-70m12-12-12 12 12 12"/></g></svg><span class="word">Sprachwerk</span><span class="caption">Worte verbinden.</span></div><div class="body"><span class="tag">Sprache · Werkzeug</span><h3>Sprachwerk Übersetzer</h3><p>Texte mit MyMemory übersetzen, eigene Wortpaare im Browser sammeln und Ergebnisse als Textdatei exportieren. Ein unabhängiger Web-Prototyp mit zusätzlicher Offline-Demo.</p><div class="features"><span>Übersetzen</span><span>Wörterbuch</span><span>Textexport</span></div><a class="cardlink" href="https://marcelmolitor.github.io/sprachwerk-uebersetzer/">Sprachwerk öffnen <span aria-hidden="true">↗</span></a></div></article>
 </div></section>
+<section class="ecs-news" id="ecs-news" aria-labelledby="ecs-news-heading">
+<h2 id="ecs-news-heading">Neues aus der ECS-Forschung</h2>
+<p>Die drei neuesten Publikationen zur ECS-Forschung aus unserer Titelsuche in Europe PMC.</p>
+<ul id="ecs-papers" hidden></ul>
+<p id="ecs-status" role="status"></p>
+<a href="https://europepmc.org/search?query=SRC%3AMED%20AND%20(TITLE%3Aendocannabinoid*%20OR%20TITLE%3Aanandamide%20OR%20TITLE%3A%222-arachidonoylglycerol%22)%20sort_date%3Ay">Alle Treffer bei Europe PMC ansehen ↗</a>
+</section>
+<script>
+(async () => {
+  const status = document.getElementById('ecs-status');
+  const list = document.getElementById('ecs-papers');
+  status.textContent = 'Publikationen werden geladen …';
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  try {
+    const params = new URLSearchParams({query: "SRC:MED AND (TITLE:endocannabinoid* OR TITLE:anandamide OR TITLE:\"2-arachidonoylglycerol\") sort_date:y", format: 'json', pageSize: '3'});
+    const response = await fetch('https://www.ebi.ac.uk/europepmc/webservices/rest/search?' + params, {signal: controller.signal});
+    if (!response.ok) throw new Error('Abruf fehlgeschlagen');
+    const data = await response.json();
+    for (const paper of data.resultList.result) {
+      if (!paper.title || !/^\d+$/.test(paper.id)) continue;
+      const item = document.createElement('li');
+      const link = document.createElement('a');
+      link.href = 'https://pubmed.ncbi.nlm.nih.gov/' + paper.id + '/';
+      link.textContent = paper.title.replace(/<\/?(?:i|b|sub|sup)>/gi, '');
+      const meta = document.createElement('small');
+      const date = paper.firstPublicationDate;
+      const published = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date.split('-').reverse().join('.') : paper.pubYear;
+      meta.textContent = [published, paper.journalTitle].filter(Boolean).join(' · ');
+      item.append(meta, link);
+      list.append(item);
+    }
+    list.hidden = !list.children.length;
+    status.textContent = list.hidden ? 'Zurzeit liegen keine Treffer vor.' : '';
+  } catch {
+    status.textContent = 'Die Publikationen lassen sich gerade nicht laden. Die vollständige Suche ist unten verlinkt.';
+  } finally {
+    clearTimeout(timer);
+  }
+})();
+</script>
 <section class="more" aria-labelledby="mehr"><div><h2 id="mehr">Noch mehr Ideen entdecken.</h2><p>Auf GitHub findest du weitere Anwendungen, Experimente und den zugehörigen Quellcode.</p></div><a href="https://github.com/MarcelMolitor?tab=repositories">Auf GitHub stöbern ↗</a></section>
 <p class="science-note">Die wissenschaftlichen Inhalte dienen der Information und ersetzen keine medizinische Beratung. Forschungsergebnisse aus Zell- und Tierstudien lassen sich nicht unmittelbar auf Menschen übertragen.</p>
 </main><footer><div class="wrap foot"><span>© 2026 Marcel Molitor</span><a href="#">Zurück nach oben ↑</a><a href="https://github.com/MarcelMolitor">GitHub</a></div></footer>
