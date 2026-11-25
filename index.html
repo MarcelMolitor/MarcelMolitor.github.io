@@ -68,13 +68,50 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div></section>
 <section class="ecs-news" id="ecs-news" aria-labelledby="ecs-news-heading">
 <h2 id="ecs-news-heading">Neues aus der ECS-Forschung</h2>
-<p>Die drei neuesten Publikationen zur ECS-Forschung aus unserer Titelsuche in Europe PMC.</p>
+<p>Die drei neuesten Treffer aus Europe PMC. Die Studientitel werden automatisch ins Deutsche übersetzt.</p>
 <ul id="ecs-papers" hidden></ul>
 <p id="ecs-status" role="status"></p>
 <a href="https://europepmc.org/search?query=SRC%3AMED%20AND%20(TITLE%3Aendocannabinoid*%20OR%20TITLE%3Aanandamide%20OR%20TITLE%3A%222-arachidonoylglycerol%22)%20sort_date%3Ay">Alle Treffer bei Europe PMC ansehen ↗</a>
 </section>
 <script>
 (async () => {
+  async function showGermanTitle(link, item, id) {
+    const original = link.textContent;
+    const cacheKey = 'ecs-de:' + id + ':' + original;
+    let translated;
+    try { translated = sessionStorage.getItem(cacheKey); } catch {}
+    if (!translated) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      try {
+        if (new TextEncoder().encode(original).length > 500) throw new Error();
+        const params = new URLSearchParams({q: original, langpair: 'en|de'});
+        const response = await fetch('https://api.mymemory.translated.net/get?' + params, {signal: controller.signal, referrerPolicy: 'no-referrer'});
+        if (!response.ok) throw new Error();
+        const data = await response.json();
+        translated = data.responseData?.translatedText?.trim();
+        if (Number(data.responseStatus) !== 200 || data.quotaFinished || !translated) throw new Error();
+        try { sessionStorage.setItem(cacheKey, translated); } catch {}
+      } catch {
+        const note = document.createElement('small');
+        note.textContent = 'Originaltitel · Deutsche Übersetzung derzeit nicht verfügbar';
+        item.append(note);
+        return;
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    link.textContent = translated;
+    link.lang = 'de';
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Originaltitel anzeigen';
+    const title = document.createElement('p');
+    title.lang = 'en';
+    title.textContent = original;
+    details.append(summary, title);
+    item.append(details);
+  }
   const status = document.getElementById('ecs-status');
   const list = document.getElementById('ecs-papers');
   status.textContent = 'Publikationen werden geladen …';
@@ -97,6 +134,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       meta.textContent = [published, paper.journalTitle].filter(Boolean).join(' · ');
       item.append(meta, link);
       list.append(item);
+      link.lang = 'en';
+      void showGermanTitle(link, item, paper.id);
     }
     list.hidden = !list.children.length;
     status.textContent = list.hidden ? 'Zurzeit liegen keine Treffer vor.' : '';
