@@ -423,6 +423,13 @@ window.addEventListener('popstate', () => {
 });
 restoreOffense();
 
+const wideNavigation = window.matchMedia('(min-width: 64rem)');
+const menu = document.querySelector('.view-menu');
+function resetMenu() {
+  menu.open = wideNavigation.matches;
+}
+wideNavigation.addEventListener('change', resetMenu);
+
 // Hashes also serve existing shared links to individual analyses.
 function showActiveView() {
   const sections = Array.from(document.querySelectorAll('main > section'));
@@ -432,8 +439,7 @@ function showActiveView() {
     const onHome = section.classList.contains('hero') || section.id === 'atlas-auswahl';
     section.hidden = overview ? !onHome : section !== target;
   }
-  const menu = document.querySelector('.view-menu');
-  menu.open = false;
+  resetMenu();
   for (const link of menu.querySelectorAll('a')) {
     if (link.hash === (overview ? '#start' : location.hash)) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -441,7 +447,20 @@ function showActiveView() {
   if (target?.id === 'jahresvergleich') showYears();
 }
 window.addEventListener('hashchange', showActiveView);
-document.querySelector('.view-menu nav').addEventListener('click', () => {
-  document.querySelector('.view-menu').open = false;
-});
+menu.querySelector('nav').addEventListener('click', resetMenu);
 showActiveView();
+
+let chartWidth = 0;
+new ResizeObserver(([entry]) => {
+  const width = Math.round(entry.contentRect.width);
+  if (width && width !== chartWidth) {
+    chartWidth = width;
+    const focusedYear = el('year-chart').contains(document.activeElement)
+      ? document.activeElement.getAttribute('aria-label') : null;
+    showYears();
+    if (focusedYear) {
+      Array.from(el('year-chart').querySelectorAll('[role=button]'))
+        .find(button => button.getAttribute('aria-label') === focusedYear)?.focus({preventScroll: true});
+    }
+  }
+}).observe(el('year-chart'));
