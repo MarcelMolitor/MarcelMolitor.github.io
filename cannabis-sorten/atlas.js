@@ -174,6 +174,13 @@ function draw() {
       linkRow.className = 'sortenaktionen';
       linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'));
       detail.append(linkRow);
+      const coverage = [
+        ['THC', 8], ['CBD', 9], ['Terpene', 7]
+      ].map(([label, index]) => {
+        const count = items.filter(({row}) => Boolean(row[index])).length;
+        return label + ': ' + format(count) + ' von ' + format(items.length);
+      });
+      detail.append(node('p', 'Katalogeinträge mit Angabe · ' + coverage.join(' · ')));
       for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd]} of items) {
         const card = document.createElement('article');
         card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle());
