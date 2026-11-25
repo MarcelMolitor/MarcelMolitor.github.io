@@ -70,7 +70,13 @@ function sortenlink(name, text) {
 function parentLabel(value) {
   return /(?:Ã.|Â.){3}/u.test(value) ? 'Elternname in der Quelle unleserlich' : value;
 }
-function datenquelle() {
+function datenquelle(row) {
+  if (typeof row[10] === 'string' && row[10].startsWith('https://')) {
+    const breederCatalog = row[2].trim().toLowerCase() === row[6].trim().toLowerCase();
+    const link = node('a', breederCatalog ? 'Zum Katalog des Züchters' : 'Zum Eintrag bei ' + row[6]);
+    link.href = row[10];
+    return link;
+  }
   const link = node('a', 'Quelldatensatz ansehen');
   link.href = 'https://github.com/Shannon-Goddard/ci-strains-pro/blob/80fbe5d40fac8dda5120f50b946f069c4961f253/raw-data.csv';
   return link;
@@ -215,9 +221,10 @@ function draw() {
       detail.append(node('p', 'Katalogeinträge mit Angabe · ' + coverage.join(' · ')));
       const cards = items.map(({row}) => ({row, photo: listingPhoto(row)}));
       cards.sort((a, b) => Number(Boolean(b.photo)) - Number(Boolean(a.photo)));
-      for (const {row:[,original,breeder,type,p1,p2,bank,terpenes,thc,cbd], photo} of cards) {
+      for (const {row, photo} of cards) {
+        const [,original,breeder,type,p1,p2,bank,terpenes,thc,cbd] = row;
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle());
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle(row));
         if (photo) card.insertBefore(photoFigure(photo), card.children[2]);
         detail.append(card);
       }
