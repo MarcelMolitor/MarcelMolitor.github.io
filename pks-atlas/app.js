@@ -216,7 +216,29 @@ function renderNationalities() {
     const row = body.insertRow();
     const heading = document.createElement('th');
     heading.scope = 'row';
-    heading.textContent = name;
+    if (countryYears.names.includes(name)) {
+      const link = document.createElement('a');
+      const url = offenseUrl(natOffense.value, 'jahresvergleich');
+      url.searchParams.set('staat', name);
+      url.searchParams.set('kennzahl', el('year-metric').value === 'share' ? 'share' : 'count');
+      link.href = url.href;
+      link.textContent = name;
+      link.setAttribute('aria-label', name + ' im Jahresvergleich öffnen');
+      link.addEventListener('click', event => {
+        if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        history.replaceState({natReturn: {search: natSearch.value, sort: natSort.value,
+          limit: natLimit, scroll: window.scrollY, name}}, '', location.href);
+        history.pushState(null, '', url);
+        restoreOffense();
+        showActiveView();
+        el('year-heading').focus({preventScroll: true});
+        window.scrollTo({top: 0, behavior: 'instant'});
+      });
+      heading.append(link);
+    } else {
+      heading.textContent = name;
+    }
     row.append(heading);
     row.insertCell().textContent = number.format(count);
     const shareCell = row.insertCell();
@@ -271,6 +293,13 @@ function showYears() {
   const body = el('year-body');
   body.replaceChildren();
   el('year-caption').textContent = yearSelector.selectedOptions[0].text + ' · ' + el('year-metric').selectedOptions[0].text;
+  const group = country !== null ? countryYears.names[country] : ({
+    sex: 'Alle Staatsangehörigkeiten', 'sex-de': 'Deutsch', 'sex-nd': 'Nichtdeutsch'
+  })[mode] || 'Deutsch und nichtdeutsch';
+  el('year-context').textContent = yearSelector.selectedOptions[0].text + ' · ' + group;
+  const basis = mode === 'rate' ? 'Ansässige Tatverdächtige je 100.000 Einwohner der jeweiligen Gruppe, jeweils ab acht Jahren.' :
+    mode === 'share' ? 'Anteil an allen Tatverdächtigen dieses Delikts im Berichtsjahr.' :
+    bySex ? 'Anzahl und Anteil innerhalb der gewählten Gruppe.' : 'Polizeilich erfasste Tatverdächtige dieses Delikts im Berichtsjahr.';
   const points = [];
   for (const [year, [de, nd, deRate, ndRate]] of Object.entries(jahresdaten[key])) {
     const row = body.insertRow();
@@ -282,11 +311,13 @@ function showYears() {
     const split = bySex ? sexPair(key, year, mode) : null;
     const values = bySex ? split.map(n => 100 * n / (split[0] + split[1])) : mode === 'rate' ? [deRate, ndRate] : counts.map(n =>
       mode === 'share' && n !== null ? 100 * n / (de + nd) : n);
-    points.push({year, values});
+    const details = [];
+    points.push({year, values, details});
     for (const [i, value] of values.entries()) {
       const cell = row.insertCell();
       cell.textContent = value === null ? 'Nicht separat ausgewiesen' :
         bySex ? number.format(split[i]) + ' (' + percent.format(value / 100) + ')' : mode === 'share' ? percent.format(value / 100) : number.format(value);
+      details.push(labels[i] + ' ' + cell.textContent);
       if (mode === 'share' && value !== null) addDenominator(cell, 'aller Tatverdächtigen dieses Delikts');
     }
   }
@@ -312,8 +343,8 @@ function showYears() {
   if (mode === 'rate') mark('2024', 'neue Zensusbasis');
   if (cannabis) mark('2024', 'Cannabis-Teillegalisierung');
   if (breaks[key]) mark(key === '131000' ? '2022' : '2021', 'geänderte Deliktsdefinition');
-  el('chart-title').textContent = el('year-caption').textContent;
-  drawYearChart(points, labels, bySex ? 'share' : mode, markers);
+  el('chart-title').textContent = el('year-metric').selectedOptions[0].text;
+  drawYearChart(points, labels, bySex ? 'share' : mode, markers, basis);
 }
 el('year-metric').addEventListener('change', () => chooseOffense(yearSelector.value, 'jahresvergleich'));
 
@@ -375,7 +406,21 @@ for (const select of countrySelects) {
     restoreOffense();
   });
 }
-window.addEventListener('popstate', restoreOffense);
+window.addEventListener('popstate', () => {
+  restoreOffense();
+  const saved = history.state?.natReturn;
+  if (!saved || location.hash !== '#nationalitaeten') return;
+  natSearch.value = saved.search;
+  natSort.value = saved.sort;
+  natLimit = saved.limit;
+  renderNationalities();
+  showActiveView();
+  requestAnimationFrame(() => {
+    if (location.hash !== '#nationalitaeten') return;
+    Array.from(el('nat-body').querySelectorAll('a')).find(a => a.textContent === saved.name)?.focus({preventScroll: true});
+    window.scrollTo({top: saved.scroll, behavior: 'instant'});
+  });
+});
 restoreOffense();
 
 // Hashes also serve existing shared links to individual analyses.

@@ -1,5 +1,5 @@
 // The table and the chart receive the same values, including gaps in T62.
-function drawYearChart(points, series, metric, breaks) {
+function drawYearChart(points, series, metric, breaks, basis) {
   const svg = document.getElementById('year-chart');
   const legend = document.getElementById('chart-legend');
   svg.replaceChildren();
@@ -52,5 +52,29 @@ function drawYearChart(points, series, metric, breaks) {
       if (p.values[index] !== null) add('circle',{cx:x(i),cy:y(p.values[index]),r:3.5,class:'dot series-' + index});
     });
   });
+  const detail = document.getElementById('year-detail');
+  const half = (right - left) / (points.length - 1) / 2;
+  const hits = points.map((p, i) => {
+    const start = Math.max(0, x(i) - half);
+    const end = Math.min(width, x(i) + half);
+    const hit = add('rect', {x: start, y: 17, width: end - start, height: 187,
+      class: 'year-hit', tabindex: 0, role: 'button', 'aria-label': 'Jahreswert ' + p.year});
+    hit.addEventListener('click', () => select(i));
+    hit.addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        select(i);
+      }
+    });
+    return hit;
+  });
+  function select(index) {
+    const point = points[index];
+    hits.forEach((hit, i) => hit.setAttribute('aria-pressed', String(i === index)));
+    detail.dataset.year = point.year;
+    detail.textContent = point.year + ' · ' + point.details.join(' · ') + '. ' + basis;
+  }
+  const previous = points.findIndex(p => p.year === detail.dataset.year);
+  select(previous < 0 ? points.length - 1 : previous);
   document.getElementById('chart-events').textContent = Array.from(breaks, ([year, labels]) => '† ' + year + ' · ' + labels.join(' und ')).join('  /  ');
 }
