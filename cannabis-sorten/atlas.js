@@ -132,6 +132,13 @@ function gehalt(value) {
   if (value[0] === 'avg') return percent.format(value[1]) + ' % (Katalogmittel)';
   return value.map(n => percent.format(n)).join('–') + ' %';
 }
+function cbdAngabe(row) {
+  const datenfassung = gehalt(row[9]);
+  if (row[10] === 'https://herbiesheadshop.com/cannabis-seeds/blue-dream-growers-choice') {
+    return 'ca. 1 % laut Herbies Seeds (Anbieterangabe, geprüft am 26.11.2026). Verwendete Datenfassung: ' + datenfassung + '.';
+  }
+  return datenfassung;
+}
 function drawComparison() {
   const rows = sides.map(side => {
     const group = comparisonGroups.get(el('sorte-' + side).value);
@@ -151,7 +158,7 @@ function drawComparison() {
     ['Variante', row => row[1]], ['Züchter', row => row[2]],
     ['Katalogtyp', row => labels[row[3]] || row[3]],
     ['Elternlinien', row => row.slice(4,6).filter(Boolean).map(parentLabel).join(' × ')],
-    ['THC laut Katalog', row => gehalt(row[8])], ['CBD laut Katalog', row => gehalt(row[9])],
+    ['THC laut Katalog', row => gehalt(row[8])], ['CBD laut Katalog', cbdAngabe],
     ['Terpene laut Katalog', row => row[7] || 'Keine belegte Angabe'], ['Katalog', row => row[6]], ['Datenquelle', datenquelle]
   ]) {
     const tr = body.insertRow();
@@ -222,9 +229,9 @@ function draw() {
       const cards = items.map(({row}) => ({row, photo: listingPhoto(row)}));
       cards.sort((a, b) => Number(Boolean(b.photo)) - Number(Boolean(a.photo)));
       for (const {row, photo} of cards) {
-        const [,original,breeder,type,p1,p2,bank,terpenes,thc,cbd] = row;
+        const [,original,breeder,type,p1,p2,bank,terpenes,thc] = row;
         const card = document.createElement('article');
-        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+gehalt(cbd)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle(row));
+        card.append(node('h3',original),node('p',breeder+' · '+(labels[type]||type)),elternlinien(p1,p2),node('p','THC laut Katalog: '+gehalt(thc)),node('p','CBD laut Katalog: '+cbdAngabe(row)),node('p','Terpene laut Katalog: '+(terpenes || 'Keine belegte Angabe')),node('p','Katalog: '+bank), datenquelle(row));
         if (photo) card.insertBefore(photoFigure(photo), card.children[2]);
         detail.append(card);
       }
