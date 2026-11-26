@@ -1,0 +1,13 @@
+#pragma code_page(65001)
+#include <windows.h>
+100 DIALOGEX 0,0,264,297
+STYLE DS_SETFONT | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
+CAPTION "QR-Brücke · Link aufs Handy"
+FONT 10,"Segoe UI"
+BEGIN
+ LTEXT "Webadresse am PC einfügen und mit dem Handy scannen.",11,10,8,244,20
+ EDITTEXT 101,10,32,244,18,ES_AUTOHSCROLL
+ DEFPUSHBUTTON "QR-Code anzeigen",102,10,57,110,19
+ CONTROL "",103,"Static",SS_BITMAP | SS_CENTERIMAGE,10,84,244,192
+ LTEXT "",104,10,278,244,15
+END
