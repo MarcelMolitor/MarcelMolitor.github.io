@@ -116,7 +116,7 @@ function render() {
       const share = fraction > 0 && fraction < 0.001 ? '< 0,1 %' : percent.format(fraction);
       const population = country === null ? 'aller Tatverdächtigen' : 'der Gruppe „' + countryYears.names[country] + '“';
       const shareLine = document.createElement('div');
-      shareLine.textContent = share + ' ' + population + ' (' + number.format(groupCount) + ' von ' + number.format(groupTotal) + ')';
+      shareLine.textContent = 'Anteil mit diesem Delikt: ' + share + ' ' + population + ' (' + number.format(groupCount) + ' von ' + number.format(groupTotal) + ')';
       row.firstElementChild.append(shareLine);
     }
     const detail = document.createElement('a');
@@ -128,14 +128,17 @@ function render() {
       detail.href = offenseUrl(key, 'jahresvergleich').href;
       detail.textContent = 'Im Jahresvergleich öffnen';
       row.lastElementChild.textContent = count === null ? 'Für 2025 nicht separat ausgewiesen' :
-        countryYears.names[country] + ' · ' + number.format(count) + ' Tatverdächtige · ' + percent.format(count / total) + ' aller Tatverdächtigen dieses Delikts';
+        'Anteil innerhalb des Delikts: ' + countryYears.names[country] + ' · ' + (count > 0 && count / total < 0.001 ? '< 0,1 %' : percent.format(count / total)) + ' (' + number.format(count) + ' von ' + number.format(total) + ')';
       el('rows').append(row);
       continue;
     }
+    const splitLabel = document.createElement('small');
+    splitLabel.textContent = 'Staatsangehörigkeit innerhalb des Delikts';
+    row.lastElementChild.prepend(splitLabel);
     row.querySelector('.bar span').style.width = (100 * german / total) + '%';
     [german, foreign].forEach((n, i) => {
       row.querySelectorAll('b')[i].textContent = percent.format(n / total);
-      row.querySelectorAll('small')[i].textContent = number.format(n);
+      row.querySelectorAll('.line small')[i].textContent = number.format(n);
     });
     const [deRate, ndRate] = rates.get(key);
     const rateLine = document.createElement('p');
