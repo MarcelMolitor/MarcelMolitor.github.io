@@ -39,13 +39,10 @@ static void arrange_mirror(HWND launcher) {
     MONITORINFO mi={sizeof(mi)};
     if(!GetMonitorInfoW(MonitorFromWindow(launcher,MONITOR_DEFAULTTONEAREST),&mi)) return;
     RECT a=mi.rcWork; int aw=a.right-a.left, ah=a.bottom-a.top;
-    int borderW=frame.right-frame.left-cw, borderH=frame.bottom-frame.top-ch;
-    int h=ah-borderH-32, width=MulDiv(h,cw,ch);
-    if(mirrorMode==4){h=MulDiv(h,75,100);width=MulDiv(h,cw,ch);}
-    if(width>aw-borderW-32){width=aw-borderW-32;h=MulDiv(width,ch,cw);}
-    if(width<100||h<100) return;
-    width+=borderW;h+=borderH;
-    SetWindowPos(mirrorWindow,NULL,a.left+(aw-width)/2,a.top+(ah-h)/2,width,h,SWP_NOZORDER|SWP_NOACTIVATE);
+    int width=frame.right-frame.left,height=frame.bottom-frame.top;
+    if(width<1||height<1)return;
+    /* The decoder chose the correct window size. Center without changing it. */
+    SetWindowPos(mirrorWindow,NULL,a.left+(aw-width)/2,a.top+(ah-height)/2,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE);
     mirrorArranged=TRUE;
     if(!mirrorControls) ShowWindow(launcher,SW_MINIMIZE);
 }
@@ -242,8 +239,24 @@ static void launch(HWND w, BOOL record) {
         if (!GetSaveFileNameW(&file)) return;
     }
     BOOL dark = IsDlgButtonChecked(w,101)==BST_CHECKED;
-    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --window-title=Tetherlume%ls%ls%ls%ls%ls",exe,
-        mirrorMode==2?L" --fullscreen":mirrorMode==3?L" --always-on-top --window-height=560":mirrorMode==4?L" --window-borderless":L"",
+    /* Ask scrcpy itself to fit the initial video, rather than deriving the
+       aspect ratio from a potentially letterboxed Windows client rectangle. */
+    wchar_t displayOptions[256]=L"";
+    MONITORINFO displayMonitor={sizeof(displayMonitor)};
+    int targetHeight=720;
+    if(GetMonitorInfoW(MonitorFromWindow(w,MONITOR_DEFAULTTONEAREST),&displayMonitor)){
+        int available=displayMonitor.rcWork.bottom-displayMonitor.rcWork.top;
+        targetHeight=available>160?available-96:available;
+    }
+    if(targetHeight<120)targetHeight=120;
+    if(mirrorMode==1 || mirrorMode==4){
+        if(mirrorMode==4)targetHeight=MulDiv(targetHeight,75,100);
+        StringCchPrintfW(displayOptions,256,L" --window-height=%d%ls",targetHeight,mirrorMode==4?L" --window-borderless":L"");
+    }else if(mirrorMode==2)StringCchCopyW(displayOptions,256,L" --fullscreen");
+    else if(mirrorMode==3)StringCchCopyW(displayOptions,256,L" --always-on-top --window-height=560");
+
+    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --max-fps=60 --video-bit-rate=12M --window-title=Tetherlume%ls%ls%ls%ls%ls",exe,
+        displayOptions,
         dark?L" --turn-screen-off":L"", record?L" --record=\"":L"", output,record?L"\"":L""))) {
         status(w,tr(L"The file path is too long.",L"Der Dateipfad ist zu lang.")); return;
     }
