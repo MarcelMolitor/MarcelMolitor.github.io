@@ -235,7 +235,7 @@
       if(controls.value==='title')all.sort(function(a,b){return String(a.title||'').localeCompare(String(b.title||''),en?'en':'de');});
       if(controls.value==='author')all.sort(function(a,b){return String(a.author||'').localeCompare(String(b.author||''),en?'en':'de');});
       if(controls.value==='progress')all.sort(function(a,b){return progress(b)-progress(a);});
-      recentSection.hidden = all.length === 0;
+      recentSection.hidden = false;
       var summary=$('shelf-summary');
       if(!summary){summary=el('p',{id:'shelf-summary',role:'status','aria-live':'polite'});filter.after(summary);}
       var state=$('shelf-state');
@@ -287,6 +287,7 @@
         recentList.appendChild(card);
         card.hidden = false;
       });
+      if(!all.length){var empty=el('li',{class:'shelf-empty'});empty.style.cssText='grid-column:1/-1;padding:24px;border:1px dashed #829bd1;border-radius:14px;text-align:center';empty.appendChild(el('h3',{text:en?'Your library starts here':'Hier beginnt deine Bibliothek'}));empty.appendChild(el('p',{text:en?'Add a DRM-free EPUB to keep your books and reading progress on this device.':'Füge ein DRM-freies EPUB hinzu, um Bücher und Lesefortschritt auf diesem Gerät zu speichern.'}));var add=el('button',{class:'btn',type:'button',text:en?'Add your first book':'Erstes Buch hinzufügen'});add.onclick=function(){$('file-input').click();};empty.appendChild(add);recentList.appendChild(empty);summary.textContent=en?'0 books':'0 Bücher';return;}
       summary.textContent=shown?(en?shown+' of '+all.length+' books':shown+' von '+all.length+' Büchern'):(en?'No matching books. Try changing your filters.':'Keine passenden Bücher. Ändere deine Filter.');
     }).catch(function () { recentSection.hidden = true; });
   }
