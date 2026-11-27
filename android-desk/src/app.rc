@@ -1,25 +1,30 @@
 #pragma code_page(65001)
 #include <windows.h>
 1 ICON "android-desk.ico"
-100 DIALOGEX 0,0,350,287
+100 DIALOGEX 0,0,350,389
 STYLE DS_SETFONT | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
 CAPTION "Tetherlume"
 FONT 10, "Segoe UI"
 BEGIN
  ICON 1,-1,16,15,28,28
  LTEXT "Tetherlume",112,54,12,278,23
- LTEXT "Control your phone over USB",107,55,36,275,14
- LTEXT "Connect one unlocked Android device with a data cable. Enable USB debugging and approve access on the device.",108,16,76,318,33
- CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,113,318,16
- DEFPUSHBUTTON "Open device",102,16,139,105,30
- PUSHBUTTON "Record MP4 ...",103,128,139,116,30
- PUSHBUTTON "Help",104,251,139,83,30
- LTEXT "Language / Sprache",109,16,178,113,14
- CONTROL "English",110,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,143,177,77,16
- CONTROL "Deutsch",111,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,230,177,95,16
- LTEXT "",105,16,211,318,36
- LTEXT "",113,32,262,302,14
- CONTROL "",114,"Static",SS_OWNERDRAW,16,262,12,9
+ LTEXT "Wi-Fi first. USB optional.",107,55,36,275,14
+ LTEXT "Start screen sharing in the Android app and paste the local link below.",117,16,75,318,28
+ EDITTEXT 118,16,106,318,17,ES_AUTOHSCROLL | WS_TABSTOP
+ DEFPUSHBUTTON "Open Wi-Fi screen",119,16,129,207,28
+ PUSHBUTTON "Android app",120,230,129,104,28
+ LTEXT "USB control (optional)",121,16,166,318,14
+ LTEXT "Connect an unlocked device with USB debugging enabled.",108,16,184,318,25
+ CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,211,318,16
+ PUSHBUTTON "Open device",102,16,237,105,30
+ PUSHBUTTON "Record MP4 ...",103,128,237,116,30
+ PUSHBUTTON "Help",104,251,237,83,30
+ LTEXT "Language / Sprache",109,16,276,113,14
+ CONTROL "English",110,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,143,275,77,16
+ CONTROL "Deutsch",111,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,230,275,95,16
+ LTEXT "",105,16,309,318,36
+ LTEXT "",113,32,364,302,14
+ CONTROL "",114,"Static",SS_OWNERDRAW,16,364,12,9
  LTEXT "",115,16,57,318,12
- LTEXT "",116,16,197,318,12
+ LTEXT "",116,16,295,318,12
 END
