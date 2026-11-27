@@ -17,3 +17,38 @@
 .sortenfoto{margin:14px 0;max-width:36rem}
 .sortenfoto img{display:block;width:100%;height:auto;border-radius:8px}
 .sortenfoto figcaption{margin-top:6px;color:var(--muted);font-size:.85rem;line-height:1.5;overflow-wrap:anywhere}
+
+/* Midnight gold botanical identity */
+:root{color-scheme:dark;--ink:#f4ead5;--muted:#c0ccd8;--line:#756447;--paper:#081522;--leaf:#e8c77d;--panel:#112332}
+body{background:radial-gradient(ellipse at 85% 4%,#193d51 0,transparent 36rem),radial-gradient(ellipse at 5% 35%,#183335 0,transparent 45rem),#081522;color:var(--ink)}
+body header{background:#0b1826;border-color:#756447}body main{width:min(1320px,calc(100% - 64px))}
+body h1 em{color:#ebc77e}body h2{color:#f3dfb2}body a{color:#f0d496}
+body .hero{position:relative;padding:64px 32px;margin:24px 0 32px;border:1px solid #a68b56;border-radius:22px;background:radial-gradient(ellipse at 85% 30%,#24505280,transparent 66%),linear-gradient(125deg,#101d30,#071420);box-shadow:0 12px 40px #0005,inset 0 0 0 4px #d8b7730d}
+body .hero aside{border:1px solid #ad8c4f;background:linear-gradient(135deg,#102c39,#142231);box-shadow:0 10px 24px #0004}
+body .hero aside small,body .hero aside i{color:#e8c77d}
+body main>section:not(.hero){margin-block:24px;padding:24px;border:1px solid #756447;border-radius:16px;background:#102131d9}
+body main>section[aria-labelledby="quality-title"]{background:#102131!important;border-color:#756447!important}
+body main>section[aria-labelledby="quality-title"] div[style*="padding:16px"]{background:#1b3040!important;border:1px solid #756447}
+body .featured-strains article,body .daily-strain,body .coverage-grid div,body .rating-panel{background:#132735!important;border-color:#756447!important;color:#f4ead5}
+body .featured-strains article.botanical-card{background:linear-gradient(155deg,#1d3746,#0b1725 55%,#172b39)!important;border:2px solid #c5a668!important;box-shadow:inset 0 0 0 3px #e7c77b18,0 8px 26px #0005;position:relative}
+body .botanical-head{background:linear-gradient(90deg,#2c3b4e,#142332,#2e3549);border:1px solid #bca16c;color:#f3ddae}
+body .featured-strains small,body .botanical-data dt{color:#bdcbd5}
+body .botanical-card h3{color:#f1d89c;font-size:1.75rem}
+body .botanical-art{border-color:#bca16c;background:#0b202e}
+body .botanical-data dd{color:#f5eee0}
+body .botanical-actions{border-color:#756447}
+body .botanical-actions a:first-child{background:#d9ba78;color:#142332}
+body .botanical-actions a{color:#f0d496}
+body form{background:#0a1927;border:1px solid #756447;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr))}
+body input,body select,body button{background:#1b3040;color:#f4ead5;border-color:#8f7955}
+body input::placeholder{color:#aebdca}
+body button:hover:enabled,body summary:hover{background:#2b4252;color:#fff4d8}
+body button:focus-visible,body a:focus-visible,body input:focus-visible,body select:focus-visible{outline:3px solid #f4d18c;outline-offset:3px}
+body #vergleich,body article{background:#112332;border-color:#756447}
+body .sortenaktionen button[aria-pressed=true],body .rating-buttons button[aria-pressed=true]{background:#e2c481;color:#122230}
+body .coverage-grid progress,body progress{accent-color:#e0bb70;max-width:100%}
+body footer{border-color:#756447}
+body .molitor-support-banner{border-color:#a68b56;background:#102131}
+body .featured-strains article:hover{box-shadow:0 8px 25px #0006}
+@media(max-width:760px){body main{width:calc(100% - 24px)}body .hero{padding:24px 18px}body main>section:not(.hero){padding:16px}body .hero h1{font-size:clamp(2.6rem,10vw,4.2rem)}body .botanical-data{font-size:.85rem}}
+@media(prefers-reduced-motion:reduce){body *{scroll-behavior:auto!important}body .featured-strains article{transition:none!important;transform:none!important}}
