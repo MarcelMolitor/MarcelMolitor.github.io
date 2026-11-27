@@ -410,7 +410,7 @@
     var request = ++openRequest;
     showReader();
     setLoading(true, uiText("Buch wird geladen …","Loading book …"));
-    fetch(u.href, { credentials: 'same-origin' }).then(function (res) {
+    fetch(u.href, { credentials: 'same-origin', redirect: 'error' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.arrayBuffer();
     }).then(function (buf) {
@@ -433,7 +433,7 @@
   function isZip(buf) {
     try {
       var b = new Uint8Array(buf, 0, 4);
-      return b[0] === 0x50 && b[1] === 0x4b;
+      return b[0] === 0x50 && b[1] === 0x4b && b[2] === 0x03 && b[3] === 0x04;
     } catch (e) { return false; }
   }
 
@@ -444,6 +444,7 @@
       return Promise.resolve();
     }
     if (!buf || !buf.byteLength) { failOpen(uiText("Die Datei ist leer.","The file is empty.")); return Promise.resolve(); }
+    if (buf.byteLength > 100 * 1024 * 1024) { failOpen(uiText('Bitte wähle eine EPUB-Datei bis 100 MiB.','Please choose an EPUB up to 100 MiB.')); return Promise.resolve(); }
     if (!isZip(buf)) { failOpen(uiText("Das ist keine gültige EPUB-Datei. Ein EPUB ist intern ein ZIP-Archiv – diese Datei ist es nicht.","This is not a valid EPUB file. EPUB uses a ZIP container, which this file lacks.")); return Promise.resolve(); }
 
     // Vorheriges Buch sauber schließen, ohne die Ansicht zu wechseln
