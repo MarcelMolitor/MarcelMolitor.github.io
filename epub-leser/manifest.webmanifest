@@ -1,0 +1,19 @@
+{
+  "name": "MOLITOR Reader",
+  "short_name": "MOLITOR Reader",
+  "id": "/epub-leser/",
+  "start_url": "/epub-leser/",
+  "scope": "/epub-leser/",
+  "display": "standalone",
+  "background_color": "#f4f7fc",
+  "theme_color": "#173354",
+  "lang": "de",
+  "icons": [
+    {
+      "src": "reader-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
