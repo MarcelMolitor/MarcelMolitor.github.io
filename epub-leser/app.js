@@ -134,12 +134,13 @@
           if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'id' });
           if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' });
         };
-        req.onsuccess = function () { resolve(req.result); };
+        req.onsuccess = function () { var db = req.result; db.onversionchange = function () { db.close(); dbPromise = null; }; resolve(db); };
         req.onerror = function () { reject(req.error || new Error('IndexedDB-Fehler')); };
         req.onblocked = function () { reject(new Error('IndexedDB blockiert')); };
       } catch (e) { reject(e); }
     });
     dbPromise = withTimeout(dbPromise, 4000, 'IndexedDB antwortet nicht').catch(function (e) {
+      dbPromise = null;
       idbOk = false;
       recentSection.hidden = true;
       throw e;
@@ -148,6 +149,7 @@
   }
   function idbTx(stores, mode, fn) {
     return openDB().then(function (db) {
+      idbOk = true;
       return new Promise(function (resolve, reject) {
         var tx = db.transaction(stores, mode);
         var result;
