@@ -199,8 +199,7 @@ public class MainActivity extends Activity {
         super.onResume();
         IntentFilter f = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         f.addAction(ACTION_CHANGED);
-        if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED);
-        else registerReceiver(receiver, f);
+        registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED);
         refresh();
     }
 
