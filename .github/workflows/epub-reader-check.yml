@@ -1,0 +1,22 @@
+name: EPUB Reader checks
+on:
+  push:
+    paths:
+      - 'epub-leser/**'
+      - 'tests/epub-reader-check.mjs'
+      - '.github/workflows/epub-reader-check.yml'
+  pull_request:
+    paths:
+      - 'epub-leser/**'
+      - 'tests/epub-reader-check.mjs'
+      - '.github/workflows/epub-reader-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: node tests/epub-reader-check.mjs
