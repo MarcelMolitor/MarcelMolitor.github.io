@@ -134,34 +134,61 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 @media(max-width:1000px){.layout{grid-template-columns:1fr}.layout aside{order:-1}.hero{grid-template-columns:1fr}.badges{justify-content:flex-start}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.features{grid-template-columns:1fr}.support{grid-template-columns:1fr}.stage{height:68vh}nav a{padding:6px 8px;font-size:13px}.keys button{flex:1 1 30%}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+
+/* ===== Tetherlume OS Design ===== */
+body{background:radial-gradient(ellipse at 75% 15%,#263d5a 0,transparent 58%),#0a111c}
+main{max-width:1800px;padding:18px 24px 96px}
+header{background:#101a28e8;border:1px solid #35465b;padding:15px 20px;border-radius:12px}
+header strong{font-size:21px;letter-spacing:.035em}header strong small{font-weight:600;color:#b9c5d6;letter-spacing:0;margin-left:4px}
+.creator{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.creator>div small{display:block;letter-spacing:.11em;text-transform:uppercase;font-size:10px;color:#b9c5d6}.creator a{font-weight:750}
+.workspace-heading{display:flex;align-items:end;justify-content:space-between;margin:20px 4px 14px;gap:12px}
+.workspace-heading h1{font-size:clamp(26px,3.4vw,44px);margin:2px 0;letter-spacing:-.045em;font-weight:760}
+.workspace-heading .sub{margin:4px 0 0;color:#b9c5d6;font-size:16px}
+.workspace-heading>small{color:#b9c5d6}
+.origin{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#a7bbd5;margin:0}
+.origin span{width:18px;height:12px;border-radius:2px;background:linear-gradient(#171717 0 33.33%,#d00 33.33% 66.66%,#ffce00 66.66%)}
+.panel{background:#111c2c;border:1px solid #36485e;border-radius:12px}
+.window-title{display:flex;justify-content:space-between;align-items:center;font-weight:700;border-bottom:1px solid #36485e;padding-bottom:12px;margin-bottom:12px}
+.window-title small{font-size:10px;letter-spacing:.12em;color:#b9c5d6}
+.dots{display:inline-flex;gap:5px;margin-right:10px;vertical-align:1px}.dots b{width:9px;height:9px;border-radius:50%;background:#ff5f57}.dots b+b{background:#febc2e}.dots b+b+b{background:#28c840}
+.stage{background:radial-gradient(ellipse,#233b57,#0a1422 80%)}
+.feature,.faq details{background:#111c2c;border-color:#36485e;border-radius:12px}
+.support{border-color:#345780;background:linear-gradient(140deg,#172e4d,#101d30);border-radius:12px}
+.brand-accent{height:3px;width:120px;background:linear-gradient(90deg,#181818 0 33.33%,#dd2029 33.33% 66.66%,#ffce00 66.66%);border-radius:3px;margin-bottom:12px}
+.dock{position:fixed;z-index:20;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;background:#101b2af5;border:1px solid #41536b;border-radius:12px;padding:8px;box-shadow:0 12px 40px #0008;max-width:calc(100% - 24px);width:max-content;backdrop-filter:blur(10px)}
+.dock a,.dock button{color:#eaf3ff;text-decoration:none;padding:9px 12px;border-radius:7px;white-space:nowrap;font-size:13px;min-height:0;background:none;border:0;font-weight:600}
+.dock a:hover,.dock button:hover{background:#263c57}
+.dock #start-menu{background:#347ff5}
+.dock-support{background:#245ba9!important}
+.dock span{padding:0 10px;color:#b9c5d6;font-variant-numeric:tabular-nums}
+#launcher{position:fixed;z-index:21;bottom:76px;left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));padding:20px;background:#142236;border:1px solid #456080;border-radius:12px;box-shadow:0 12px 40px #0008}
+#launcher:not([hidden]){display:grid;gap:10px}
+#launcher small{color:#b9c5d6}
+#launcher a{padding:10px;border-radius:6px;background:#1c304a;text-decoration:none;color:#eaf3ff}
+#launcher a:hover{background:#263c57}
+footer{margin-bottom:10px}
+@media(max-width:850px){main{padding:12px 12px 100px}.dock{overflow-x:auto;justify-content:flex-start;width:calc(100% - 24px)}.workspace-heading>small,.window-title small{display:none}}
 </style>
 </head>
 <body>
 <main>
 <header>
-  <a class="logo" href="./"><i>◈</i> TETHERLUME <small>Web · Early Access</small></a>
+  <div class="creator"><strong>◈ TETHERLUME OS <small>Web · Early Access</small></strong><div><small>Created by</small><a href="/de.html">Marcel Molitor</a></div></div>
   <nav aria-label="Hauptmenü">
     <a href="#so-gehts">So geht's</a>
     <a href="#faq">Hilfe</a>
-    <a href="account.html">Konto</a>
-    <a href="/de.html">Mehr Projekte</a>
+    <a href="account.html">Optionales Konto</a>
+    <a href="/android-desk/de.html">Desktop-Version</a>
     <a class="heart" href="#unterstuetzen">♡ Unterstützen</a>
   </nav>
 </header>
 
-<section class="hero">
-  <div>
-    <p class="muted"><span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland · von Marcel Molitor</p>
-    <h1>Dein Android.<br><span>Live im Browser.</span></h1>
-    <p>Handy per USB anstecken, Chrome oder Edge öffnen, fertig. Du siehst dein Display flüssig am PC und bedienst es mit Maus und Tastatur. Dateien und Apps schiebst du einfach rüber. Nichts installieren, kein Konto, kostenlos.</p>
-  </div>
-  <div class="badges">
-    <span class="badge">⚡ Live-Video bis 60 FPS</span>
-    <span class="badge">🖱 Maus &amp; Tastatur</span>
-    <span class="badge">📦 APK per Drag &amp; Drop</span>
-    <span class="badge">🔒 Alles lokal im Browser</span>
-  </div>
-</section>
+<div class="workspace-heading">
+  <div><p class="origin"><span aria-hidden="true"></span> German Engineering · Digital Freedom</p>
+  <h1>Dein digitaler Arbeitsplatz.</h1>
+  <p class="sub">Dein Android live im Browser – per USB, ohne Installation. Maus, Tastatur, Dateien &amp; APKs.</p></div>
+  <small>Android · USB · Browser</small>
+</div>
 
 <section id="mobile-hint" class="mobile-hint" hidden>
   <b>📱 Du bist gerade am Handy</b>
@@ -171,6 +198,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 </section>
 <div class="layout">
   <section class="panel" id="workspace" aria-label="Smartphone">
+    <div class="window-title"><span><i class="dots"><b></b><b></b><b></b></i>◈ &nbsp;Smartphone</span><small>ANDROID WORKSPACE</small></div>
     <div class="bar">
       <span><span class="status" id="connection-state">Wird geladen …</span><span id="fps"></span></span>
       <div class="row" style="margin:0;flex:0 1 auto">
@@ -213,6 +241,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
   </section>
 
   <aside class="panel" id="device-center" aria-label="Gerätecenter">
+    <div class="window-title"><span>⌁ &nbsp;Gerätecenter</span><small>DEVICE CENTER</small></div>
     <h2>Gerät verbinden</h2>
     <p class="muted">Läuft in Chrome und Edge am PC/Mac, auch am Android-Handy mit OTG-Adapter.</p>
     <button class="primary big" id="connect" disabled>Wird geladen …</button>
@@ -284,7 +313,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 </section>
 
 <section class="support" id="unterstuetzen">
-  <div>
+  <div><div class="brand-accent"></div>
     <h2>Gefällt dir Tetherlume? ♡</h2>
     <p>Ich entwickle Tetherlume allein und in meiner Freizeit, ohne Werbung, ohne Abo und ohne Tracking. Wenn dir das Tool Zeit oder Nerven spart, freue ich mich über einen Kaffee. Jeder Euro fließt in die Weiterentwicklung (als Nächstes: Ton-Übertragung und WLAN-Modus).</p>
     <div class="share">
@@ -310,6 +339,24 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
   <span>◈ Tetherlume Web v5 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
   <span><a href="privacy.html">Datenschutz</a> · <a href="/android-desk/de.html">Windows-Version</a> · <a href="/">MOLITOR · Projekte</a> · Live-Video: <a href="https://github.com/Genymobile/scrcpy" target="_blank" rel="noopener">scrcpy</a> (Apache-2.0) &amp; <a href="https://github.com/yume-chan/ya-webadb" target="_blank" rel="noopener">Tango/ya-webadb</a> (MIT)</span>
 </footer>
+<nav class="dock" aria-label="Arbeitsplatz">
+  <button id="start-menu" type="button" aria-expanded="false" aria-controls="launcher">◈ Start</button>
+  <a href="#workspace">▯ Smartphone</a>
+  <a href="#device-center">⌁ Gerätecenter</a>
+  <a href="#" data-demo>▶ Demo</a>
+  <a href="#faq">? Hilfe</a>
+  <a class="dock-support" href="https://www.paypal.biz/molitormarcel93" target="_blank" rel="noopener noreferrer">♡ Unterstützen</a>
+  <span id="clock"></span>
+</nav>
+<div id="launcher" hidden>
+  <strong>Tetherlume OS</strong><small>Created by Marcel Molitor</small>
+  <a href="#workspace">Smartphone öffnen</a>
+  <a href="#device-center">Gerät verbinden</a>
+  <a href="#" data-demo>Demo ansehen</a>
+  <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Android-App laden</a>
+  <a href="/android-desk/de.html">Windows-Version</a>
+  <a href="/de.html">Über den Entwickler</a>
+</div>
 </main>
 <script>
 (() => {
@@ -328,6 +375,19 @@ document.getElementById("share-btn").onclick = async () => {
   const data = { title: "Tetherlume Web", text: "Android-Handy live im Browser steuern – per USB, ohne Installation:", url: "https://marcelmolitor.github.io/tetherlume/web/" };
   try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(data.url); document.getElementById("share-btn").textContent = "✓ Link kopiert"; } } catch {}
 };
+</script>
+<script>
+(() => {
+  const start = document.getElementById("start-menu"), menu = document.getElementById("launcher");
+  const close = () => { menu.hidden = true; start.setAttribute("aria-expanded", "false"); };
+  start.onclick = () => { menu.hidden = !menu.hidden; start.setAttribute("aria-expanded", String(!menu.hidden)); };
+  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", close));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  document.addEventListener("click", (e) => { if (!menu.hidden && !menu.contains(e.target) && e.target !== start) close(); });
+  const tick = () => (document.getElementById("clock").textContent = new Date().toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" }));
+  tick(); setInterval(tick, 15000);
+  document.querySelectorAll("a[data-demo]").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+})();
 </script>
 <script>
 (() => {
