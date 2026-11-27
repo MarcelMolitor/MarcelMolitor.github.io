@@ -502,7 +502,7 @@
           if (my !== session) return;
           buildToc(st, (nav && nav.toc) || []);
           if (st.location) markCurrentChapter(st, st.location);
-        }).catch(function () { tocList.appendChild(el('li', { class: 'pane-note', text: 'Dieses Buch hat kein Inhaltsverzeichnis.' })); });
+        }).catch(function () { tocList.appendChild(el('li', { class: 'pane-note', text: uiText('Dieses Buch hat kein Inhaltsverzeichnis.','This book has no table of contents.') })); });
 
         renderMarks(st);
         updateBookmarkButton(st);
@@ -696,7 +696,7 @@
     if (!S || reader.hidden) return;
     if (e.key === 'Escape') { if (closeOverlays()) e.preventDefault && e.preventDefault(); return; }
     if (!drawer.hidden || isTyping(e.target)) return;
-    if (e.altKey || e.ctrlKey || e.metaKey) return;
+    if (e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented || e.isComposing) return;
     switch (e.key) {
       case 'ArrowLeft': goLeft(); break;
       case 'ArrowRight': goRight(); break;
@@ -709,7 +709,7 @@
 
   /* ===================== Fortschritt / Kapitel ===================== */
   function onRelocated(st, loc) {
-    if (!loc || !loc.start) return;
+    if (!loc || !loc.start || st !== S) return;
     st.location = loc;
     var cfi = loc.start.cfi;
     var pct = null;
@@ -717,23 +717,24 @@
       try { pct = st.book.locations.percentageFromCfi(cfi); } catch (e) { pct = null; }
       if (typeof pct !== 'number' || !isFinite(pct)) pct = typeof loc.start.percentage === 'number' ? loc.start.percentage : null;
       if (loc.atEnd) pct = 1;
+      if (typeof pct === 'number' && isFinite(pct)) pct = Math.max(0, Math.min(1, pct)); else pct = null;
     }
     // Anzeige
     if (pct != null) {
       progPct.textContent = fmtPct(pct);
       if (!st.dragging) range.value = String(Math.round(pct * 1000));
-      range.setAttribute('aria-valuetext', fmtPct(pct) + ' gelesen');
+      range.setAttribute('aria-valuetext', fmtPct(pct) + uiText(' gelesen',' read'));
     } else if (!st.locationsReady) {
       progPct.textContent = '–';
     }
     var disp = loc.start.displayed;
     if (st.locationsReady) {
       var pageTxt = '';
-      if (disp && disp.total) pageTxt = 'Kapitelseite ' + disp.page + ' von ' + disp.total;
+      if (disp && disp.total) pageTxt = uiText('Kapitelseite ','Chapter page ') + disp.page + uiText(' von ',' of ') + disp.total;
       try {
         var li = st.book.locations.locationFromCfi(cfi);
         var tot = st.book.locations.total;
-        if (typeof li === 'number' && li >= 0 && tot > 0) pageTxt = 'Position ' + (li + 1) + ' von ' + (tot + 1) + (pageTxt ? ' · ' + pageTxt : '');
+        if (typeof li === 'number' && li >= 0 && tot > 0) pageTxt = uiText('Position ','Location ') + (li + 1) + uiText(' von ',' of ') + (tot + 1) + (pageTxt ? ' · ' + pageTxt : '');
       } catch (e) { /* egal */ }
       progPage.textContent = pageTxt;
     }
@@ -779,7 +780,7 @@
     st.tocLinks = [];
     function walk(items, parent, depth) {
       items.forEach(function (item) {
-        var label = String(item.label || '').trim() || 'Ohne Titel';
+        var label = String(item.label || '').trim() || uiText('Ohne Titel','Untitled');
         var a = el('a', { href: '#', text: label });
         var entry = { label: label, href: item.href, index: spineIndexOf(st.book, item.href), a: a, depth: depth };
         st.tocLinks.push(entry);
@@ -816,7 +817,7 @@
   }
   function chapterLabel(st, index) {
     var e = chapterEntryFor(st, index);
-    return e ? e.label : (typeof index === 'number' ? 'Abschnitt ' + (index + 1) : '');
+    return e ? e.label : (typeof index === 'number' ? uiText('Abschnitt ','Section ') + (index + 1) : '');
   }
 
   function markCurrentChapter(st, loc) {
