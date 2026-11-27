@@ -6,7 +6,7 @@
   /* ===================== Hilfsfunktionen ===================== */
   var $ = function (id) { return document.getElementById(id); };
   var PREFIX = 'epubleser:';
-  var englishUI = new URLSearchParams(location.search).get('lang') === 'en' || /\\/en\\/?$/.test(location.pathname);
+  var englishUI = new URLSearchParams(location.search).get('lang') === 'en' || location.pathname.indexOf('/epub-leser/en/') !== -1;
   function uiText(de,en){return englishUI?en:de;}
 
   var LIBRARY = [
