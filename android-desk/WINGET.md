@@ -2,7 +2,7 @@
 
 Vorgeschlagene Paket-ID: `Molitor.AndroidDesk` (noch nicht registriert).
 
-MOLITOR LinkDeck bleibt kostenlos; freiwillige finanzielle Unterstützung ist keine Voraussetzung für die Nutzung. scrcpy von Genymobile wird separat als offizielle Paketabhängigkeit `Genymobile.scrcpy` installiert. Die jeweilige Lizenz und Hinweise zu Drittkomponenten sind zu beachten. Vor Veröffentlichung muss die Lizenz des eigenen Programms ausdrücklich festgelegt werden.
+Tetherlume bleibt kostenlos; freiwillige finanzielle Unterstützung ist keine Voraussetzung für die Nutzung. scrcpy von Genymobile wird separat als offizielle Paketabhängigkeit `Genymobile.scrcpy` installiert. Die jeweilige Lizenz und Hinweise zu Drittkomponenten sind zu beachten. Vor Veröffentlichung muss die Lizenz des eigenen Programms ausdrücklich festgelegt werden.
 
 ## Release-Checkliste
 
