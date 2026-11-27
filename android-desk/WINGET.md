@@ -1,8 +1,8 @@
 # WinGet-Veröffentlichung (in Vorbereitung)
 
-Vorgeschlagene Paket-ID: `Molitor.AndroidDesk` (noch nicht registriert).
+Vorgeschlagene Paket-ID: `Molitor.AndroidDecks` (noch nicht registriert).
 
-Android Desk bleibt kostenlos; freiwillige finanzielle Unterstützung ist keine Voraussetzung für die Nutzung. scrcpy von Genymobile wird separat als offizielle Paketabhängigkeit `Genymobile.scrcpy` installiert. Die jeweilige Lizenz und Hinweise zu Drittkomponenten sind zu beachten. Vor Veröffentlichung muss die Lizenz des eigenen Programms ausdrücklich festgelegt werden.
+Android Decks bleibt kostenlos; freiwillige finanzielle Unterstützung ist keine Voraussetzung für die Nutzung. scrcpy von Genymobile wird separat als offizielle Paketabhängigkeit `Genymobile.scrcpy` installiert. Die jeweilige Lizenz und Hinweise zu Drittkomponenten sind zu beachten. Vor Veröffentlichung muss die Lizenz des eigenen Programms ausdrücklich festgelegt werden.
 
 ## Release-Checkliste
 
