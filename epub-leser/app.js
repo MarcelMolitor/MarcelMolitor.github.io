@@ -728,6 +728,20 @@
   $('reading-spread').onchange=function(){settings.spread=this.value;saveSettings();if(S&&S.rendition){try{S.rendition.spread(settings.spread);}catch(e){}}};
 
 
+  var resetReading=el('button',{id:'reading-reset-preferences',type:'button',class:'btn',text:uiText('Lesedarstellung zurücksetzen','Reset reading appearance')});
+  resetReading.style.minHeight='44px';
+  readingOptions.appendChild(resetReading);
+  resetReading.onclick=function(){
+    Object.assign(settings,{fontSize:110,theme:'hell',font:'serif',lineHeight:1.65,spread:'auto',margin:12});
+    $('reading-spacing').value='1.65';$('reading-spread').value='auto';$('reading-margin').value='12';
+    saveSettings();
+    if(S&&S.rendition){try{S.rendition.spread('auto');}catch(e){}}
+    toast(uiText('Lesedarstellung zurückgesetzt.','Reading appearance reset.'));
+  };
+  settingsBox.style.maxHeight='calc(100dvh - 80px - env(safe-area-inset-top) - env(safe-area-inset-bottom))';
+  settingsBox.style.overflowY='auto';
+  readingOptions.querySelectorAll('select').forEach(function(select){select.style.minHeight='44px';select.style.maxWidth='100%';select.style.font='inherit';});
+
   /* ===================== Navigation ===================== */
   function turnPage(direction) {
     var st = S;
