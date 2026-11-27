@@ -3,7 +3,15 @@ Your phone. Your desktop.
 
 Free, open-source Windows launcher for scrcpy. Mirror and control one USB-connected Android device, switch off its physical screen, and record MP4 video.
 
-[Download and instructions](https://marcelmolitor.github.io/android-desk/)
+**[Download Tetherlume for Windows (setup, Windows 10/11, 64-bit)](https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/Tetherlume-Setup.exe)** – includes scrcpy. [SHA-256 checksum](https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/SHA256.txt)
+
+Windows SmartScreen may warn about new programs: choose "More info" → "Run anyway".
+
+`MOLITOR-Android-Desk.exe` in this folder is only the launcher and needs scrcpy; use the setup above.
+
+No installation? Try [Tetherlume Web in your browser](https://marcelmolitor.github.io/tetherlume/web/).
+
+[Instructions](https://marcelmolitor.github.io/android-desk/) · [Anleitung auf Deutsch](https://marcelmolitor.github.io/android-desk/de.html)
 
 ## Build
 Use Zig 0.13.0 in the android-desk directory:
