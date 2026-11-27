@@ -1,0 +1,63 @@
+name: Android Desk Setup
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  setup:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build launcher
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $release = (Invoke-RestMethod https://ziglang.org/download/index.json).'0.13.0'.'x86_64-windows'
+          $archive = Join-Path $env:RUNNER_TEMP zig.zip
+          Invoke-WebRequest $release.tarball -OutFile $archive
+          if ((Get-FileHash $archive -Algorithm SHA256).Hash -ne $release.shasum) { throw 'Zig checksum mismatch' }
+          Expand-Archive $archive -DestinationPath $env:RUNNER_TEMP
+          $zig = Join-Path $env:RUNNER_TEMP 'zig-windows-x86_64-0.13.0/zig.exe'
+          Set-Location android-desk
+          New-Item -ItemType Directory -Force installer/payload | Out-Null
+          & $zig rc /fo icon.res src/app.rc
+          & $zig cc -target x86_64-windows-gnu -Os -s -municode -Wl,--subsystem,windows src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o installer/payload/Android-Desk.exe
+      - name: Compile setup
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (!(Test-Path $iscc)) { throw 'Inno Setup 6 missing from runner' }
+          & $iscc android-desk/installer/Android-Desk.iss
+      - name: Test installation and local scrcpy
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $dir = Join-Path $env:RUNNER_TEMP AndroidDeskTest
+          $setup = (Resolve-Path android-desk/installer/output/Android-Desk-Setup.exe).Path
+          $p = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $dir + '"')) -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw "Setup failed: $($p.ExitCode)" }
+          foreach ($file in @('Android-Desk.exe','scrcpy/scrcpy.exe','scrcpy/adb.exe','LICENSE-Android-Desk.txt','THIRD-PARTY.txt')) {
+            if (!(Test-Path (Join-Path $dir $file))) { throw "Missing installed file: $file" }
+          }
+          & (Join-Path $dir 'scrcpy/scrcpy.exe') --version
+          if ($LASTEXITCODE -ne 0) { throw 'scrcpy version check failed' }
+          $app = Start-Process (Join-Path $dir 'Android-Desk.exe') -PassThru
+          try {
+            Start-Sleep -Seconds 4
+            $app.Refresh()
+            if ($app.HasExited) { throw 'Launcher exited early' }
+          } finally {
+            if (!$app.HasExited) { $null = $app.CloseMainWindow(); if (!$app.WaitForExit(3000)) { Stop-Process -Id $app.Id -Force } }
+          }
+          $u = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
+          if ($u.ExitCode -ne 0) { throw 'Uninstall failed' }
+          (Get-FileHash $setup -Algorithm SHA256).Hash | Set-Content android-desk/installer/output/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Android-Desk-Setup-test
+          path: android-desk/installer/output/
+          retention-days: 7
