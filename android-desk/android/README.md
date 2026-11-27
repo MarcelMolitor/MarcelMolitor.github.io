@@ -1,0 +1,2 @@
+# Tetherlume Android
+Native Android companion, version 0.1.0. German and English, dark navy and blue design, USB power and debugging indicators, system settings shortcuts, Windows download link. No Android permissions, network client or telemetry. USB power does not establish a data connection; the Windows scrcpy application performs mirroring and control independently. No remote-control server is included. Build with JDK 17, Gradle 8.9 and Android SDK 35: `gradle :app:assembleDebug`. Debug APK is for testing only; release signing and Play Store submission are separate. 
