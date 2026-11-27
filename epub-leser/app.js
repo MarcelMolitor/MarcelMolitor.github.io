@@ -6,7 +6,7 @@
   /* ===================== Hilfsfunktionen ===================== */
   var $ = function (id) { return document.getElementById(id); };
   var PREFIX = 'epubleser:';
-  var englishUI = new URLSearchParams(location.search).get('lang') === 'en';
+  var englishUI = new URLSearchParams(location.search).get('lang') === 'en' || /\\/en\\/?$/.test(location.pathname);
   function uiText(de,en){return englishUI?en:de;}
 
   var LIBRARY = [
