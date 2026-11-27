@@ -24,6 +24,8 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,104,tr(L"Help",L"Hilfe"));
     SetDlgItemTextW(w,109,tr(L"Language / Sprache",L"Sprache / Language"));
     SetDlgItemTextW(w,113,tr(L"Developed in Germany  |  Local USB connection",L"Entwickelt in Deutschland  |  Lokale USB-Verbindung"));
+    SetDlgItemTextW(w,115,tr(L"DEVICE CONNECTION",L"GERÄTEVERBINDUNG"));
+    SetDlgItemTextW(w,116,tr(L"STATUS",L"STATUS"));
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -96,7 +98,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         HIGHCONTRASTW hc={sizeof(hc)};
         BOOL highContrast=SystemParametersInfoW(SPI_GETHIGHCONTRAST,sizeof(hc),&hc,0)&&(hc.dwFlags&HCF_HIGHCONTRASTON);
         if(!highContrast){
-        backgroundBrush=CreateSolidBrush(RGB(245,248,252));
+        backgroundBrush=CreateSolidBrush(RGB(248,250,252));
         headerBrush=CreateSolidBrush(RGB(17,41,54));
         statusBrush=CreateSolidBrush(RGB(230,239,245));
         }
@@ -127,7 +129,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(230,239,245));
             return (INT_PTR)statusBrush;
         }
-        SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(245,248,252));
+        SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(248,250,252));
         return (INT_PTR)backgroundBrush;
     }
     if (msg==WM_ERASEBKGND && backgroundBrush && headerBrush) {
@@ -135,13 +137,15 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         FillRect(dc,&r,backgroundBrush);
         RECT header={0,0,350,57}; MapDialogRect(w,&header); header.right=r.right;
         FillRect(dc,&header,headerBrush);
-        RECT flag={0,0,10,9}; MapDialogRect(w,&flag);
-        RECT origin; GetWindowRect(GetDlgItem(w,113),&origin);
-        MapWindowPoints(NULL,w,(POINT*)&origin,2);
-        // Keep the flag at the right edge, clear of the localized footer text.
-        int x=r.right-flag.right-8, y=origin.top+2;
+        return TRUE;
+    }
+    if (msg==WM_DRAWITEM && wp==114) {
+        DRAWITEMSTRUCT *d=(DRAWITEMSTRUCT*)lp;
+        RECT flag=d->rcItem; HDC dc=d->hDC;
+        int x=flag.left,y=flag.top;
+        int width=flag.right-flag.left,height=flag.bottom-flag.top;
         COLORREF colors[]={RGB(20,20,20),RGB(221,32,41),RGB(255,206,0)};
-        for(int i=0;i<3;i++){RECT stripe={x,y+i*flag.bottom/3,x+flag.right,y+(i+1)*flag.bottom/3}; HBRUSH b=CreateSolidBrush(colors[i]); if(b){FillRect(dc,&stripe,b);DeleteObject(b);}}
+        for(int i=0;i<3;i++){RECT stripe={x,y+i*height/3,x+width,y+(i+1)*height/3}; HBRUSH b=CreateSolidBrush(colors[i]); if(b){FillRect(dc,&stripe,b);DeleteObject(b);}}
         return TRUE;
     }
     if (msg==WM_DESTROY) {
