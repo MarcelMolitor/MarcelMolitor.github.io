@@ -152,6 +152,7 @@ function drawComparison() {
     head.append(th);
   }
   table.tHead.replaceChildren(head);
+  const chart=el('terpene-compare');if(chart){chart.replaceChildren(node('h3','Terpenvergleich · dokumentierte Nennungen'));const sets=rows.map(r=>new Set((r[7]||'').split(', ').filter(Boolean)));for(const t of [...new Set([...sets[0],...sets[1]])].sort(collator.compare)){const line=node('p',t+' · '+rows.map((r,i)=>r[0]+': '+(sets[i].has(t)?'genannt':'nicht genannt')).join(' | '));chart.append(line)}chart.append(node('small','Nicht genannt bedeutet nicht nachweislich abwesend. Keine Konzentrationsmessung.'));}
   const body = table.tBodies[0];
   body.replaceChildren();
   for (const [label, value] of [
@@ -217,7 +218,7 @@ function draw() {
       if (!detail.open || detail.children.length>1) return;
       const linkRow = node('p', '');
       linkRow.className = 'sortenaktionen';
-      linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'));
+      linkRow.append(savedButton(name), sortenlink(name, 'Direktlink zu dieser Sorte'),shareButton(name));
       detail.append(linkRow);
       const coverage = [
         ['THC', 8], ['CBD', 9], ['Terpene', 7]
@@ -242,6 +243,8 @@ function draw() {
   el('next').disabled=(page+1)*size>=matches.length;
   el('page').textContent=matches.length?'Seite '+(page+1)+' von '+format(Math.ceil(matches.length/size)):'';
 }
+function daily(groups){const target=el('daily-strain');if(!target)return;const candidates=[...groups.values()].filter(g=>g[1].some(x=>x.row[7]&&x.row[8]&&x.row[9])).sort((a,b)=>collator.compare(a[0],b[0]));if(!candidates.length){target.textContent='Keine vollständig dokumentierte Sorte verfügbar.';return}const [name,items]=candidates[Math.floor(Date.now()/86400000)%candidates.length];const row=items.find(x=>x.row[7]&&x.row[8]&&x.row[9]).row;target.replaceChildren(node('h3',name),node('p',row[2]+' · '+row[6]),node('p','THC: '+gehalt(row[8])+' · CBD: '+gehalt(row[9])),node('p','Terpene: '+row[7]),sortenlink(name,'Alle Varianten und Quellen ansehen →'),shareButton(name));}
+function shareButton(name){const b=node('button','Sortenprofil teilen');b.type='button';b.onclick=async()=>{const url=sortenlink(name,'').href;try{if(navigator.share)await navigator.share({title:name+' · MOLITOR Sortenatlas',url});else if(navigator.clipboard){await navigator.clipboard.writeText(url);b.textContent='Link kopiert ✓'}else window.prompt('Profil-Link',url)}catch(e){if(e.name!=='AbortError')window.prompt('Profil-Link',url)}};return b}
 function featured(groups){const target=el('featured-strains');if(!target)return;target.replaceChildren();const ranked=[...groups.values()].map(([name,items])=>({name,entries:items.length,breeders:new Set(items.map(x=>x.row[2]).filter(Boolean)).size,catalogs:new Set(items.map(x=>x.row[6]).filter(Boolean)).size})).sort((a,b)=>b.breeders-a.breeders||b.catalogs-a.catalogs||b.entries-a.entries||collator.compare(a.name,b.name)).slice(0,12);for(const [i,s] of ranked.entries()){const card=node('article','');card.append(node('small','RANG '+String(i+1).padStart(2,'0')+' · KATALOGPRÄSENZ'),node('h3',s.name),node('p',format(s.breeders)+' Züchter · '+format(s.catalogs)+' Kataloge'),node('p',format(s.entries)+' Einträge'),sortenlink(s.name,'Sortenprofil öffnen →'));target.append(card)}}
 function coverageMatch(row){const v=el('coverage').value;return !v||({thc:!!row[8],cbd:!!row[9],both:!!row[8]&&!!row[9],all:!!row[8]&&!!row[9]&&!!row[7],missing:!row[8]||!row[9]||!row[7]})[v]}
 function dashboard(rows){const grid=el('coverage-grid');grid.hidden=false;grid.replaceChildren();for(const [label,index] of [['THC',8],['CBD',9],['Terpene',7]]){const n=rows.filter(r=>!!r[index]).length;const card=node('div','');card.append(node('small',label+' · Katalogabdeckung'),node('strong',rows.length?Math.round(n/rows.length*100)+' %':'–'));const p=document.createElement('progress');p.max=rows.length||1;p.value=n;p.setAttribute('aria-label',label+' Datenabdeckung');card.append(p,node('small',format(n)+' / '+format(rows.length)));grid.append(card)}const counts=new Map();for(const r of rows)for(const t of new Set((r[7]||'').split(', ').filter(Boolean)))counts.set(t,(counts.get(t)||0)+1);const card=node('div','');card.style.gridColumn='1 / -1';card.append(node('h3','Terpenprofil · häufigste Katalognennungen'),node('p','Häufigkeit der Nennung, keine Konzentration oder Wirkstärke.'));for(const [t,n] of [...counts].sort((a,b)=>b[1]-a[1]).slice(0,8)){const line=node('div','');line.style.border='0';line.style.padding='5px';line.append(node('small',t+' · '+format(n)));const p=document.createElement('progress');p.max=Math.max(1,...counts.values());p.value=n;p.setAttribute('aria-label',t+' Katalognennungen, relativ zur häufigsten Nennung');line.append(p);card.append(line)}grid.append(card);const types=new Map();for(const r of rows){const t=labels[r[3]]||r[3]||'Ohne Typangabe';types.set(t,(types.get(t)||0)+1)}const typeCard=node('div','');typeCard.style.gridColumn='1 / -1';typeCard.append(node('h3','Verteilung der Katalogtypen'));for(const [t,n] of [...types].sort((a,b)=>b[1]-a[1])){typeCard.append(node('p',t+' · '+format(n)+' ('+Math.round(n/rows.length*100)+' %)'));const p=document.createElement('progress');p.max=rows.length||1;p.value=n;p.setAttribute('aria-label',t);typeCard.append(p)}grid.append(typeCard);el('export').disabled=!rows.length}
@@ -301,6 +304,7 @@ async function start() {
   for (const [key, [name]] of groups) sortennamen.set(key, name);
   comparisonGroups = groups;
   featured(groups);
+  daily(groups);
   syncComparison();
   const requested = new URL(location.href).searchParams.get('sorte');
   if (requested) {
