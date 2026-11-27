@@ -15,6 +15,7 @@ static BOOL mirrorArranged;
 static BOOL mirrorRecord;
 static BOOL mirrorControls=TRUE;
 static BOOL mirrorClosing;
+static BOOL desktopDocked;
 static int mirrorMode=1;
 static HWND mirrorWindow;
 static BOOL CALLBACK find_mirror(HWND hwnd, LPARAM arg) {
@@ -28,6 +29,18 @@ static void arrange_mirror(HWND launcher) {
     if(!session || mirrorArranged) return;
     mirrorWindow=NULL; EnumWindows(find_mirror,(LPARAM)GetProcessId(session));
     if(!mirrorWindow) return;
+    if(mirrorMode==1 && mirrorControls) {
+        HWND panel=GetDlgItem(launcher,132);
+        RECT area; GetWindowRect(panel,&area);
+        RECT work; GetClientRect(mirrorWindow,&work);
+        int aw=area.right-area.left-16, ah=area.bottom-area.top-16;
+        if(work.right>0 && work.bottom>0 && aw>0 && ah>0){
+            int h=ah, width=MulDiv(h,work.right,work.bottom);
+            if(width>aw){width=aw;h=MulDiv(width,work.bottom,work.right);}
+            SetWindowPos(mirrorWindow,HWND_TOP,area.left+(area.right-area.left-width)/2,area.top+(area.bottom-area.top-h)/2,width,h,SWP_NOACTIVATE);
+            desktopDocked=TRUE; mirrorArranged=TRUE; ShowWindow(GetDlgItem(launcher,133),SW_HIDE); return;
+        }
+    }
     if(mirrorMode!=1){mirrorArranged=TRUE;if(mirrorMode==2 || !mirrorControls) ShowWindow(launcher,SW_MINIMIZE);return;}
     RECT client,frame; GetClientRect(mirrorWindow,&client); GetWindowRect(mirrorWindow,&frame);
     int cw=client.right, ch=client.bottom;
@@ -85,6 +98,9 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,128,tr(L"Show device",L"Handy anzeigen"));
     SetDlgItemTextW(w,129,tr(L"End session",L"Verbindung beenden"));
     SetDlgItemTextW(w,130,tr(L"Keyboard: Alt+F fullscreen, Alt+H home, Alt+B back.",L"Tastatur: Alt+F Vollbild, Alt+H Home, Alt+B zurück."));
+    SetDlgItemTextW(w,131,tr(L"SMARTPHONE VIEW",L"SMARTPHONE-ANSICHT"));
+    SetDlgItemTextW(w,133,tr(L"Connect via USB to start the live view.",L"Per USB verbinden, um die Live-Ansicht zu starten."));
+    SetDlgItemTextW(w,134,tr(L"QUICK ACTIONS",L"SCHNELLAKTIONEN"));
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -214,7 +230,7 @@ static void launch(HWND w, BOOL record) {
     if (log!=INVALID_HANDLE_VALUE) CloseHandle(log);
     if (input!=INVALID_HANDLE_VALUE) CloseHandle(input);
     if (!ok) { status(w,tr(L"Could not launch scrcpy.",L"scrcpy konnte nicht gestartet werden.")); return; }
-    CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record; mirrorClosing=FALSE;
+    CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record; mirrorClosing=FALSE; desktopDocked=FALSE;
     EnableWindow(GetDlgItem(w,102),FALSE); EnableWindow(GetDlgItem(w,103),FALSE);
     EnableWindow(GetDlgItem(w,127),FALSE);
     EnableWindow(GetDlgItem(w,126),FALSE); EnableWindow(GetDlgItem(w,110),FALSE); EnableWindow(GetDlgItem(w,111),FALSE);
@@ -288,6 +304,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             SetTextColor(dc,RGB(255,255,255)); SetBkColor(dc,RGB(11,22,40));
             return (INT_PTR)headerBrush;
         }
+        if(id==133){SetTextColor(dc,RGB(226,232,240));SetBkColor(dc,RGB(0,0,0));return (INT_PTR)GetStockObject(BLACK_BRUSH);}
         if(id==105) {
             SetTextColor(dc,RGB(11,22,40)); SetBkColor(dc,RGB(219,234,254));
             return (INT_PTR)statusBrush;
@@ -298,9 +315,9 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     if (msg==WM_ERASEBKGND && backgroundBrush && headerBrush) {
         HDC dc=(HDC)wp; RECT r; GetClientRect(w,&r);
         FillRect(dc,&r,backgroundBrush);
-        RECT header={0,0,350,52}; MapDialogRect(w,&header); header.right=r.right;
+        RECT header={0,0,660,48}; MapDialogRect(w,&header); header.right=r.right;
         FillRect(dc,&header,headerBrush);
-        RECT accent={0,52,350,54};MapDialogRect(w,&accent);accent.right=r.right;
+        RECT accent={0,48,660,50};MapDialogRect(w,&accent);accent.right=r.right;
         HBRUSH blue=CreateSolidBrush(RGB(37,99,235));if(blue){FillRect(dc,&accent,blue);DeleteObject(blue);}
         return TRUE;
     }
@@ -313,6 +330,15 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         COLORREF colors[]={RGB(20,20,20),RGB(221,32,41),RGB(255,206,0)};
         for(int i=0;i<3;i++){RECT stripe={x,y+i*height/3,x+width,y+(i+1)*height/3}; HBRUSH b=CreateSolidBrush(colors[i]); if(b){FillRect(dc,&stripe,b);DeleteObject(b);}}
         return TRUE;
+    }
+    if(msg==WM_MOVE && desktopDocked && IsWindow(mirrorWindow) && !IsIconic(w)){
+        RECT area,frame; GetWindowRect(GetDlgItem(w,132),&area); GetWindowRect(mirrorWindow,&frame);
+        int width=frame.right-frame.left,height=frame.bottom-frame.top;
+        SetWindowPos(mirrorWindow,NULL,area.left+(area.right-area.left-width)/2,area.top+(area.bottom-area.top-height)/2,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE);
+    }
+    if(msg==WM_SIZE && desktopDocked && IsWindow(mirrorWindow)){
+        if(wp==SIZE_MINIMIZED) ShowWindow(mirrorWindow,SW_MINIMIZE);
+        else if(IsIconic(mirrorWindow)) ShowWindow(mirrorWindow,SW_RESTORE);
     }
     if (msg==WM_DESTROY) {
         if(headingFont) DeleteObject(headingFont);
@@ -368,7 +394,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     }
     if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
-        KillTimer(w,1); mirrorClosing=FALSE; EnableWindow(GetDlgItem(w,127),TRUE); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
+        KillTimer(w,1); desktopDocked=FALSE; ShowWindow(GetDlgItem(w,133),SW_SHOW); mirrorClosing=FALSE; EnableWindow(GetDlgItem(w,127),TRUE); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
             wchar_t detail[768];
             StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
