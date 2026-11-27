@@ -33,3 +33,16 @@ header{background:#fff;border-bottom:1px solid var(--line);padding:14px 0}
 .projects .card .cardlink{background:none;color:#075db5;border:0;border-top:1px solid var(--line);border-radius:0;padding:12px 0 0}
 .projects .card .cardlink+.cardlink{margin-top:8px}
 @media(max-width:600px){.projects .card .visual{height:146px}.projects .card .visual .word{font-size:25px}}
+
+/* Accessible project groups and consistent action alignment. */
+.project-family{margin:24px 0 32px}.project-family h3.family-heading{font-size:19px;font-weight:750;margin:0 0 12px;color:var(--ink);letter-spacing:-.02em}
+.project-family .projects{margin:0}.projects .card .body{min-width:0}.projects .card .visual .word{font-size:clamp(19px,2vw,26px)}
+.projects .card .visual .caption{letter-spacing:.045em}
+.projects .card .cardlink{overflow-wrap:anywhere;justify-content:flex-start}
+.projects .card .cardlink:focus-visible,.home-intro .button:focus-visible{outline:3px solid #347ff5;outline-offset:3px}
+.projects .card[data-family="windows"] .cardlink:first-of-type{font-weight:750}
+.projects .card .visual svg{z-index:0}.projects .card .visual .word{position:relative;z-index:1}
+.project-family .projects .card{transition:box-shadow .16s ease,border-color .16s ease}
+@media(hover:hover){.project-family .projects .card:hover{border-color:#90a8c1;box-shadow:0 5px 16px #17335412}}
+@media(max-width:600px){.project-family{margin:18px 0 26px}.project-family h3.family-heading{font-size:18px}}
+@media(prefers-reduced-motion:reduce){.project-family .projects .card{transition:none}}
