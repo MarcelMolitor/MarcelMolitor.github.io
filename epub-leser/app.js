@@ -252,18 +252,18 @@
           } catch (e) { coverImg = null; }
         }
         var card = bookCard({
-          title: m.title || 'Unbenanntes Buch',
+          title: m.title || (en?'Untitled book':'Unbenanntes Buch'),
           sub: m.author || (m.name || ''),
           cover: 'c' + ((parseInt(hash(m.id), 16) % 3) + 1),
           coverImg: coverImg,
           pct: pct,
-          label: 'Weiterlesen: ' + (m.title || 'Buch'),
+          label: (en?'Continue reading: ':'Weiterlesen: ') + (m.title || (en?'Book':'Buch')),
           onOpen: function () { openFromRecent(m); },
           onRemove: function () {
             idbDelete(m.id).then(renderRecent).catch(function () { /* still */ });
           }
         });
-        var fav=el('button',{type:'button',class:'btn shelf-favorite','aria-pressed':String(favorites.includes(m.id)),text:favorites.includes(m.id)?'★':'☆','aria-label':en?'Toggle favorite':'Favorit umschalten'});
+        var fav=el('button',{type:'button',class:'btn shelf-favorite','aria-pressed':String(favorites.includes(m.id)),text:favorites.includes(m.id)?'★':'☆','aria-label':(en?'Toggle favorite: ':'Favorit umschalten: ')+(m.title||m.name||'EPUB')});
         fav.style.cssText='position:relative;z-index:3;min-width:44px;min-height:44px;margin:6px;color:#3458d4;background:white;border:1px solid #d5deeb;border-radius:8px';
         fav.addEventListener('click',function(e){e.stopPropagation();var current=lsGet('shelf-favorites',[]);if(!Array.isArray(current))current=[];var next=current.includes(m.id)?current.filter(function(id){return id!==m.id;}):current.concat(m.id);if(lsSet('shelf-favorites',next))renderRecent();else homeMessage(en?'Unable to save favorite.':'Favorit konnte nicht gespeichert werden.',true);});
         card.appendChild(fav);
@@ -298,25 +298,26 @@
 
   /* ===================== Karten (Bibliothek / Zuletzt) ===================== */
   function bookCard(o) {
+    var en = new URLSearchParams(location.search).get('lang') === 'en';
     var cover = el('div', { class: 'cover ' + (o.cover || 'c1'), 'aria-hidden': 'true' });
     if (o.coverImg) cover.appendChild(o.coverImg); else cover.textContent = o.title;
     var meta = el('div', { class: 'book-meta' }, [el('b', { text: o.title })]);
     if (o.sub) meta.appendChild(el('span', { class: 'sub', text: o.sub }));
     var pctBox = el('span', { class: 'pct' });
     if (typeof o.pct === 'number' && o.pct > 0) {
-      pctBox.textContent = fmtPct(o.pct) + ' gelesen';
+      pctBox.textContent = fmtPct(o.pct) + (en ? ' read' : ' gelesen');
       var bar = el('div', { class: 'bar', 'aria-hidden': 'true' }, [el('i')]);
       bar.firstChild.style.width = Math.round(Math.min(1, o.pct) * 100) + '%';
       pctBox.appendChild(bar);
     } else {
-      pctBox.textContent = o.emptyText || 'Noch nicht begonnen';
+      pctBox.textContent = o.emptyText || (en ? 'Not started' : 'Noch nicht begonnen');
     }
     meta.appendChild(pctBox);
     var open = el('button', { class: 'open', type: 'button', 'aria-label': o.label || o.title });
     open.addEventListener('click', o.onOpen);
     var card = el('div', { class: 'book-card' }, [cover, meta, open]);
     if (o.onRemove) {
-      var rm = el('button', { class: 'remove', type: 'button', 'aria-label': '„' + o.title + '“ aus der Liste entfernen', title: 'Aus der Liste entfernen', text: '×' });
+      var rm = el('button', { class: 'remove', type: 'button', 'aria-label': en ? 'Remove '+o.title+' from library' : '„' + o.title + '“ aus der Liste entfernen', title: en ? 'Remove from library' : 'Aus der Liste entfernen', text: '×' });
       rm.addEventListener('click', function (e) { e.stopPropagation(); o.onRemove(); });
       card.appendChild(rm);
     }
