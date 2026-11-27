@@ -1,6 +1,6 @@
 {
-  "name": "MOLITOR Reader",
-  "short_name": "MOLITOR Reader",
+  "name": "EPUB Reader",
+  "short_name": "EPUB Reader",
   "id": "/epub-leser/",
   "start_url": "/epub-leser/",
   "scope": "/epub-leser/",
