@@ -1203,6 +1203,45 @@
   }
 
   /* ===================== Ereignisse: Startseite ===================== */
+  // Original bilingual sample, generated locally as a valid EPUB 3 archive.
+  var sampleButton = document.createElement('button');
+  sampleButton.type = 'button';
+  sampleButton.className = 'btn';
+  sampleButton.id = 'reader-sample';
+  sampleButton.style.cssText = 'display:block;margin:12px auto;min-height:44px;max-width:100%;';
+  function sampleLabel() { sampleButton.textContent = uiText('Beispielbuch lesen','Try a sample book'); }
+  sampleLabel();
+  var languageSelect = document.getElementById('reader-language');
+  if (languageSelect) languageSelect.addEventListener('change', function () { setTimeout(sampleLabel, 0); });
+  dropzone.insertAdjacentElement('afterend', sampleButton);
+  sampleButton.addEventListener('click', async function () {
+    sampleButton.disabled = true;
+    try {
+      if (typeof JSZip !== 'function') throw new Error('JSZip unavailable');
+      var en = uiText('de','en') === 'en';
+      var title = en ? 'A moment to read' : 'Ein Moment zum Lesen';
+      var lang = en ? 'en' : 'de';
+      var chapters = en ? ['A quiet beginning','A new perspective','One page at a time'] : ['Ein ruhiger Anfang','Eine neue Perspektive','Seite für Seite'];
+      var paragraphs = en ? ['A book offers a small space away from the noise of everyday life. Take a moment to settle in and explore the reading tools.','Change the text size, try a different theme, or search for a word. A comfortable reading experience is personal.','Save a bookmark and return whenever you like. Every page is an invitation to discover something new.'] : ['Ein Buch bietet einen kleinen Raum abseits des Alltags. Nimm dir einen Moment Zeit und entdecke die Lesewerkzeuge.','Ändere die Schriftgröße, probiere ein anderes Farbschema oder suche nach einem Wort. Angenehmes Lesen ist individuell.','Setze ein Lesezeichen und kehre jederzeit zurück. Jede Seite lädt dazu ein, etwas Neues zu entdecken.'];
+      var zip = new JSZip();
+      zip.file('mimetype','application/epub+zip',{compression:'STORE'});
+      zip.file('META-INF/container.xml','<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="EPUB/package.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
+      var manifest = '', spine = '', nav = '';
+      chapters.forEach(function (heading,i) {
+        var name = 'chapter'+i+'.xhtml';
+        manifest += '<item id="c'+i+'" href="'+name+'" media-type="application/xhtml+xml"/>';
+        spine += '<itemref idref="c'+i+'"/>';
+        nav += '<li><a href="'+name+'">'+heading+'</a></li>';
+        zip.file('EPUB/'+name,'<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml" lang="'+lang+'"><head><title>'+heading+'</title></head><body><h1>'+heading+'</h1><p>'+paragraphs[i]+'</p></body></html>');
+      });
+      zip.file('EPUB/nav.xhtml','<?xml version="1.0"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops"><head><title>Contents</title></head><body><nav epub:type="toc"><ol>'+nav+'</ol></nav></body></html>');
+      zip.file('EPUB/package.opf','<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="id"><metadata xmlns:dc="http://purl.org/dc/elements/1.1/"><dc:identifier id="id">urn:molitor:sample:'+lang+'</dc:identifier><dc:title>'+title+'</dc:title><dc:language>'+lang+'</dc:language><meta property="dcterms:modified">2026-11-27T00:00:00Z</meta></metadata><manifest><item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>'+manifest+'</manifest><spine>'+spine+'</spine></package>');
+      var bytes = await zip.generateAsync({type:'uint8array',compression:'STORE'});
+      openFile(new File([bytes], 'reader-sample-'+lang+'.epub', {type:'application/epub+zip'}));
+    } catch (err) {
+      homeMessage(uiText('Beispielbuch konnte nicht geöffnet werden. Bitte lade die Seite neu.','Could not open the sample book. Please reload the page.'),true);
+    } finally { sampleButton.disabled = false; }
+  });
   dropzone.addEventListener('click', function () { fileInput.click(); });
   dropzone.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') { e.preventDefault(); fileInput.click(); }
