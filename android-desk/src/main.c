@@ -36,7 +36,7 @@ static void refresh(HWND w) {
     EnableWindow(GetDlgItem(w,102),found);
     EnableWindow(GetDlgItem(w,103),found);
     status(w,found ? L"Ready. Connect an Android device and choose an action." :
-        L"scrcpy is missing. Run the LinkDeck setup again, or install scrcpy separately.");
+        L"scrcpy is missing. Run the Tetherlume setup again, or install scrcpy separately.");
 }
 static void launch(HWND w, BOOL record) {
     wchar_t exe[32768], cmd[32768], output[MAX_PATH] = L"", tmp[MAX_PATH];
@@ -102,7 +102,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         KillTimer(w,1); refresh(w);
         if (code) {
             status(w,L"Connection ended. Check your data cable, debugging permission and that exactly one USB device is connected.");
-            if (MessageBoxW(w,L"scrcpy reported an error. Open the technical log in Notepad?",L"MOLITOR LinkDeck",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
+            if (MessageBoxW(w,L"scrcpy reported an error. Open the technical log in Notepad?",L"Tetherlume",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
                 wchar_t editor[MAX_PATH], quoted[MAX_PATH+3];
                 if (GetSystemDirectoryW(editor, MAX_PATH) &&
                     SUCCEEDED(StringCchCatW(editor, MAX_PATH, L"\\notepad.exe")) &&
@@ -114,7 +114,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DeleteFileW(logPath); return TRUE;
     }
     if (msg==WM_CLOSE) {
-        if (session) { MessageBoxW(w,L"Close the mirrored device window first to save any active recording.",L"MOLITOR LinkDeck",MB_OK); return TRUE; }
+        if (session) { MessageBoxW(w,L"Close the mirrored device window first to save any active recording.",L"Tetherlume",MB_OK); return TRUE; }
         EndDialog(w,0); return TRUE;
     }
     return FALSE;
