@@ -531,9 +531,10 @@
 
     st.highlights = lsGet('highlights:'+st.key, []);
     if(!Array.isArray(st.highlights))st.highlights=[];
+    st.highlights=st.highlights.filter(function(h){return h&&typeof h.cfi==='string'&&typeof h.text==='string'&&['#facc15','#4ade80','#60a5fa','#f472b6'].indexOf(h.color)!==-1;});
     st.highlights.forEach(function(h){paintHighlight(st,h);});
-    r.on('selected',function(cfi,contents){if(S!==st)return;var sel=contents.window.getSelection();st.pendingHighlight={cfi:cfi,text:sel?String(sel).slice(0,500):''};if(sel)sel.removeAllRanges();renderHighlights();if(!$('highlight-dialog').open)$('highlight-dialog').showModal();});
-    r.on('relocated', function (loc) { stopSpeech(); if (S === st) onRelocated(st, loc); });
+    r.on('selected',function(cfi,contents){if(S!==st)return;var sel=contents.window.getSelection();if(!sel||!String(sel).trim())return;st.pendingHighlight={cfi:cfi,text:sel?String(sel).slice(0,500):''};if(sel)sel.removeAllRanges();renderHighlights();if(!$('highlight-dialog').open)$('highlight-dialog').showModal();});
+    r.on('relocated', function (loc) { if (S === st) { stopSpeech(); onRelocated(st, loc); } });
     r.on('keyup', onKey);
     r.on('click', function () { closeSettings(); });
     r.on('displayError', function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
@@ -1066,6 +1067,9 @@
     selectTab('toc');
   }
   function destroySession() {
+    stopSpeech();
+    ['highlight-dialog','note-dialog'].forEach(function(id){var d=$(id);if(d&&d.open)d.close();});
+    document.body.classList.remove('focus-mode');
     var st = S;
     S = null;
     session++;
