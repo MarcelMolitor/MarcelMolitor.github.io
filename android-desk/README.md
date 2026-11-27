@@ -1,4 +1,4 @@
-# Android Desk
+# Android Decks
 Deutsche Windows-Oberfläche für scrcpy. Eine einzelne USB-Verbindung spiegeln, das physische Display ausschalten und MP4-Aufnahmen an einem gewählten Speicherort ablegen.
 
 [Download und Einrichtung](https://marcelmolitor.github.io/android-desk/)
