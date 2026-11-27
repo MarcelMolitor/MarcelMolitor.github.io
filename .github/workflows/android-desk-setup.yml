@@ -1,8 +1,15 @@
 name: Android Desk Setup
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android-desk-setup.yml'
 permissions:
-  contents: read
+  contents: write
+concurrency:
+  group: android-desk-setup-release
+  cancel-in-progress: false
 jobs:
   setup:
     runs-on: windows-2022
@@ -61,3 +68,15 @@ jobs:
           name: Android-Desk-Setup-test
           path: android-desk/installer/output/
           retention-days: 7
+      - name: Publish tested setup as preview
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $tag = 'android-desk-v0.2'
+          gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
+          if ($LASTEXITCODE -eq 0) { Write-Host 'Release already exists; refusing to overwrite versioned files'; exit 0 }
+          gh release create $tag android-desk/installer/output/Android-Desk-Setup.exe android-desk/installer/output/SHA256.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --prerelease --title 'Android Desk 0.2 – Setup Preview' --notes 'Online installer. Installs original scrcpy from Genymobile. Automated installation, startup and uninstall checks passed; physical USB and MP4 tests remain outstanding. Unsigned.'
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
