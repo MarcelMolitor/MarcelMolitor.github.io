@@ -511,7 +511,7 @@
             if (blob) meta.cover = blob;
           }).catch(function () {}).then(function () {
             return idbSaveBook(meta, copy);
-          }).catch(function () { /* still: kein Speicher */ });
+          }).catch(function () { toast(uiText('Buch konnte nicht dauerhaft gespeichert werden. Behalte deine Originaldatei.','Could not save this book permanently. Keep your original file.')); });
         }
 
         // Positionen berechnen (für Prozent & Regler)
