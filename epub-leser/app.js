@@ -246,7 +246,16 @@
       if(!summary){summary=el('p',{id:'shelf-summary',role:'status','aria-live':'polite'});filter.after(summary);}
       var state=$('shelf-state');
       if(!state){state=el('select',{id:'shelf-state','aria-label':en?'Reading status':'Lesestatus'});[['all',en?'All books':'Alle Bücher'],['new',en?'Not started':'Nicht begonnen'],['active',en?'Reading':'In Arbeit'],['done',en?'Completed':'Abgeschlossen']].forEach(function(p){state.appendChild(el('option',{value:p[0],text:p[1]}));});filter.after(state);state.addEventListener('change',renderRecent);}
+      var metrics=$('shelf-metrics');
+      if(!metrics){metrics=el('div',{id:'shelf-metrics',class:'shelf-metrics'});$('shelf-search').parentNode.before(metrics);}
+      clear(metrics);
+      var counts=[all.length,all.filter(function(m){return progress(m)>0&&progress(m)<1;}).length,all.filter(function(m){return progress(m)>=1;}).length,all.filter(function(m){return favorites.includes(m.id);}).length];
+      var names=en?['Books','Reading','Completed','Favorites']:['Bücher','In Arbeit','Abgeschlossen','Favoriten'];
+      counts.forEach(function(n,i){var tile=el('div',{});tile.appendChild(el('strong',{text:String(n)}));tile.appendChild(el('span',{text:names[i]}));metrics.appendChild(tile);});
+      var reset=$('shelf-reset-filters');
+      if(!reset){reset=el('button',{id:'shelf-reset-filters',type:'button',class:'btn',text:en?'Reset filters':'Filter zurücksetzen'});state.after(reset);reset.addEventListener('click',function(){$('shelf-search').value='';controls.value='recent';state.value='all';filter.setAttribute('aria-pressed','false');renderRecent();});}
       var query=($('shelf-search').value||'').trim().toLocaleLowerCase();
+      reset.disabled=!query&&!only&&state.value==='all'&&controls.value==='recent';
       var shown=0;
       all.forEach(function (m) {
         if(only && !favorites.includes(m.id))return;
