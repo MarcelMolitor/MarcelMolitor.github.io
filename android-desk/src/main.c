@@ -13,6 +13,7 @@ static const wchar_t *settings = L"Software\\Molitor\\AndroidDesk";
 static HANDLE session;
 static BOOL mirrorArranged;
 static BOOL mirrorRecord;
+static int mirrorMode=1;
 static HWND mirrorWindow;
 static BOOL CALLBACK find_mirror(HWND hwnd, LPARAM arg) {
     DWORD pid=0; GetWindowThreadProcessId(hwnd,&pid);
@@ -25,6 +26,7 @@ static void arrange_mirror(HWND launcher) {
     if(!session || mirrorArranged) return;
     mirrorWindow=NULL; EnumWindows(find_mirror,(LPARAM)GetProcessId(session));
     if(!mirrorWindow) return;
+    if(mirrorMode!=1){mirrorArranged=TRUE;ShowWindow(launcher,SW_MINIMIZE);return;}
     RECT client,frame; GetClientRect(mirrorWindow,&client); GetWindowRect(mirrorWindow,&frame);
     int cw=client.right, ch=client.bottom;
     if(cw<1 || ch<1) return;
@@ -69,6 +71,14 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,120,tr(L"Android app",L"Android-App"));
     SetDlgItemTextW(w,121,tr(L"USB control (optional)",L"USB-Steuerung (optional)"));
     SetDlgItemTextW(w,113,tr(L"Developed in Germany | Local connection",L"Entwickelt in Deutschland | Lokale Verbindung"));
+    SetDlgItemTextW(w,125,tr(L"USB display mode",L"USB-Anzeigemodus"));
+    HWND combo=GetDlgItem(w,126);
+    SendMessageW(combo,CB_RESETCONTENT,0,0);
+    SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Normal window",L"Normales Fenster"));
+    SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Large phone view",L"Große Smartphone-Ansicht"));
+    SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Fullscreen",L"Vollbild"));
+    SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Always on top",L"Immer im Vordergrund"));
+    SendMessageW(combo,CB_SETCURSEL,mirrorMode,0);
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -182,7 +192,8 @@ static void launch(HWND w, BOOL record) {
         if (!GetSaveFileNameW(&file)) return;
     }
     BOOL dark = IsDlgButtonChecked(w,101)==BST_CHECKED;
-    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --window-title=Tetherlume%ls%ls%ls%ls",exe,
+    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --window-title=Tetherlume%ls%ls%ls%ls%ls",exe,
+        mirrorMode==2?L" --fullscreen":mirrorMode==3?L" --always-on-top --window-height=560":L"",
         dark?L" --turn-screen-off":L"", record?L" --record=\"":L"", output,record?L"\"":L""))) {
         status(w,tr(L"The file path is too long.",L"Der Dateipfad ist zu lang.")); return;
     }
@@ -199,7 +210,7 @@ static void launch(HWND w, BOOL record) {
     if (!ok) { status(w,tr(L"Could not launch scrcpy.",L"scrcpy konnte nicht gestartet werden.")); return; }
     CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record;
     EnableWindow(GetDlgItem(w,102),FALSE); EnableWindow(GetDlgItem(w,103),FALSE);
-    EnableWindow(GetDlgItem(w,110),FALSE); EnableWindow(GetDlgItem(w,111),FALSE);
+    EnableWindow(GetDlgItem(w,126),FALSE); EnableWindow(GetDlgItem(w,110),FALSE); EnableWindow(GetDlgItem(w,111),FALSE);
     status(w, record ? tr(L"Recording started. Close the device window to finalize the MP4 file.",L"Aufnahme gestartet. Schließe das Gerätefenster, um die MP4-Datei fertigzustellen.") :
         tr(L"scrcpy started. Approve USB debugging on your device if prompted.",L"scrcpy gestartet. Bestätige bei Bedarf USB-Debugging auf dem Gerät."));
     SetTimer(w,1,500,NULL);
@@ -260,7 +271,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD language=PRIMARYLANGID(GetUserDefaultUILanguage())==LANG_GERMAN?1:0;
         size=sizeof(value);
         if (RegGetValueW(HKEY_CURRENT_USER,settings,L"GermanUI",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) language=value;
-        german=language!=0; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
+        german=language!=0; size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS && value<=3) mirrorMode=(int)value; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
     }
     if (msg==WM_CTLCOLORDLG && backgroundBrush) return (INT_PTR)backgroundBrush;
     if (msg==WM_CTLCOLORSTATIC && backgroundBrush && headerBrush && statusBrush) {
@@ -313,6 +324,10 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             if (!session) refresh(w);
             return TRUE;
         }
+        case 126: {
+            if(HIWORD(wp)==CBN_SELCHANGE){LRESULT sel=SendDlgItemMessageW(w,126,CB_GETCURSEL,0,0);if(sel>=0 && sel<=3){mirrorMode=(int)sel;DWORD value=(DWORD)sel;RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",REG_DWORD,&value,sizeof(value));}}
+            return TRUE;
+        }
         case 101: {
             DWORD value=IsDlgButtonChecked(w,101)==BST_CHECKED;
             RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"ScreenOff",REG_DWORD,&value,sizeof(value)); return TRUE;
@@ -334,7 +349,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     }
     if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
-        KillTimer(w,1); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
+        KillTimer(w,1); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
             wchar_t detail[768];
             StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
