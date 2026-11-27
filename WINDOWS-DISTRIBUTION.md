@@ -13,7 +13,7 @@ Die vier veröffentlichten Windows-Werkzeuge bleiben kostenlos nutzbar. Keine Pf
 | DisplayFit | Molitor.DisplayFit | 1.0 |
 
 ## Gemeinsame Freigabeprüfung
-1. Eigene Softwarelizenz ausdrücklich festlegen; Drittkomponenten und deren Lizenzbedingungen prüfen.
+1. MIT-Lizenz für den eigenen Code aller vier Anwendungen festgelegt (siehe jeweilige LICENSE-Datei). Drittkomponenten bleiben unter ihren jeweiligen Lizenzen; deren Hinweise und Weitergabebedingungen vor dem Release prüfen.
 2. Windows-x64-Builds in einer sauberen Windows-Umgebung testen.
 3. Unveränderliche versionsgebundene Artefakte und SHA-256-Prüfsummen bereitstellen.
 4. WinGet-Manifeste mit zutreffendem InstallerType, Publisher, Lizenz und Abhängigkeiten erstellen und validieren. Android Desk benötigt Genymobile.scrcpy.
