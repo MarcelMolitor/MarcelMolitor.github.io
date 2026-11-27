@@ -37,21 +37,21 @@ jobs:
           New-Item -ItemType Directory -Force $out | Out-Null
           Push-Location android-desk
           zig rc /fo icon.res src/app.rc
-          zig cc -target x86_64-windows-gnu -Os -s -municode -Wl,--subsystem,windows src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o "$out/MOLITOR-Android-Desk.exe"
+          zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o "$out/MOLITOR-Android-Desk.exe"
           Pop-Location
           Push-Location fotolimit
           git clone https://github.com/nothings/stb.git stb
           git -C stb checkout 6b5799bae8a1fe3792691ef4b72ae26434c3e799
-          zig cc -target x86_64-windows-gnu -O2 -s -municode -Wl,--subsystem,windows -Istb fotolimit.c -lcomdlg32 -luser32 -o "$out/MOLITOR-FotoLimit.exe"
+          zig cc -target x86_64-windows-gnu -O2 -s -municode '-Wl,--subsystem,windows' -Istb fotolimit.c -lcomdlg32 -luser32 -o "$out/MOLITOR-FotoLimit.exe"
           Pop-Location
           Push-Location qr-bruecke
           zig rc /fo qr.res dialog.rc
-          zig cc -target x86_64-windows-gnu -Os -s -municode -Wl,--subsystem,windows app.c qrcodegen.c qr.res -lgdi32 -luser32 -o "$out/QR-Bruecke.exe"
+          zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' app.c qrcodegen.c qr.res -lgdi32 -luser32 -o "$out/QR-Bruecke.exe"
           Pop-Location
           Push-Location displayfit
           git clone https://github.com/nothings/stb.git stb
           git -C stb checkout 6b5799bae8a1fe3792691ef4b72ae26434c3e799
-          zig cc -target x86_64-windows-gnu -O2 -s -municode -Wl,--subsystem,windows -Istb app.c -lcomdlg32 -luser32 -o "$out/DisplayFit.exe"
+          zig cc -target x86_64-windows-gnu -O2 -s -municode '-Wl,--subsystem,windows' -Istb app.c -lcomdlg32 -luser32 -o "$out/DisplayFit.exe"
           Pop-Location
       - name: Smoke test executable startup
         shell: pwsh
