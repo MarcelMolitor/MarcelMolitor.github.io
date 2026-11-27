@@ -1378,5 +1378,5 @@
 
   var param = null;
   try { param = new URL(location.href).searchParams.get('book'); } catch (e) { param = null; }
-  if (param) openFromUrl(param);
+  var edition=new URLSearchParams(location.search).get('edition');if(edition&&window.molitorBuildEnglishEpub){window.molitorBuildEnglishEpub(edition).then(function(blob){openFile(new File([blob],edition+'-en.epub',{type:'application/epub+zip'}));}).catch(function(){homeMessage(uiText('Die Ausgabe konnte nicht geladen werden.','Could not load the edition.'),true);});}else if (param) openFromUrl(param);
 })();
