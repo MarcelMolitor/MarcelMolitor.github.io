@@ -10,6 +10,10 @@
 static const wchar_t *settings = L"Software\\Molitor\\AndroidDesk";
 static HANDLE session;
 static BOOL german;
+static HFONT headingFont;
+static HBRUSH backgroundBrush;
+static HBRUSH headerBrush;
+static HBRUSH statusBrush;
 static const wchar_t *tr(const wchar_t *en,const wchar_t *de) { return german ? de : en; }
 static void localize(HWND w) {
     SetDlgItemTextW(w,107,tr(L"Control your phone over USB",L"Smartphone per USB steuern"));
@@ -19,6 +23,7 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,103,tr(L"Record MP4 ...",L"MP4 aufnehmen ..."));
     SetDlgItemTextW(w,104,tr(L"Help",L"Hilfe"));
     SetDlgItemTextW(w,109,tr(L"Language / Sprache",L"Sprache / Language"));
+    SetDlgItemTextW(w,113,tr(L"Developed in Germany  |  Local USB connection",L"Entwickelt in Deutschland  |  Lokale USB-Verbindung"));
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -88,6 +93,18 @@ static void launch(HWND w, BOOL record) {
 static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     (void)lp;
     if (msg==WM_INITDIALOG) {
+        HIGHCONTRASTW hc={sizeof(hc)};
+        BOOL highContrast=SystemParametersInfoW(SPI_GETHIGHCONTRAST,sizeof(hc),&hc,0)&&(hc.dwFlags&HCF_HIGHCONTRASTON);
+        if(!highContrast){
+        backgroundBrush=CreateSolidBrush(RGB(245,248,252));
+        headerBrush=CreateSolidBrush(RGB(17,41,54));
+        statusBrush=CreateSolidBrush(RGB(230,239,245));
+        }
+        HDC dc=GetDC(w);
+        int dpi=dc?GetDeviceCaps(dc,LOGPIXELSY):96;
+        if(dc) ReleaseDC(w,dc);
+        headingFont=CreateFontW(-MulDiv(19,dpi,72),0,0,0,FW_SEMIBOLD,FALSE,FALSE,FALSE,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,CLEARTYPE_QUALITY,DEFAULT_PITCH,L"Segoe UI");
+        if(headingFont) SendDlgItemMessageW(w,112,WM_SETFONT,(WPARAM)headingFont,TRUE);
         HICON icon=LoadIconW(GetModuleHandleW(NULL),MAKEINTRESOURCEW(1));
         SendMessageW(w,WM_SETICON,ICON_BIG,(LPARAM)icon); SendMessageW(w,WM_SETICON,ICON_SMALL,(LPARAM)icon);
         DWORD value=0, size=sizeof(value);
@@ -97,6 +114,42 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         size=sizeof(value);
         if (RegGetValueW(HKEY_CURRENT_USER,settings,L"GermanUI",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) language=value;
         german=language!=0; localize(w); refresh(w); return TRUE;
+    }
+    if (msg==WM_CTLCOLORDLG && backgroundBrush) return (INT_PTR)backgroundBrush;
+    if (msg==WM_CTLCOLORSTATIC && backgroundBrush && headerBrush && statusBrush) {
+        HDC dc=(HDC)wp;
+        int id=GetDlgCtrlID((HWND)lp);
+        if(id==112 || id==107) {
+            SetTextColor(dc,RGB(255,255,255)); SetBkColor(dc,RGB(17,41,54));
+            return (INT_PTR)headerBrush;
+        }
+        if(id==105) {
+            SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(230,239,245));
+            return (INT_PTR)statusBrush;
+        }
+        SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(245,248,252));
+        return (INT_PTR)backgroundBrush;
+    }
+    if (msg==WM_ERASEBKGND && backgroundBrush && headerBrush) {
+        HDC dc=(HDC)wp; RECT r; GetClientRect(w,&r);
+        FillRect(dc,&r,backgroundBrush);
+        RECT header={0,0,350,57}; MapDialogRect(w,&header); header.right=r.right;
+        FillRect(dc,&header,headerBrush);
+        RECT flag={0,0,10,9}; MapDialogRect(w,&flag);
+        RECT origin; GetWindowRect(GetDlgItem(w,113),&origin);
+        MapWindowPoints(NULL,w,(POINT*)&origin,2);
+        // Keep the flag at the right edge, clear of the localized footer text.
+        int x=r.right-flag.right-8, y=origin.top+2;
+        COLORREF colors[]={RGB(20,20,20),RGB(221,32,41),RGB(255,206,0)};
+        for(int i=0;i<3;i++){RECT stripe={x,y+i*flag.bottom/3,x+flag.right,y+(i+1)*flag.bottom/3}; HBRUSH b=CreateSolidBrush(colors[i]); if(b){FillRect(dc,&stripe,b);DeleteObject(b);}}
+        return TRUE;
+    }
+    if (msg==WM_DESTROY) {
+        if(headingFont) DeleteObject(headingFont);
+        if(backgroundBrush) DeleteObject(backgroundBrush);
+        if(headerBrush) DeleteObject(headerBrush);
+        if(statusBrush) DeleteObject(statusBrush);
+        return FALSE;
     }
     if (msg==WM_COMMAND) {
         switch (LOWORD(wp)) {
