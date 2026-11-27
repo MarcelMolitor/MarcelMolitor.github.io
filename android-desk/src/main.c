@@ -35,8 +35,8 @@ static void refresh(HWND w) {
     BOOL found = executable(exe,32768);
     EnableWindow(GetDlgItem(w,102),found);
     EnableWindow(GetDlgItem(w,103),found);
-    status(w,found ? L"Bereit. Verbinde ein Android-Gerät und wähle eine Aktion." :
-        L"scrcpy fehlt. In PowerShell: winget install --exact Genymobile.scrcpy. Danach MOLITOR HandyBrücke neu öffnen.");
+    status(w,found ? L"Ready. Connect an Android device and choose an action." :
+        L"scrcpy is missing. Run the LinkDeck setup again, or install scrcpy separately.");
 }
 static void launch(HWND w, BOOL record) {
     wchar_t exe[32768], cmd[32768], output[MAX_PATH] = L"", tmp[MAX_PATH];
@@ -54,11 +54,11 @@ static void launch(HWND w, BOOL record) {
     BOOL dark = IsDlgButtonChecked(w,101)==BST_CHECKED;
     if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb%ls%ls%ls%ls",exe,
         dark?L" --turn-screen-off":L"", record?L" --record=\"":L"", output,record?L"\"":L""))) {
-        status(w,L"Der Dateipfad ist zu lang."); return;
+        status(w,L"The file path is too long."); return;
     }
     DWORD n = GetTempPathW(MAX_PATH,tmp);
     if (!n || n >= MAX_PATH || !GetTempFileNameW(tmp,L"MAD",0,logPath)) {
-        status(w,L"Temporäre Protokolldatei konnte nicht angelegt werden."); return;
+        status(w,L"Could not create a temporary log file."); return;
     }
     SECURITY_ATTRIBUTES sa={sizeof(sa),NULL,TRUE};
     HANDLE log=CreateFileW(logPath,GENERIC_WRITE,FILE_SHARE_READ,&sa,TRUNCATE_EXISTING,FILE_ATTRIBUTE_NORMAL,NULL);
@@ -70,11 +70,11 @@ static void launch(HWND w, BOOL record) {
         CreateProcessW(exe,cmd,NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
     if (log!=INVALID_HANDLE_VALUE) CloseHandle(log);
     if (input!=INVALID_HANDLE_VALUE) CloseHandle(input);
-    if (!ok) { DeleteFileW(logPath); status(w,L"scrcpy konnte nicht gestartet werden."); return; }
+    if (!ok) { DeleteFileW(logPath); status(w,L"Could not launch scrcpy."); return; }
     CloseHandle(pi.hThread); session=pi.hProcess;
     EnableWindow(GetDlgItem(w,102),FALSE); EnableWindow(GetDlgItem(w,103),FALSE);
-    status(w, record ? L"Aufnahmesitzung gestartet. Schließe das Gerätefenster, um die MP4-Datei fertigzustellen." :
-        L"scrcpy gestartet. Bestätige bei Bedarf USB-Debugging auf dem Android-Gerät.");
+    status(w, record ? L"Recording started. Close the device window to finalize the MP4 file." :
+        L"scrcpy started. Approve USB debugging on your device if prompted.");
     SetTimer(w,1,500,NULL);
 }
 static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
@@ -101,8 +101,8 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
         KillTimer(w,1); refresh(w);
         if (code) {
-            status(w,L"Verbindung beendet. Prüfe Datenkabel, USB-Freigabe und ob genau ein USB-Gerät verbunden ist.");
-            if (MessageBoxW(w,L"scrcpy hat einen Fehler gemeldet. Technisches Protokoll im Editor öffnen?",L"MOLITOR HandyBrücke",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
+            status(w,L"Connection ended. Check your data cable, debugging permission and that exactly one USB device is connected.");
+            if (MessageBoxW(w,L"scrcpy reported an error. Open the technical log in Notepad?",L"MOLITOR LinkDeck",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
                 wchar_t editor[MAX_PATH], quoted[MAX_PATH+3];
                 if (GetSystemDirectoryW(editor, MAX_PATH) &&
                     SUCCEEDED(StringCchCatW(editor, MAX_PATH, L"\\notepad.exe")) &&
@@ -110,11 +110,11 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
                     ShellExecuteW(w,L"open",editor,quoted,NULL,SW_SHOWNORMAL);
                 return TRUE;
             }
-        } else status(w,L"Sitzung beendet.");
+        } else status(w,L"Session ended.");
         DeleteFileW(logPath); return TRUE;
     }
     if (msg==WM_CLOSE) {
-        if (session) { MessageBoxW(w,L"Schließe zuerst das gespiegelte Gerätefenster, damit eine laufende Aufnahme gespeichert wird.",L"MOLITOR HandyBrücke",MB_OK); return TRUE; }
+        if (session) { MessageBoxW(w,L"Close the mirrored device window first to save any active recording.",L"MOLITOR LinkDeck",MB_OK); return TRUE; }
         EndDialog(w,0); return TRUE;
     }
     return FALSE;
