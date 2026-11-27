@@ -658,6 +658,8 @@
     try { r.themes.font(FONTS[settings.font]); } catch (e) { /* egal */ }
   }
   function saveSettings() { lsSet('settings', settings); applySettingsToRendition(); }
+  window.molitorReadingPreferences={get:function(){var o={};['fontSize','theme','font','lineHeight','spread','margin'].forEach(function(k){if(settings[k]!==undefined)o[k]=settings[k];});return o;},set:function(o){if(!o||typeof o!=='object')throw Error('Invalid preferences');if(typeof o.fontSize==='number'&&o.fontSize>=50&&o.fontSize<=300)settings.fontSize=o.fontSize;if(['hell','sepia','dunkel'].includes(o.theme))settings.theme=o.theme;if(['serif','sans'].includes(o.font))settings.font=o.font;if([1.4,1.65,1.9].includes(o.lineHeight))settings.lineHeight=o.lineHeight;if(['none','auto'].includes(o.spread))settings.spread=o.spread;if([0,12,24].includes(o.margin))settings.margin=o.margin;lsSet('settings',settings);location.reload();}};
+
   var readingOptions=document.createElement('div');
   readingOptions.className='set-row';
   var english=new URLSearchParams(location.search).get('lang')==='en';
