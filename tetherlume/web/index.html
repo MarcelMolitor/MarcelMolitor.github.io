@@ -188,7 +188,7 @@ footer{margin-bottom:10px}
 <header>
   <div class="creator"><strong>◈ TETHERLUME OS <small>Web · Early Access</small></strong><div><small>Created by</small><a href="/de.html">Marcel Molitor</a></div></div>
   <nav aria-label="Hauptmenü">
-    <a href="#so-gehts">So geht's</a>
+    <a href="#wifi">WLAN verbinden</a><a href="#so-gehts">USB-Hilfe</a>
     <a href="#faq">Hilfe</a>
     <a href="account.html">Optionales Konto</a>
     <a href="/android-desk/de.html">Desktop-Version</a>
@@ -199,17 +199,17 @@ footer{margin-bottom:10px}
 <div class="workspace-heading">
   <div><p class="origin"><span aria-hidden="true"></span> German Engineering · Digital Freedom</p>
   <h1>Dein digitaler Arbeitsplatz.</h1>
-  <p class="sub">Dein Android live im Browser – per USB, ohne Installation. Maus, Tastatur, Dateien &amp; APKs.</p></div>
-  <small>Android · USB · Browser</small>
+  <p class="sub">Dein Android-Bildschirm über WLAN im Browser. USB-Steuerung als optionale Alternative.</p></div>
+  <small>Android · WLAN · USB · Browser</small>
 </div>
 
 <section id="mobile-hint" class="mobile-hint" hidden>
   <b>📱 Du bist gerade am Handy</b>
-  <p>Tetherlume steuert dein Android vom <b>PC aus</b>. Schick dir den Link an den Computer, öffne ihn dort in Chrome oder Edge und steck dein Handy per USB an.</p>
+  <p>Installiere die Android-App, starte die Bildschirmfreigabe und öffne den angezeigten lokalen Link am PC im selben WLAN.</p>
   <div class="row"><button class="primary" id="send-to-pc" type="button">📤 Link an meinen PC senden</button><button id="copy-link" type="button">🔗 Link kopieren</button></div><button type="button" class="demo-btn" data-demo style="width:100%;margin-top:8px">▶ Erst mal die Demo ansehen</button><a class="btn" style="width:100%;margin-top:8px;background:#3ccf8e;color:#062;border-color:#7ee6b4" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">📲 Tetherlume-App laden: Bildschirm per WLAN teilen</a><p class="muted" style="font-size:12px;margin:6px 0 0">Test-Version (Early Access). Beim Installieren „Unbekannte Apps zulassen“ erlauben. In der App „Bildschirm teilen“ tippen, dann den angezeigten Link in einem Browser im selben WLAN öffnen.</p>
   <p class="muted" style="font-size:13px;margin:10px 0 0">Profi-Tipp: Mit einem OTG-Adapter kannst du von hier aus auch ein <b>zweites</b> Android-Handy steuern. Einfach anstecken und unten auf „Android verbinden“ tippen.</p>
 </section>
-<div class="layout">
+<section class="panel" id="wifi" aria-labelledby="wifi-title" style="margin:18px 0;border-color:#5289cb"><div class="window-title"><span>◈ &nbsp;WLAN-Verbindung</span><small>EMPFOHLENER MODUS · VORSCHAU</small></div><h2 id="wifi-title">Dein Handy. Kabellos im Browser.</h2><p>Teile den Bildschirm direkt aus der Tetherlume Android-App. Kein USB-Debugging nötig.</p><ol><li><a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Tetherlume Android-Testversion herunterladen</a> und installieren.</li><li>Handy und Computer mit demselben vertrauenswürdigen privaten WLAN verbinden.</li><li>In der App „Bildschirm teilen starten“ wählen und die Android-Freigabe bestätigen.</li><li>Den vollständigen angezeigten Verbindungslink hier einfügen.</li></ol><form id="wifi-form" style="display:grid;gap:10px;max-width:760px"><label for="wifi-url">Lokaler Verbindungslink aus der App</label><input id="wifi-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="http://192.168.x.x:8080/?k=…" required style="width:100%;padding:12px"><button class="primary" type="submit">WLAN-Bildschirm öffnen ↗</button><p id="wifi-status" role="status" aria-live="polite"></p></form><p class="muted">Das Bild öffnet sich auf der lokalen Adresse deines Handys in einem neuen Browser-Tab. Die HTTPS-Webseite bettet den unverschlüsselten HTTP-Stream bewusst nicht ein. WLAN unterstützt derzeit nur Bildübertragung, nicht Maus- oder Tastatursteuerung. Teile den Link nicht öffentlich und beende die Sitzung nach Gebrauch.</p><a href="#device-center">Alternative: USB-Steuerung</a></section><div class="layout">
   <section class="panel" id="workspace" aria-label="Smartphone">
     <div class="window-title"><span><i class="dots"><b></b><b></b><b></b></i>◈ &nbsp;Smartphone</span><small>ANDROID WORKSPACE</small></div>
     <div class="bar">
@@ -255,7 +255,7 @@ footer{margin-bottom:10px}
 
   <aside class="panel" id="device-center" aria-label="Gerätecenter">
     <div class="window-title"><span>⌁ &nbsp;Gerätecenter</span><small>DEVICE CENTER</small></div>
-    <h2>Gerät verbinden</h2>
+    <h2>Alternative: USB verbinden</h2>
     <p class="muted">Läuft in Chrome und Edge am PC/Mac, auch am Android-Handy mit OTG-Adapter.</p>
     <button class="primary big" id="connect" disabled>Wird geladen …</button>
     <button id="disconnect" class="big" style="margin-top:8px;padding:10px" disabled>Trennen</button>
@@ -320,7 +320,7 @@ footer{margin-bottom:10px}
 <section class="downloads panel" id="download" aria-label="Downloads">
   <div class="window-title"><span><i class="dots"><b></b><b></b><b></b></i>⬇ &nbsp;Download-Center</span><small>ALLE PLATTFORMEN · KOSTENLOS</small></div>
   <div class="dl-grid">
-    <div class="dl-tile web"><em>🌐</em><b>Tetherlume Web</b><span>Direkt im Browser. Chrome oder Edge, Handy per USB. Ohne Installation.</span><a class="dl-btn" href="#workspace">Jetzt starten →</a></div>
+    <div class="dl-tile web"><em>🌐</em><b>Tetherlume Web</b><span>WLAN-Bildschirmfreigabe mit Android-App oder optionale USB-Steuerung in Chrome/Edge.</span><a class="dl-btn" href="#wifi">Jetzt starten →</a></div>
     <div class="dl-tile android"><em>📲</em><b>Android-App</b><span>Bildschirm per WLAN in jeden Browser teilen, mit USB-Check und Schnellhilfe. Ab Android 8.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">APK herunterladen</a><small>Test-Version · „Unbekannte Apps zulassen“ erlauben</small></div>
     <div class="dl-tile windows"><em>🖥</em><b>Windows-App</b><span>Setup inkl. scrcpy: Live-Bild, MP4-Aufnahme, Display aus. Windows 10/11, 64 Bit.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/Tetherlume-Setup.exe">Setup herunterladen</a><small>Vor der Installation Herkunft und digitale Signatur prüfen.</small></div>
   </div>
@@ -352,13 +352,13 @@ footer{margin-bottom:10px}
   <details><summary>Muss ich etwas installieren?</summary><p>Nein. Tetherlume läuft komplett im Browser. Für das Live-Bild wird beim Verbinden ein kleiner Helfer (scrcpy-server, ca. 90 KB) temporär aufs Handy kopiert. Der verschwindet beim Trennen wieder.</p></details>
   <details><summary>Ist das sicher? Wo landen meine Daten?</summary><p>Das Bild und deine Eingaben laufen nur über das USB-Kabel zwischen Handy und deinem Browser. Es gibt keinen Server, der etwas mitliest. Der ADB-Schlüssel wird lokal in deinem Browser gespeichert. Du kannst die Freigabe jederzeit am Handy unter „USB-Debugging-Autorisierungen aufheben“ widerrufen.</p></details>
   <details><summary>Welche Handys funktionieren?</summary><p>Viele Android-Geräte ab Android 5 (Samsung, Xiaomi, Pixel, OnePlus, Motorola …). Live-Video gibt es ab Android 5, flüssig am besten ab Android 8. Ältere Geräte nutzen automatisch den Bild-Modus. iPhones gehen nicht, weil Apple das nicht erlaubt.</p></details>
-  <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Ja, mit der <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Tetherlume-App für Android</a> (Test-Version): „Bildschirm teilen“ tippen und den angezeigten Link in einem Browser im selben WLAN öffnen, am PC, Tablet oder sogar am Handy selbst. Das Bild bleibt in deinem WLAN und ist mit einem Code geschützt. Steuern per Maus geht im WLAN-Modus noch nicht, dafür gibt es die USB-Verbindung.</p></details>
+  <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Ja, mit der <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Tetherlume-App für Android</a> (Test-Version): „Bildschirm teilen“ tippen und den angezeigten Link in einem Browser im selben WLAN öffnen, am PC, Tablet oder sogar am Handy selbst. Das Bild wird lokal per unverschlüsseltem HTTP übertragen. Nutze nur ein vertrauenswürdiges privates WLAN. Der zufällige Zugriffsschlüssel steht im Link. Steuern per Maus geht im WLAN-Modus noch nicht, dafür gibt es die USB-Verbindung.</p></details>
   <details><summary>Gibt es Ton?</summary><p>Ton-Übertragung ist in Arbeit. Bis dahin bleibt der Ton am Handy.</p></details>
   <details><summary>„USB belegt“ / Verbindung klappt nicht</summary><p>Meist läuft im Hintergrund schon ein anderes ADB-Programm (adb.exe, Android Studio, Vysor, Smart Switch). Schließen, Kabel neu stecken, nochmal verbinden. Hilft das nicht, klick auf „Diagnose kopieren“ und schick mir den Text.</p></details>
 </section>
 
 <footer>
-  <span>◈ Tetherlume Web v5.3 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
+  <span>◈ Tetherlume Web v5.4 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
   <span><a href="privacy.html">Datenschutz</a> · <a href="/android-desk/de.html">Windows-Version</a> · <a href="/">MOLITOR · Projekte</a> · Live-Video: <a href="https://github.com/Genymobile/scrcpy" target="_blank" rel="noopener">scrcpy</a> (Apache-2.0) &amp; <a href="https://github.com/yume-chan/ya-webadb" target="_blank" rel="noopener">Tango/ya-webadb</a> (MIT)</span>
 </footer>
 <nav class="dock" aria-label="Arbeitsplatz">
@@ -447,5 +447,5 @@ document.getElementById("share-btn").onclick = async () => {
 })();
 </script>
 <script type="module" src="app.js?v=5.3"></script>
-</body>
+<script>(()=>{const form=document.getElementById("wifi-form"),input=document.getElementById("wifi-url"),status=document.getElementById("wifi-status");form.addEventListener("submit",e=>{e.preventDefault();try{const u=new URL(input.value.trim());const p=u.hostname.split(".").map(Number);const privateIp=p.length===4&&p.every(n=>Number.isInteger(n)&&n>=0&&n<=255)&&(p[0]===10||(p[0]===192&&p[1]===168)||(p[0]===172&&p[1]>=16&&p[1]<=31));if(u.protocol!=="http:"||!privateIp||u.port!=="8080"||u.username||u.password||u.pathname!=="/"||!u.searchParams.get("k"))throw Error("Bitte den vollständigen lokalen Tetherlume-Link aus der Android-App einfügen.");window.open(u.href,"_blank","noopener,noreferrer");status.textContent="Lokaler Bildschirm geöffnet. Falls keine Verbindung entsteht, prüfe WLAN, laufende Freigabe und Gastnetz-Isolation.";input.value="";}catch(err){status.textContent=err.message;}});})();</script></body>
 </html>
