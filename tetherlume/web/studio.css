@@ -39,3 +39,15 @@ button,.btn,select{border-radius:9px}button.primary,.btn.primary{background:#347
 @media(max-width:760px){#wifi .wifi-grid{grid-template-columns:minmax(0,1fr)}.dl-grid{grid-template-columns:minmax(0,1fr)}.workspace-heading{margin:26px 0 18px}.workspace-heading h1{font-size:38px}header nav{width:100%;gap:3px}header nav a{padding:7px 9px}.stage{height:440px;min-height:300px}.wifi-connect{padding:16px}}
 @media(max-width:420px){main{padding-inline:12px}.workspace-heading h1{font-size:32px}.panel{padding:14px}.wifi-connect{padding:12px}.row{flex-wrap:wrap}.row>*{min-width:0}.window-title small{display:none}.stage{height:380px}.keys .sep{display:none}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important;transition:none!important}}
+
+/* MOLITOR ORBIT — Tetherlume flagship */
+:root{--bg:#0b1628;--blue:#2563eb;--blue2:#7dd3fc;--r:16px}
+body{background:radial-gradient(ellipse at 85% 0,#223d65 0,transparent 45%),#0b1628}
+.workspace-heading{position:relative;padding:clamp(20px,4vw,36px);border:1px solid #334a69;border-radius:20px;background:linear-gradient(125deg,#0b1628,#14283f)}
+.workspace-heading:after{content:"";position:absolute;bottom:0;left:20px;right:20px;height:3px;background:linear-gradient(90deg,#2563eb,#38bdf8,#a78bfa);border-radius:3px;pointer-events:none}
+.workspace-heading h1{max-width:22ch;text-wrap:balance}
+.wifi-connect .primary,button.primary,.btn.primary,.dl-tile .dl-btn{background:#2563eb;border-color:#6495ff;color:white}
+.panel,.wifi-connect,.dl-tile,.feature{border-radius:16px}
+header nav a[href="#wifi"]{background:#2563eb}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+@media(max-width:420px){.workspace-heading{padding:18px}.workspace-heading h1{font-size:30px}}
