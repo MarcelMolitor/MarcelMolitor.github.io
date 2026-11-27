@@ -30,7 +30,7 @@ jobs:
           Set-Location android-desk
           New-Item -ItemType Directory -Force installer/payload | Out-Null
           & $zig rc /fo icon.res src/app.rc
-          & $zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o installer/payload/Android-Desk.exe
+          & $zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -lgdi32 -o installer/payload/Android-Desk.exe
       - name: Fetch and verify bundled scrcpy
         shell: pwsh
         run: |
