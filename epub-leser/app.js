@@ -499,6 +499,7 @@
       return withTimeout(shown, 30000, 'Zeitüberschreitung').then(function () {
         if (my !== session) return;
         setLoading(false);
+        questReady=true;questActiveAt=Date.now();questTick=Date.now();questAdd('open',1);
         if (pos && pos.cfi) toast(uiText("Weiter an deiner letzten Leseposition","Resuming your last reading position"));
 
         // Inhaltsverzeichnis
@@ -714,6 +715,7 @@
   /* ===================== Fortschritt / Kapitel ===================== */
   function onRelocated(st, loc) {
     if (!loc || !loc.start || st !== S) return;
+    if(questReady)questActiveAt=Date.now();
     st.location = loc;
     var cfi = loc.start.cfi;
     var pct = null;
@@ -1162,6 +1164,7 @@
     selectTab('toc');
   }
   function destroySession() {
+    questReady=false;
     stopSpeech();
     ['highlight-dialog','note-dialog'].forEach(function(id){var d=$(id);if(d&&d.open)d.close();});
     document.body.classList.remove('focus-mode');
@@ -1325,7 +1328,7 @@
   function showNotes(){clear(nl);notes().forEach(function(n,i){var jump=el('button',{type:'button',text:n.text});jump.addEventListener('click',function(){if(S&&S.rendition){nd.close();S.rendition.display(n.cfi).catch(function(){toast(uiText("Stelle nicht verfügbar","Location unavailable"));});}});var del=el('button',{type:'button',text:uiText("Löschen","Delete")});del.addEventListener('click',function(){var a=notes();a.splice(i,1);if(lsSet('notes:'+S.key,a))showNotes();else ns.textContent=uiText("Speichern fehlgeschlagen","Could not save");});nl.appendChild(el('li',null,[jump,del]));});}
   $('btn-note').addEventListener('click',function(){if(!S||!S.key||!S.location||!S.location.start)return;nt.value='';ns.textContent='';showNotes();nd.showModal();});
   $('note-close').addEventListener('click',function(){nd.close();});
-  $('note-save').addEventListener('click',function(){if(!S||!S.location||!nt.value.trim())return;var a=notes();a.push({cfi:S.location.start.cfi,text:nt.value.trim()});if(lsSet('notes:'+S.key,a)){nt.value='';ns.textContent=uiText("Gespeichert","Saved");showNotes();}else ns.textContent=uiText("Speicher nicht verfügbar","Storage unavailable");});
+  $('note-save').addEventListener('click',function(){if(!S||!S.location||!nt.value.trim())return;var a=notes();a.push({cfi:S.location.start.cfi,text:nt.value.trim()});if(lsSet('notes:'+S.key,a)){questAdd('note',1);nt.value='';ns.textContent=uiText("Gespeichert","Saved");showNotes();}else ns.textContent=uiText("Speicher nicht verfügbar","Storage unavailable");});
   function stopSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();speak.setAttribute('aria-pressed','false');}
   if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))speak.hidden=true;
   speak.addEventListener('click',function(){if(speak.getAttribute('aria-pressed')==='true'){stopSpeech();return;}if(!S||!S.rendition)return;var voices=window.speechSynthesis.getVoices().filter(function(v){return v.localService;});if(!voices.length){toast(uiText("Keine lokale Vorlesestimme verfügbar.","No local speech voice available."));return;}var contents=S.rendition.getContents()[0];if(!contents||!contents.document.body)return;var lang=contents.document.documentElement.lang||'de';var voice=voices.find(function(v){return v.lang.split('-')[0]===lang.split('-')[0];});if(!voice){toast(uiText("Keine passende lokale Stimme verfügbar.","No matching local speech voice available."));return;}var text=contents.document.body.innerText.trim().slice(0,12000);if(!text)return;var u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.onend=u.onerror=stopSpeech;speak.setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);});
@@ -1335,7 +1338,21 @@
   $('btn-highlight').addEventListener('click',function(){if(!S||!S.key)return;renderHighlights();$('highlight-dialog').showModal();});
   $('highlight-close').addEventListener('click',function(){$('highlight-dialog').close();});
   $('highlight-dialog').addEventListener('close',function(){if(S)S.pendingHighlight=null;});
-  document.querySelectorAll('[data-highlight]').forEach(function(b){b.addEventListener('click',function(){if(!S||!S.pendingHighlight)return;var h=Object.assign({},S.pendingHighlight,{color:b.dataset.highlight});var next=(S.highlights||[]).filter(function(x){return x.cfi!==h.cfi;}).concat(h);if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;paintHighlight(S,h);S.pendingHighlight=null;renderHighlights();$('highlight-dialog').close();});});
+  document.querySelectorAll('[data-highlight]').forEach(function(b){b.addEventListener('click',function(){if(!S||!S.pendingHighlight)return;var h=Object.assign({},S.pendingHighlight,{color:b.dataset.highlight});var next=(S.highlights||[]).filter(function(x){return x.cfi!==h.cfi;}).concat(h);if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');if(next.length>(S.highlights||[]).length)questAdd('highlight',1);S.highlights=next;paintHighlight(S,h);S.pendingHighlight=null;renderHighlights();$('highlight-dialog').close();});});
+
+  /* Optional local reading quests. No titles, passages or account data stored. */
+  var questKey='quests-v1', quest=lsGet(questKey,null), questActiveAt=0, questTick=Date.now(), questReady=false;
+  function questDay(){var d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+  function questNew(){return {enabled:false,xp:0,day:questDay(),counts:{open:0,minutes:0,note:0,highlight:0},claimed:{},seconds:0,days:0};}
+  if(!quest||typeof quest.xp!=='number'||!quest.counts||!quest.claimed)quest=questNew();
+  var questDefs=[['open',1,50,'Erstes Kapitel','First chapter','Öffne ein Buch','Open a book'],['minutes',15,100,'Deep Focus','Deep focus','15 Minuten aktive Lesezeit','15 minutes of active reading time'],['highlight',3,75,'Wissensjäger','Knowledge hunter','Speichere drei neue Markierungen','Save three new highlights'],['note',1,50,'Der Gelehrte','The scholar','Speichere eine Notiz','Save a note']];
+  function questRoll(){if(quest.day!==questDay()){quest.day=questDay();quest.counts={open:0,minutes:0,note:0,highlight:0};quest.claimed={};quest.seconds=0;}}
+  function questSave(){return lsSet(questKey,quest);}
+  function questAdd(kind,n){if(!quest.enabled)return;questRoll();var def=questDefs.find(function(d){return d[0]===kind;});if(!def)return;quest.counts[kind]=Math.min(def[1],(quest.counts[kind]||0)+n);if(quest.counts[kind]>=def[1]&&!quest.claimed[kind]){quest.claimed[kind]=true;quest.xp+=def[2];if(questDefs.every(function(d){return quest.claimed[d[0]];}))quest.days=(quest.days||0)+1;toast(uiText('Quest abgeschlossen! +','Quest complete! +')+def[2]+' XP');}questSave();questRender();}
+  var questPanel=$('reading-quests');
+  function questRender(){if(!questPanel)return;questRoll();var level=1+Math.floor(quest.xp/100);$('quest-level').textContent=uiText('Level ','Level ')+level+' · '+quest.xp+' XP';$('quest-xp').value=quest.xp%100;$('quest-xp-label').textContent=(quest.xp%100)+' / 100 XP';$('quest-toggle').textContent=quest.enabled?uiText('Quests pausieren','Pause quests'):uiText('Quests aktivieren','Enable quests');$('quest-list').hidden=!quest.enabled;$('quest-xp').hidden=!quest.enabled;$('quest-xp-label').hidden=!quest.enabled;$('quest-achievement').textContent=uiText('Titel: ','Title: ')+(level>=20?'Reading Legend':level>=10?'Scholar':level>=5?'Bookworm':'Explorer');$('quest-days').textContent=uiText('Vollständige Quest-Tage: ','Completed quest days: ')+(quest.days||0);clear($('quest-list'));questDefs.forEach(function(d){var li=el('li');var count=quest.counts[d[0]]||0;li.appendChild(el('strong',{text:uiText(d[3],d[4])}));li.appendChild(el('span',{text:uiText(d[5],d[6])+' · '+count+'/'+d[1]+' · +'+d[2]+' XP'+(quest.claimed[d[0]]?' ✓':'')}));var p=document.createElement('progress');p.max=d[1];p.value=count;p.setAttribute('aria-label',uiText(d[3],d[4]));li.appendChild(p);$('quest-list').appendChild(li);});}
+  if(questPanel){$('quest-toggle').onclick=function(){quest.enabled=!quest.enabled;questActiveAt=Date.now();questTick=Date.now();if(!questSave())toast(uiText('Lokaler Speicher nicht verfügbar','Local storage unavailable'));questRender();};$('quest-reset').onclick=function(){if(confirm(uiText('Nur Quest-Fortschritt löschen?','Reset quest progress only?'))){quest=questNew();questSave();questRender();}};questRender();document.addEventListener('visibilitychange',function(){questTick=Date.now();});['pointerdown','keydown','touchstart'].forEach(function(e){document.addEventListener(e,function(){questActiveAt=Date.now();},{passive:true});});setInterval(function(){var now=Date.now(),delta=Math.min(5,Math.max(0,(now-questTick)/1000));questTick=now;if(!quest.enabled||!questReady||!S||reader.hidden||document.hidden||now-questActiveAt>120000)return;questRoll();quest.seconds+=delta;var mins=Math.floor(quest.seconds/60);if(mins>(quest.counts.minutes||0))questAdd('minutes',mins-(quest.counts.minutes||0));else questSave();},5000);}
+
   /* ===================== Start ===================== */
   applySettingsToRendition();
   renderLibrary();
