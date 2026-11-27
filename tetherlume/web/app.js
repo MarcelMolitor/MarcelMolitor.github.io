@@ -51,7 +51,7 @@ async function loadLibs() {
   if (!window.isSecureContext || !navigator.usb) {
     setState("Browser nicht unterstützt", "bad");
     ui.connect.textContent = "USB nicht verfügbar";
-    message("WebUSB fehlt. Öffne die Seite in Chrome oder Edge (PC/Mac oder Android-Handy mit OTG).", "bad");
+    message(/iPhone|iPad/i.test(navigator.userAgent) ? "Auf dem iPhone geht es nicht (Apple erlaubt kein WebUSB). Öffne den Link am PC in Chrome oder Edge." : "WebUSB fehlt. Öffne die Seite in Chrome oder Edge (PC/Mac oder Android-Handy mit OTG).", "bad");
     showHelp("browser");
     return;
   }
@@ -66,7 +66,8 @@ async function loadLibs() {
     ui.connect.disabled = false;
     ui.connect.textContent = "Android verbinden";
     setState("Nicht verbunden");
-    message("Bereit. Handy per USB anstecken und auf „Android verbinden“ klicken.");
+    const isMobile = /Android|Mobile/i.test(navigator.userAgent);
+    message(isMobile ? "Am Handy: Zweites Android per OTG-Adapter anstecken und „Android verbinden“ tippen – oder den Link am PC öffnen." : "Bereit. Handy per USB anstecken und auf „Android verbinden“ klicken.");
     // Bereits freigegebene Geräte anzeigen
     try {
       const known = await manager.getDevices();
