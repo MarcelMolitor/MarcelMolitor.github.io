@@ -207,6 +207,18 @@
       coverUrls = [];
       clear(recentList);
       all = (all || []).sort(function (a, b) { return (b.time || 0) - (a.time || 0); });
+      var en = new URLSearchParams(location.search).get('lang') === 'en';
+      var controls = $('shelf-sort');
+      if (!controls) {
+        controls = el('select', { id: 'shelf-sort', 'aria-label': en ? 'Sort bookshelf' : 'Bücherregal sortieren' });
+        [['recent',en?'Recently opened':'Zuletzt geöffnet'],['title',en?'Title A–Z':'Titel A–Z'],['author',en?'Author A–Z':'Autor A–Z'],['progress',en?'Reading progress':'Lesefortschritt']].forEach(function(pair){controls.appendChild(el('option',{value:pair[0],text:pair[1]}));});
+        $('shelf-search').parentNode.after(controls);
+        controls.addEventListener('change',renderRecent);
+      }
+      function progress(m){var p=lsGet('pos:'+m.id,null);return p&&typeof p.pct==='number'?p.pct:Number(m.pct)||0;}
+      if(controls.value==='title')all.sort(function(a,b){return String(a.title||'').localeCompare(String(b.title||''),en?'en':'de');});
+      if(controls.value==='author')all.sort(function(a,b){return String(a.author||'').localeCompare(String(b.author||''),en?'en':'de');});
+      if(controls.value==='progress')all.sort(function(a,b){return progress(b)-progress(a);});
       recentSection.hidden = all.length === 0;
       all.forEach(function (m) {
         var pos = lsGet('pos:' + m.id, null);
@@ -307,6 +319,7 @@
   function openFile(file) {
     if (!file) return;
     homeMessage('');
+    if(file.size > 100 * 1024 * 1024){homeMessage(new URLSearchParams(location.search).get('lang')==='en'?'Please choose an EPUB up to 100 MiB.':'Bitte wähle eine EPUB-Datei bis 100 MiB.',true);return;}
     var name = file.name || 'buch.epub';
     if (!/\.epub$/i.test(name) && file.type && file.type !== 'application/epub+zip' && file.type !== 'application/zip') {
       homeMessage('„' + name + '“ scheint keine EPUB-Datei zu sein. Bitte wähle eine Datei mit der Endung .epub.', true);
