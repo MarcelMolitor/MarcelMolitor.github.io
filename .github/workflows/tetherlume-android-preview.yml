@@ -24,7 +24,16 @@ jobs:
         with:
           gradle-version: '8.11.1'
       - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Upload-Schluessel aus Secrets (optional)
+        env:
+          KS: ${{ secrets.TL_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KS" ]; then echo "$KS" | base64 -d > "$RUNNER_TEMP/upload.jks"; echo "TL_KEYSTORE_FILE=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"; echo "Signiertes AAB wird gebaut"; else echo "Keine Secrets: unsigniertes AAB"; fi
       - run: gradle --no-daemon assembleDebug bundleRelease lintDebug
+        env:
+          TL_KEYSTORE_PASSWORD: ${{ secrets.TL_KEYSTORE_PASSWORD }}
+          TL_KEY_ALIAS: ${{ secrets.TL_KEY_ALIAS }}
+          TL_KEY_PASSWORD: ${{ secrets.TL_KEY_PASSWORD }}
       - uses: actions/upload-artifact@v4
         with:
           name: tetherlume-android-test

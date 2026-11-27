@@ -1,4 +1,10 @@
 plugins { id 'com.android.application' }
 android { namespace 'com.molitor.tetherlume'; compileSdk 36
- defaultConfig { applicationId 'com.molitor.tetherlume'; minSdk 26; targetSdk 36; versionCode 1; versionName '0.1.0' }
+ defaultConfig { applicationId 'com.molitor.tetherlume'; minSdk 26; targetSdk 36; versionCode 2; versionName '0.2.0' }
+ // Optionale Signatur fuer den Play Store: GitHub-Secrets TL_KEYSTORE_BASE64, TL_KEYSTORE_PASSWORD, TL_KEY_ALIAS, TL_KEY_PASSWORD
+ def ks = System.getenv('TL_KEYSTORE_FILE')
+ if (ks) {
+  signingConfigs { upload { storeFile file(ks); storePassword System.getenv('TL_KEYSTORE_PASSWORD'); keyAlias System.getenv('TL_KEY_ALIAS'); keyPassword System.getenv('TL_KEY_PASSWORD') } }
+  buildTypes { release { signingConfig signingConfigs.upload } }
+ }
 }
