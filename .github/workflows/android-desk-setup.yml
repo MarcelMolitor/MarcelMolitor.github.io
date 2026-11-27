@@ -5,8 +5,10 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/android-desk-setup.yml'
+      - 'android-desk/src/**'
+      - 'android-desk/installer/**'
 permissions:
-  contents: read
+  contents: write
 concurrency:
   group: android-desk-setup-release
   cancel-in-progress: false
@@ -88,3 +90,14 @@ jobs:
           name: Tetherlume-Setup-test
           path: android-desk/installer/output/
           retention-days: 7
+      - name: Setup als oeffentlichen Download veroeffentlichen
+        if: github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $out = 'android-desk/installer/output'
+          gh release view tetherlume-windows-latest 2>$null | Out-Null
+          if ($LASTEXITCODE -ne 0) { gh release create tetherlume-windows-latest --title 'Tetherlume fuer Windows' --notes 'Tetherlume-Setup fuer Windows 10/11 (64 Bit) inkl. scrcpy. Android per USB am PC steuern. Pruefsumme: SHA256.txt' }
+          gh release upload tetherlume-windows-latest "$out/Tetherlume-Setup.exe" "$out/SHA256.txt" --clobber
+          $global:LASTEXITCODE = 0

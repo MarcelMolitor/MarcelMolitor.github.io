@@ -1,5 +1,5 @@
 #define AppName "Tetherlume"
-#define AppVersion "0.4"
+#define AppVersion "0.5"
 [Setup]
 AppId=Molitor.AndroidDesk
 AppName={#AppName}

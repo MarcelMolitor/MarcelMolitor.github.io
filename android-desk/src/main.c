@@ -178,7 +178,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
         KillTimer(w,1); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
-            status(w,tr(L"Connection ended. Check your data cable, debugging permission and that exactly one USB device is connected.",L"Verbindung beendet. Prüfe Datenkabel und USB-Freigabe. Verbinde genau ein USB-Gerät."));
+            status(w,tr(L"Connection ended. Unlock the phone, approve USB debugging, use a data cable, connect exactly one device and close other ADB tools (Android Studio, Vysor, browser tabs with Tetherlume Web).",L"Verbindung beendet. Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen, genau ein Gerät anschließen und andere ADB-Programme schließen (Android Studio, Vysor, Browser-Tabs mit Tetherlume Web)."));
 
         } else status(w,tr(L"Session ended.",L"Sitzung beendet."));
         return TRUE;
