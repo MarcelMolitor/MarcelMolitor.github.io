@@ -142,3 +142,6 @@ header{background:#ffffffed;backdrop-filter:blur(16px);position:sticky;top:0;z-i
 #projekte,#bibliothek,#ecs-news,#android-apps,#windows-apps,#unterstuetzen{scroll-margin-top:110px}
 @media(min-width:1000px){#android-apps .projects{grid-template-columns:repeat(3,minmax(0,1fr))}#android-apps .card{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:8px}#android-apps .card .visual{height:auto;min-height:180px}}
 @media(max-width:760px){header{position:relative;backdrop-filter:none}.home-intro{border-radius:20px}.projects{gap:14px}.projects .card[data-family] .visual{height:138px}#projekte,#bibliothek,#ecs-news,#android-apps,#windows-apps,#unterstuetzen{scroll-margin-top:16px}}
+
+/* Official single brand mark */
+.logo:before{content:none!important;display:none!important}.logo img{flex:none}
