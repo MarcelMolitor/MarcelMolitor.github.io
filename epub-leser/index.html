@@ -110,7 +110,7 @@
       <strong id="r-book-title">Buch</strong>
       <span id="r-chapter"></span>
     </div>
-    <div class="r-actions"><button id="btn-note" class="icon-btn" type="button" aria-label="Notiz zur aktuellen Stelle" title="Notiz">✎</button><button id="btn-speak" class="icon-btn" type="button" aria-label="Sichtbaren Buchabschnitt vorlesen" aria-pressed="false" title="Vorlesen">🔊</button><button id="btn-focus-mode" class="icon-btn" type="button" aria-pressed="false" aria-label="Fokusmodus aktivieren" title="Fokusmodus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8"/></svg></button>
+    <div class="r-actions"><button id="btn-highlight" class="icon-btn" type="button" aria-label="Textmarkierungen" title="Textmarkierungen">▰</button><button id="btn-note" class="icon-btn" type="button" aria-label="Notiz zur aktuellen Stelle" title="Notiz">✎</button><button id="btn-speak" class="icon-btn" type="button" aria-label="Sichtbaren Buchabschnitt vorlesen" aria-pressed="false" title="Vorlesen">🔊</button><button id="btn-focus-mode" class="icon-btn" type="button" aria-pressed="false" aria-label="Fokusmodus aktivieren" title="Fokusmodus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8"/></svg></button>
       <button id="btn-toc" class="icon-btn" type="button" aria-label="Inhaltsverzeichnis" title="Inhalt">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
       </button>
@@ -198,7 +198,7 @@
     </div>
   </div>
 
-  <dialog id="note-dialog" style="max-width:min(90vw,480px);width:100%;padding:20px;border-radius:16px"><h2>Lesenotiz</h2><label>Notiz zur aktuellen Leseposition<textarea id="note-text" rows="5" maxlength="4000" style="display:block;width:100%;box-sizing:border-box"></textarea></label><p id="note-status" role="status"></p><button id="note-save" type="button">Speichern</button> <button id="note-close" type="button">Schließen</button><h3>Notizen in diesem Buch</h3><ul id="note-list"></ul></dialog><div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="note-dialog" style="max-width:min(90vw,480px);width:100%;padding:20px;border-radius:16px"><h2>Lesenotiz</h2><label>Notiz zur aktuellen Leseposition<textarea id="note-text" rows="5" maxlength="4000" style="display:block;width:100%;box-sizing:border-box"></textarea></label><p id="note-status" role="status"></p><button id="note-save" type="button">Speichern</button> <button id="note-close" type="button">Schließen</button><h3>Notizen in diesem Buch</h3><ul id="note-list"></ul></dialog><dialog id="highlight-dialog" style="max-width:min(90vw,440px);width:100%;padding:20px;border-radius:16px"><h2>Textmarkierungen</h2><p id="highlight-status" role="status">Markiere Text im Buch und wähle eine Farbe.</p><div id="highlight-colors"><button type="button" data-highlight="#facc15">Gelb</button> <button type="button" data-highlight="#4ade80">Grün</button> <button type="button" data-highlight="#60a5fa">Blau</button> <button type="button" data-highlight="#f472b6">Rosa</button></div><ul id="highlight-list"></ul><button id="highlight-close" type="button">Schließen</button></dialog><div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </div>
 
 <div id="drop-overlay" class="drop-overlay" hidden><div>EPUB loslassen zum Öffnen</div></div>
