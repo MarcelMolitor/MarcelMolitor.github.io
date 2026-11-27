@@ -238,7 +238,7 @@
       all.forEach(function (m) {
         if(only && !favorites.includes(m.id))return;
         var p=progress(m);
-        if(state.value==='new'&&p>0||state.value==='active'&&!(p>0&&p<.99)||state.value==='done'&&p<.99)return;
+        if(state.value==='new'&&p>0||state.value==='active'&&!(p>0&&p<1)||state.value==='done'&&p<1)return;
         if(query&&!String((m.title||'')+' '+(m.author||'')+' '+(m.name||'')).toLocaleLowerCase().includes(query))return;
         shown++;
         var pos = lsGet('pos:' + m.id, null);
@@ -1215,7 +1215,7 @@
     if (S && S.key && S.location) lsSet('pos:' + S.key, Object.assign(lsGet('pos:' + S.key, {}) || {}, { cfi: S.location.start.cfi, time: Date.now() }));
   });
 
-  $('shelf-search').addEventListener('input',function(){var q=this.value.toLowerCase();Array.from(recentList.children).forEach(function(n){n.hidden=!n.textContent.toLowerCase().includes(q);});});
+  var shelfSearchTimer; $('shelf-search').addEventListener('input',function(){clearTimeout(shelfSearchTimer);shelfSearchTimer=setTimeout(renderRecent,180);});
   var nd=$('note-dialog'), nt=$('note-text'), nl=$('note-list'), ns=$('note-status'), speak=$('btn-speak');
   function notes(){var a=S&&S.key?lsGet('notes:'+S.key,[]):[];return Array.isArray(a)?a:[];}
   function showNotes(){clear(nl);notes().forEach(function(n,i){var jump=el('button',{type:'button',text:n.text});jump.addEventListener('click',function(){if(S&&S.rendition){nd.close();S.rendition.display(n.cfi).catch(function(){toast('Stelle nicht verfügbar');});}});var del=el('button',{type:'button',text:'Löschen'});del.addEventListener('click',function(){var a=notes();a.splice(i,1);if(lsSet('notes:'+S.key,a))showNotes();else ns.textContent='Speichern fehlgeschlagen';});nl.appendChild(el('li',null,[jump,del]));});}
