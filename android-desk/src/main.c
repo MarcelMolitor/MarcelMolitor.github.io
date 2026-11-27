@@ -13,6 +13,8 @@ static const wchar_t *settings = L"Software\\Molitor\\AndroidDesk";
 static HANDLE session;
 static BOOL mirrorArranged;
 static BOOL mirrorRecord;
+static BOOL mirrorControls=TRUE;
+static BOOL mirrorClosing;
 static int mirrorMode=1;
 static HWND mirrorWindow;
 static BOOL CALLBACK find_mirror(HWND hwnd, LPARAM arg) {
@@ -26,7 +28,7 @@ static void arrange_mirror(HWND launcher) {
     if(!session || mirrorArranged) return;
     mirrorWindow=NULL; EnumWindows(find_mirror,(LPARAM)GetProcessId(session));
     if(!mirrorWindow) return;
-    if(mirrorMode!=1){mirrorArranged=TRUE;ShowWindow(launcher,SW_MINIMIZE);return;}
+    if(mirrorMode!=1){mirrorArranged=TRUE;if(mirrorMode==2 || !mirrorControls) ShowWindow(launcher,SW_MINIMIZE);return;}
     RECT client,frame; GetClientRect(mirrorWindow,&client); GetWindowRect(mirrorWindow,&frame);
     int cw=client.right, ch=client.bottom;
     if(cw<1 || ch<1) return;
@@ -40,7 +42,7 @@ static void arrange_mirror(HWND launcher) {
     width+=borderW;h+=borderH;
     SetWindowPos(mirrorWindow,NULL,a.left+(aw-width)/2,a.top+(ah-h)/2,width,h,SWP_NOZORDER|SWP_NOACTIVATE);
     mirrorArranged=TRUE;
-    ShowWindow(launcher,SW_MINIMIZE);
+    if(!mirrorControls) ShowWindow(launcher,SW_MINIMIZE);
 }
 
 static HANDLE wifiProbe;
@@ -79,6 +81,10 @@ static void localize(HWND w) {
     SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Fullscreen",L"Vollbild"));
     SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Always on top",L"Immer im Vordergrund"));
     SendMessageW(combo,CB_SETCURSEL,mirrorMode,0);
+    SetDlgItemTextW(w,127,tr(L"Keep control center open",L"Kontrollzentrum geöffnet lassen"));
+    SetDlgItemTextW(w,128,tr(L"Show device",L"Handy anzeigen"));
+    SetDlgItemTextW(w,129,tr(L"End session",L"Verbindung beenden"));
+    SetDlgItemTextW(w,130,tr(L"Keyboard: Alt+F fullscreen, Alt+H home, Alt+B back.",L"Tastatur: Alt+F Vollbild, Alt+H Home, Alt+B zurück."));
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -208,15 +214,16 @@ static void launch(HWND w, BOOL record) {
     if (log!=INVALID_HANDLE_VALUE) CloseHandle(log);
     if (input!=INVALID_HANDLE_VALUE) CloseHandle(input);
     if (!ok) { status(w,tr(L"Could not launch scrcpy.",L"scrcpy konnte nicht gestartet werden.")); return; }
-    CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record;
+    CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record; mirrorClosing=FALSE;
     EnableWindow(GetDlgItem(w,102),FALSE); EnableWindow(GetDlgItem(w,103),FALSE);
+    EnableWindow(GetDlgItem(w,127),FALSE);
     EnableWindow(GetDlgItem(w,126),FALSE); EnableWindow(GetDlgItem(w,110),FALSE); EnableWindow(GetDlgItem(w,111),FALSE);
     status(w, record ? tr(L"Recording started. Close the device window to finalize the MP4 file.",L"Aufnahme gestartet. Schließe das Gerätefenster, um die MP4-Datei fertigzustellen.") :
         tr(L"scrcpy started. Approve USB debugging on your device if prompted.",L"scrcpy gestartet. Bestätige bei Bedarf USB-Debugging auf dem Gerät."));
     SetTimer(w,1,500,NULL);
 }
 static void style_buttons(HWND w) {
-    const int ids[]={102,103,104,119,120,122,123,124};
+    const int ids[]={102,103,104,119,120,122,123,124,128,129};
     for(size_t i=0;i<sizeof(ids)/sizeof(ids[0]);i++){
         HWND b=GetDlgItem(w,ids[i]);
         LONG_PTR style=GetWindowLongPtrW(b,GWL_STYLE);
@@ -271,7 +278,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD language=PRIMARYLANGID(GetUserDefaultUILanguage())==LANG_GERMAN?1:0;
         size=sizeof(value);
         if (RegGetValueW(HKEY_CURRENT_USER,settings,L"GermanUI",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) language=value;
-        german=language!=0; size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS && value<=3) mirrorMode=(int)value; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
+        german=language!=0; size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"KeepControls",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) mirrorControls=value!=0; CheckDlgButton(w,127,mirrorControls?BST_CHECKED:BST_UNCHECKED); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS && value<=3) mirrorMode=(int)value; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
     }
     if (msg==WM_CTLCOLORDLG && backgroundBrush) return (INT_PTR)backgroundBrush;
     if (msg==WM_CTLCOLORSTATIC && backgroundBrush && headerBrush && statusBrush) {
@@ -324,6 +331,17 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             if (!session) refresh(w);
             return TRUE;
         }
+        case 127: {
+            mirrorControls=IsDlgButtonChecked(w,127)==BST_CHECKED;
+            DWORD value=mirrorControls?1:0; RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"KeepControls",REG_DWORD,&value,sizeof(value)); return TRUE;
+        }
+        case 128:
+            if(session && IsWindow(mirrorWindow) && !mirrorClosing){if(IsIconic(mirrorWindow)) ShowWindow(mirrorWindow,SW_RESTORE); SetForegroundWindow(mirrorWindow);} return TRUE;
+        case 129:
+            if(session && IsWindow(mirrorWindow) && !mirrorClosing && PostMessageW(mirrorWindow,WM_CLOSE,0,0)){
+                mirrorClosing=TRUE; EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE);
+                status(w,tr(L"Closing session safely…",L"Verbindung wird sicher beendet…"));
+            } return TRUE;
         case 126: {
             if(HIWORD(wp)==CBN_SELCHANGE){LRESULT sel=SendDlgItemMessageW(w,126,CB_GETCURSEL,0,0);if(sel>=0 && sel<=3){mirrorMode=(int)sel;DWORD value=(DWORD)sel;RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",REG_DWORD,&value,sizeof(value));}}
             return TRUE;
@@ -344,12 +362,13 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     }
     if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_TIMEOUT) {
         arrange_mirror(w);
-        if(mirrorArranged) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Resize or move the device window as needed.",L"USB-Bildschirm verbunden. Gerätefenster frei verschieben oder skalieren."));
+        if(mirrorArranged && !mirrorClosing && IsWindow(mirrorWindow)){EnableWindow(GetDlgItem(w,128),TRUE);EnableWindow(GetDlgItem(w,129),TRUE);}
+        if(mirrorArranged && !mirrorClosing) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Resize or move the device window as needed.",L"USB-Bildschirm verbunden. Gerätefenster frei verschieben oder skalieren."));
         return TRUE;
     }
     if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
-        KillTimer(w,1); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
+        KillTimer(w,1); mirrorClosing=FALSE; EnableWindow(GetDlgItem(w,127),TRUE); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
             wchar_t detail[768];
             StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
