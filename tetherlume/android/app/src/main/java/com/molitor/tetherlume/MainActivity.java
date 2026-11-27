@@ -90,9 +90,9 @@ public class MainActivity extends Activity {
                 "Free, no ads, no tracking. If Tetherlume helps you, a coffee keeps it going."), 15, 0xffc7d6ec);
         button(l, t("Mit PayPal unterstützen", "Support via PayPal"), () -> open("https://www.paypal.biz/molitormarcel93"), 0xffd99a00);
 
-        label(l, t("Datenschutz: Die App sammelt keine Daten. Beim Teilen läuft das Bild nur in deinem WLAN, geschützt mit einem 4-stelligen Code im Link. Teilen jederzeit über die Benachrichtigung beenden. USB-Debugging nur an vertrauenswürdigen PCs erlauben.",
-                "Privacy: the app collects no data. When sharing, the picture stays in your Wi-Fi, protected by a 4-digit code in the link. Stop anytime from the notification. Allow USB debugging only on trusted PCs."), 13, 0xff9fb1ca);
-        TextView by = label(l, "Created by Marcel Molitor · " + t("Entwickelt in Deutschland", "Made in Germany"), 13, 0xff6ba5ff);
+        label(l, t("Datenschutz: Die App sammelt keine Daten. Beim Teilen läuft das Bild nur in deinem WLAN, mit einem zufälligen Zugriffsschlüssel im Link; HTTP ist nicht verschlüsselt, nur in vertrauenswürdigen privaten Netzwerken nutzen. Teilen jederzeit über die Benachrichtigung beenden. USB-Debugging nur an vertrauenswürdigen PCs erlauben.",
+                "Privacy: the app collects no data. When sharing, the picture stays in your Wi-Fi, with a random access token in the link; HTTP is not encrypted, use trusted private networks only. Stop anytime from the notification. Allow USB debugging only on trusted PCs."), 13, 0xff9fb1ca);
+        TextView by = label(l, "" + t("Marcel Molitor · Entwickelt in Deutschland", "Marcel Molitor · Made in Germany"), 13, 0xff6ba5ff);
         by.setOnClickListener(v -> open(WEB));
 
         if (Build.VERSION.SDK_INT >= 33 && checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED)
@@ -199,7 +199,8 @@ public class MainActivity extends Activity {
         super.onResume();
         IntentFilter f = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         f.addAction(ACTION_CHANGED);
-        registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED);
+        if (Build.VERSION.SDK_INT >= 33) registerReceiver(receiver, f, Context.RECEIVER_NOT_EXPORTED);
+        else registerReceiver(receiver, f);
         refresh();
     }
 
