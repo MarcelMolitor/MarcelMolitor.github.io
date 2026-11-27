@@ -25,7 +25,7 @@ static void refresh(HWND w) {
     EnableWindow(GetDlgItem(w,102),found);
     EnableWindow(GetDlgItem(w,103),found);
     status(w,found ? L"Bereit. Verbinde ein Android-Gerät und wähle eine Aktion." :
-        L"scrcpy fehlt. In PowerShell: winget install --exact Genymobile.scrcpy. Danach Android Desk neu öffnen.");
+        L"scrcpy fehlt. In PowerShell: winget install --exact Genymobile.scrcpy. Danach Android Decks neu öffnen.");
 }
 static void launch(HWND w, BOOL record) {
     wchar_t exe[32768], cmd[32768], output[MAX_PATH] = L"", tmp[MAX_PATH];
@@ -91,7 +91,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         KillTimer(w,1); refresh(w);
         if (code) {
             status(w,L"Verbindung beendet. Prüfe Datenkabel, USB-Freigabe und ob genau ein USB-Gerät verbunden ist.");
-            if (MessageBoxW(w,L"scrcpy hat einen Fehler gemeldet. Technisches Protokoll im Editor öffnen?",L"Android Desk",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
+            if (MessageBoxW(w,L"scrcpy hat einen Fehler gemeldet. Technisches Protokoll im Editor öffnen?",L"Android Decks",MB_YESNO|MB_ICONINFORMATION)==IDYES) {
                 wchar_t editor[MAX_PATH], quoted[MAX_PATH+3];
                 if (GetSystemDirectoryW(editor, MAX_PATH) &&
                     SUCCEEDED(StringCchCatW(editor, MAX_PATH, L"\\notepad.exe")) &&
@@ -103,7 +103,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DeleteFileW(logPath); return TRUE;
     }
     if (msg==WM_CLOSE) {
-        if (session) { MessageBoxW(w,L"Schließe zuerst das gespiegelte Gerätefenster, damit eine laufende Aufnahme gespeichert wird.",L"Android Desk",MB_OK); return TRUE; }
+        if (session) { MessageBoxW(w,L"Schließe zuerst das gespiegelte Gerätefenster, damit eine laufende Aufnahme gespeichert wird.",L"Android Decks",MB_OK); return TRUE; }
         EndDialog(w,0); return TRUE;
     }
     return FALSE;
