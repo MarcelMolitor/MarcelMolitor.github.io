@@ -709,8 +709,19 @@
 
 
   /* ===================== Navigation ===================== */
-  function goForward() { if (S && S.rendition) S.rendition.next(); }
-  function goBack() { if (S && S.rendition) S.rendition.prev(); }
+  function turnPage(direction) {
+    var st = S;
+    if (!st || !st.rendition || st.turnPending) return;
+    if (st.location && (direction === 'next' ? st.location.atEnd : st.location.atStart)) return;
+    st.turnPending = true;
+    Promise.resolve().then(function () {
+      if (st === S) return st.rendition[direction]();
+    }).catch(function () {
+      if (st === S) toast(uiText('Seite konnte nicht gewechselt werden.','Could not turn the page.'));
+    }).then(function () { st.turnPending = false; });
+  }
+  function goForward() { turnPage('next'); }
+  function goBack() { turnPage('prev'); }
   function goLeft() { if (S && S.rtl) goForward(); else goBack(); }
   function goRight() { if (S && S.rtl) goBack(); else goForward(); }
 
@@ -731,7 +742,7 @@
 
   /* ===================== Fortschritt / Kapitel ===================== */
   function onRelocated(st, loc) {
-    if (!loc || !loc.start || st !== S) return;
+    if (!loc || !loc.start || !loc.start.cfi || st !== S) return;
     if(questReady)questActiveAt=Date.now();
     st.location = loc;
     var cfi = loc.start.cfi;
@@ -1190,6 +1201,12 @@
     session++;
     if (st) {
       clearTimeout(st.saveTimer);
+      if (st.key && idbOk) {
+        var saved = lsGet('pos:' + st.key, null);
+        if (saved && typeof saved.pct === 'number' && Number.isFinite(saved.pct)) {
+          idbUpdateMeta(st.key, { pct: saved.pct, time: saved.time || Date.now() }).catch(function () {});
+        }
+      }
       st.searchToken++;
       try { if (st.rendition) st.rendition.destroy(); } catch (e) { /* egal */ }
       try { st.book.destroy(); } catch (e) { /* egal */ }
