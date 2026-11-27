@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://marcelmolitor.github.io/sitemap.xml
