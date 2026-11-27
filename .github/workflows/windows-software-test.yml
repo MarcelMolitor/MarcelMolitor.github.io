@@ -37,7 +37,7 @@ jobs:
           New-Item -ItemType Directory -Force $out | Out-Null
           Push-Location android-desk
           zig rc /fo icon.res src/app.rc
-          zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o "$out/MOLITOR-Android-Desk.exe"
+          zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -lgdi32 -o "$out/MOLITOR-Android-Desk.exe"
           Pop-Location
           Push-Location fotolimit
           git clone https://github.com/nothings/stb.git stb
