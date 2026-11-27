@@ -94,3 +94,25 @@ a:focus-visible,summary:focus-visible{outline:3px solid #2563eb;outline-offset:3
 
 /* Orbit signature */
 .home-intro:before{content:"";position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,#2563eb,#38bdf8,#a78bfa);pointer-events:none}.logo:before{background:linear-gradient(145deg,#2563eb,#1d4ed8)}
+
+/* MOLITOR editorial interface — light canvas, expressive product art. */
+:root{--paper:#f6f8fc;--ink:#17243a;--muted:#526278;--line:#e0e6f0;--brand-blue:#2458d8}
+body{background:var(--paper)}
+header{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
+.logo{color:var(--ink)}.navlinks a{color:#34445c}.navlinks a[href="/downloads/"]{color:#2458d8}
+.navlinks a{padding:0 6px;border-radius:8px}.navlinks a:hover{background:#eef3ff;text-decoration:none}
+.home-intro{background:radial-gradient(ellipse at 92% 20%,#c9ddff 0,transparent 58%),linear-gradient(120deg,#fff 25%,#edf3ff);color:var(--ink);border-color:#dbe5f6;box-shadow:0 12px 36px #263e7410}
+.home-intro h1 em{color:#2458d8}.home-intro .eyebrow,.home-intro .origin-label{color:#405777}.home-intro .intro-copy p{color:#42536b}.home-intro .button.secondary{color:#2458d8;background:#ffffffb0;border-color:#a9bde5}.home-intro:after{background:repeating-radial-gradient(ellipse at 110% 100%,transparent 0 20px,#2458d825 21px 22px,transparent 23px 34px)}
+.home-intro a:focus-visible,header a:focus-visible{outline-color:#2458d8}
+.projects .card[data-family] .visual{background:radial-gradient(ellipse at 90% 10%,#4d78cc 0,transparent 65%),linear-gradient(145deg,#172e58,#284c91);border-bottom-color:#7da9ff}
+.projects .card[data-family="research"] .visual{background:radial-gradient(ellipse at 90% 10%,#258a83 0,transparent 65%),linear-gradient(145deg,#123c43,#17665e);border-bottom-color:#70ddd0}
+.projects .card[data-family="other"] .visual{background:radial-gradient(ellipse at 90% 10%,#7268af 0,transparent 65%),linear-gradient(145deg,#293454,#4b4677);border-bottom-color:#c3b5ff}
+.projects .card[data-family] .visual:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-radial-gradient(circle at 100% 100%,transparent 0 18px,#ffffff12 19px 20px,transparent 21px 34px)}
+.projects .card .visual .caption,.projects .card .visual .index,.projects .card .visual .word{z-index:2}
+.projects .card[data-family] .cardlink{background:#edf2ff;color:#214bb7;border-color:#dbe5ff}.projects .card[data-family] .cardlink:hover{background:#2458d8;color:#fff;border-color:#2458d8}
+.projects .card[data-family="research"] .cardlink{background:#e8f7f4;color:#125b54;border-color:#cce9e3}.projects .card[data-family="research"] .cardlink:hover{background:#125b54;color:#fff;border-color:#125b54}
+.project-family .projects .card{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.project-family .projects .card:hover{transform:translateY(-3px);box-shadow:0 12px 28px #203b6414}}
+@media(prefers-reduced-motion:reduce){.project-family .projects .card{transition:none}}
+.ecs-news li{background:white;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:10px 0}.ecs-topic,.support-projects{box-shadow:0 4px 20px #203b6408}
+@media(max-width:600px){.nav .navlinks a{padding:0 4px;min-height:44px}.home-intro .button{min-height:48px}}
