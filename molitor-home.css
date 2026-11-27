@@ -91,3 +91,6 @@ a:focus-visible,summary:focus-visible{outline:3px solid #2563eb;outline-offset:3
 #bibliothek .book-card .button{background:var(--brand-blue);border-radius:9px;align-self:stretch;justify-content:center;text-align:center}#bibliothek .book-card>a:not(.button){color:#1d4ed8;font-size:14px;font-weight:650;padding:8px 4px;min-height:36px}
 .support-projects{background:#fff;border:1px solid var(--line);border-radius:16px}.nav .support-link:hover,.support-projects .button:hover{background:#e8c98e!important}.ecs-news a,.ecs-topic a,.more a{color:#1d4ed8}.science-note{font-size:14px}.foot{color:var(--muted)}
 @media(max-width:600px){.logo:before{width:28px;height:28px;font-size:16px}.logo{gap:8px}.projects .card[data-family] .visual{height:140px}#bibliothek .book-cover{min-height:185px}.science-note{font-size:13px}}
+
+/* Orbit signature */
+.home-intro:before{content:"";position:absolute;inset:auto 0 0;height:3px;background:linear-gradient(90deg,#2563eb,#38bdf8,#a78bfa);pointer-events:none}.logo:before{background:linear-gradient(145deg,#2563eb,#1d4ed8)}
