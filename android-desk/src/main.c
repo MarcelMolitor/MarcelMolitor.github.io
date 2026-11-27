@@ -16,7 +16,7 @@ static HBRUSH headerBrush;
 static HBRUSH statusBrush;
 static const wchar_t *tr(const wchar_t *en,const wchar_t *de) { return german ? de : en; }
 static void localize(HWND w) {
-    SetDlgItemTextW(w,107,tr(L"Control your phone over USB",L"Smartphone per USB steuern"));
+    SetDlgItemTextW(w,107,tr(L"Wi-Fi first. USB optional.",L"WLAN zuerst. USB optional."));
     SetDlgItemTextW(w,108,tr(L"Connect one unlocked Android device with a data cable. Enable USB debugging and approve access on the device.",L"Verbinde ein entsperrtes Android-Gerät per Datenkabel. Aktiviere USB-Debugging und bestätige den Zugriff."));
     SetDlgItemTextW(w,101,tr(L"Turn off phone screen on launch",L"Handydisplay beim Start ausschalten"));
     SetDlgItemTextW(w,102,tr(L"Open device",L"Gerät öffnen"));
@@ -26,10 +26,35 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,113,tr(L"Developed in Germany  |  Local USB connection",L"Entwickelt in Deutschland  |  Lokale USB-Verbindung"));
     SetDlgItemTextW(w,115,tr(L"DEVICE CONNECTION",L"GERÄTEVERBINDUNG"));
     SetDlgItemTextW(w,116,tr(L"STATUS",L"STATUS"));
+    SetDlgItemTextW(w,117,tr(L"Start sharing in Tetherlume Android and paste its local link here.",L"Starte die Bildschirmfreigabe in Tetherlume Android und füge den lokalen Link hier ein."));
+    SetDlgItemTextW(w,119,tr(L"Open Wi-Fi screen",L"WLAN-Bildschirm öffnen"));
+    SetDlgItemTextW(w,120,tr(L"Android app",L"Android-App"));
+    SetDlgItemTextW(w,121,tr(L"USB control (optional)",L"USB-Steuerung (optional)"));
+    SetDlgItemTextW(w,113,tr(L"Developed in Germany | Local connection",L"Entwickelt in Deutschland | Lokale Verbindung"));
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
 
+/* Accept only the application's private IPv4 HTTP session URL. No shell command. */
+static BOOL wifi_url(const wchar_t *url) {
+    unsigned a,b,c,d; int n=0;
+    if (swscanf(url,L"http://%u.%u.%u.%u:8080/?k=%n",&a,&b,&c,&d,&n)!=4 || n<=0) return FALSE;
+    if(a>255||b>255||c>255||d>255) return FALSE;
+    if(!(a==10||(a==192&&b==168)||(a==172&&b>=16&&b<=31))) return FALSE;
+    const wchar_t *key=url+n; size_t len=wcslen(key);
+    if(len!=32 && len!=4) return FALSE;
+    for(size_t i=0;i<len;i++){wchar_t x=key[i];if(!((x>=L'0'&&x<=L'9')||(len==32&&((x>=L'A'&&x<=L'Z')||(x>=L'a'&&x<=L'z')||x==L'-'||x==L'_'))))return FALSE;}
+    return TRUE;
+}
+static void open_wifi(HWND w) {
+    wchar_t url[512];
+    GetDlgItemTextW(w,118,url,512);
+    if(!wifi_url(url)){status(w,tr(L"Paste the full local link from the Android app.",L"Bitte den vollständigen lokalen Link aus der Android-App einfügen."));return;}
+    INT_PTR result=(INT_PTR)ShellExecuteW(w,L"open",url,NULL,NULL,SW_SHOWNORMAL);
+    if(result<=32){status(w,tr(L"Could not open browser.",L"Browser konnte nicht geöffnet werden."));return;}
+    SetDlgItemTextW(w,118,L"");
+    status(w,tr(L"Browser opened. Use the same trusted Wi-Fi; stop sharing when finished.",L"Browser geöffnet. Gleiches privates WLAN nutzen und Freigabe danach beenden."));
+}
 static BOOL executable(wchar_t *out, DWORD size) {
     wchar_t local[32768];
     DWORD n = GetModuleFileNameW(NULL, local, 32768);
@@ -53,8 +78,8 @@ static void refresh(HWND w) {
     BOOL found = executable(exe,32768);
     EnableWindow(GetDlgItem(w,102),found);
     EnableWindow(GetDlgItem(w,103),found);
-    status(w,found ? tr(L"Ready. Connect an Android device and choose an action.",L"Bereit. Verbinde ein Android-Gerät und wähle eine Aktion.") :
-        tr(L"scrcpy is missing. Run the Tetherlume setup again, or install scrcpy separately.",L"scrcpy fehlt. Führe das Tetherlume-Setup erneut aus."));
+    status(w,found ? tr(L"Ready for Wi-Fi sharing or optional USB control.",L"Bereit für WLAN-Freigabe oder optionale USB-Steuerung.") :
+        tr(L"Wi-Fi available independently. For USB, reinstall scrcpy using setup.",L"WLAN unabhängig nutzbar. Für USB bitte das Setup erneut ausführen."));
 }
 static void launch(HWND w, BOOL record) {
     wchar_t exe[32768], cmd[32768], output[MAX_PATH] = L"";
@@ -115,7 +140,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD language=PRIMARYLANGID(GetUserDefaultUILanguage())==LANG_GERMAN?1:0;
         size=sizeof(value);
         if (RegGetValueW(HKEY_CURRENT_USER,settings,L"GermanUI",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) language=value;
-        german=language!=0; localize(w); refresh(w); return TRUE;
+        german=language!=0; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
     }
     if (msg==WM_CTLCOLORDLG && backgroundBrush) return (INT_PTR)backgroundBrush;
     if (msg==WM_CTLCOLORSTATIC && backgroundBrush && headerBrush && statusBrush) {
@@ -169,6 +194,8 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             DWORD value=IsDlgButtonChecked(w,101)==BST_CHECKED;
             RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"ScreenOff",REG_DWORD,&value,sizeof(value)); return TRUE;
         }
+        case 119: open_wifi(w); return TRUE;
+        case 120: ShellExecuteW(w,L"open",L"https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk",NULL,NULL,SW_SHOWNORMAL); return TRUE;
         case 102: case 103: launch(w,LOWORD(wp)==103); return TRUE;
         case 104: ShellExecuteW(w,L"open",tr(L"https://marcelmolitor.github.io/android-desk/?lang=en",L"https://marcelmolitor.github.io/android-desk/de.html?lang=de"),NULL,NULL,SW_SHOWNORMAL); return TRUE;
         case IDCANCEL: SendMessageW(w,WM_CLOSE,0,0); return TRUE;
