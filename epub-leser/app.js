@@ -229,8 +229,18 @@
       if(controls.value==='author')all.sort(function(a,b){return String(a.author||'').localeCompare(String(b.author||''),en?'en':'de');});
       if(controls.value==='progress')all.sort(function(a,b){return progress(b)-progress(a);});
       recentSection.hidden = all.length === 0;
+      var summary=$('shelf-summary');
+      if(!summary){summary=el('p',{id:'shelf-summary',role:'status','aria-live':'polite'});filter.after(summary);}
+      var state=$('shelf-state');
+      if(!state){state=el('select',{id:'shelf-state','aria-label':en?'Reading status':'Lesestatus'});[['all',en?'All books':'Alle Bücher'],['new',en?'Not started':'Nicht begonnen'],['active',en?'Reading':'In Arbeit'],['done',en?'Completed':'Abgeschlossen']].forEach(function(p){state.appendChild(el('option',{value:p[0],text:p[1]}));});filter.after(state);state.addEventListener('change',renderRecent);}
+      var query=($('shelf-search').value||'').trim().toLocaleLowerCase();
+      var shown=0;
       all.forEach(function (m) {
         if(only && !favorites.includes(m.id))return;
+        var p=progress(m);
+        if(state.value==='new'&&p>0||state.value==='active'&&!(p>0&&p<.99)||state.value==='done'&&p<.99)return;
+        if(query&&!String((m.title||'')+' '+(m.author||'')+' '+(m.name||'')).toLocaleLowerCase().includes(query))return;
+        shown++;
         var pos = lsGet('pos:' + m.id, null);
         var pct = pos && typeof pos.pct === 'number' ? pos.pct : m.pct;
         var coverImg = null;
@@ -258,8 +268,9 @@
         fav.addEventListener('click',function(e){e.stopPropagation();var current=lsGet('shelf-favorites',[]);if(!Array.isArray(current))current=[];var next=current.includes(m.id)?current.filter(function(id){return id!==m.id;}):current.concat(m.id);if(lsSet('shelf-favorites',next))renderRecent();else homeMessage(en?'Unable to save favorite.':'Favorit konnte nicht gespeichert werden.',true);});
         card.appendChild(fav);
         recentList.appendChild(card);
-        card.hidden = !card.textContent.toLowerCase().includes(($('shelf-search').value || '').toLowerCase());
+        card.hidden = false;
       });
+      summary.textContent=shown?(en?shown+' of '+all.length+' books':shown+' von '+all.length+' Büchern'):(en?'No matching books. Try changing your filters.':'Keine passenden Bücher. Ändere deine Filter.');
     }).catch(function () { recentSection.hidden = true; });
   }
 
