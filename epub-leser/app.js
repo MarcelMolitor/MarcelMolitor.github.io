@@ -365,7 +365,7 @@
   function openFile(file) {
     if (!file) return;
     homeMessage('');
-    if(file.size > 100 * 1024 * 1024){homeMessage(new URLSearchParams(location.search).get('lang')==='en'?'Please choose an EPUB up to 100 MiB.':'Bitte wähle eine EPUB-Datei bis 100 MiB.',true);return;}
+    if(file.size > 100 * 1024 * 1024){homeMessage(uiText('Bitte wähle eine EPUB-Datei bis 100 MiB.','Please choose an EPUB up to 100 MiB.'),true);return;}
     if (!file.size) { homeMessage(uiText('Die Datei ist leer. Bitte lade das Buch erneut herunter.','This file is empty. Please download the book again.'), true); return; }
     var name = file.name || 'buch.epub';
     if (!/\.epub$/i.test(name) && file.type && file.type !== 'application/epub+zip' && file.type !== 'application/zip') {
@@ -1319,7 +1319,7 @@
   btnClose.addEventListener('click', function () { closeBook(); });
   document.addEventListener('keydown', onKey);
   window.addEventListener('pagehide', function () {
-    if (S && S.key && S.location) lsSet('pos:' + S.key, Object.assign(lsGet('pos:' + S.key, {}) || {}, { cfi: S.location.start.cfi, time: Date.now() }));
+    if (S && S.key && S.location && S.location.start && S.location.start.cfi) lsSet('pos:' + S.key, Object.assign(lsGet('pos:' + S.key, {}) || {}, { cfi: S.location.start.cfi, time: Date.now() }));
   });
 
   var shelfSearchTimer; $('shelf-search').addEventListener('input',function(){clearTimeout(shelfSearchTimer);shelfSearchTimer=setTimeout(renderRecent,180);});
