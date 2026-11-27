@@ -92,7 +92,7 @@ details ol,details ul{padding-left:20px;margin:8px 0}details li{margin:6px 0}
 #help-box ol{margin:6px 0;padding-left:20px}
 .apps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
 .apps button{font-size:13px;padding:8px 6px}
-.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:18px}
 .feature{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:16px}
 .feature b{display:block;font-size:16px;margin-bottom:4px}
 .feature span{color:var(--mut);font-size:14px}
@@ -166,7 +166,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 <section id="mobile-hint" class="mobile-hint" hidden>
   <b>📱 Du bist gerade am Handy</b>
   <p>Tetherlume steuert dein Android vom <b>PC aus</b>. Schick dir den Link an den Computer, öffne ihn dort in Chrome oder Edge und steck dein Handy per USB an.</p>
-  <div class="row"><button class="primary" id="send-to-pc" type="button">📤 Link an meinen PC senden</button><button id="copy-link" type="button">🔗 Link kopieren</button></div><button type="button" class="demo-btn" data-demo style="width:100%;margin-top:8px">▶ Erst mal die Demo ansehen</button>
+  <div class="row"><button class="primary" id="send-to-pc" type="button">📤 Link an meinen PC senden</button><button id="copy-link" type="button">🔗 Link kopieren</button></div><button type="button" class="demo-btn" data-demo style="width:100%;margin-top:8px">▶ Erst mal die Demo ansehen</button><a class="btn" style="width:100%;margin-top:8px;background:#3ccf8e;color:#062;border-color:#7ee6b4" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">📲 Tetherlume-App laden: Bildschirm per WLAN teilen</a><p class="muted" style="font-size:12px;margin:6px 0 0">Test-Version (Early Access). Beim Installieren „Unbekannte Apps zulassen“ erlauben. In der App „Bildschirm teilen“ tippen, dann den angezeigten Link in einem Browser im selben WLAN öffnen.</p>
   <p class="muted" style="font-size:13px;margin:10px 0 0">Profi-Tipp: Mit einem OTG-Adapter kannst du von hier aus auch ein <b>zweites</b> Android-Handy steuern. Einfach anstecken und unten auf „Android verbinden“ tippen.</p>
 </section>
 <div class="layout">
@@ -279,6 +279,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
   <div class="feature"><em>⚡</em><b>Flüssig wie ein Video</b><span>Echtes Live-Bild mit bis zu 60 FPS, Hardware-dekodiert in deinem Browser. Basiert auf dem bewährten scrcpy.</span></div>
   <div class="feature"><em>🖱</em><b>Volle Kontrolle</b><span>Tippen, wischen, scrollen, schreiben. Zurück, Home, Lautstärke, Drehen, Mitteilungen – alles per Klick.</span></div>
   <div class="feature"><em>📦</em><b>Dateien &amp; Apps</b><span>Fotos, PDFs oder Musik aufs Bild ziehen, und sie landen im Download-Ordner. APKs werden direkt installiert.</span></div>
+  <div class="feature"><em>📲</em><b>Auch ohne Kabel</b><span>Mit der <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Android-App</a> teilst du deinen Bildschirm per WLAN in jeden Browser. Kein USB-Debugging nötig.</span></div>
   <div class="feature"><em>🔒</em><b>Privat by Design</b><span>Keine Cloud, kein Server, kein Konto. Das Bild geht direkt per Kabel vom Handy in deinen Browser.</span></div>
 </section>
 
@@ -300,7 +301,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
   <details><summary>Muss ich etwas installieren?</summary><p>Nein. Tetherlume läuft komplett im Browser. Für das Live-Bild wird beim Verbinden ein kleiner Helfer (scrcpy-server, ca. 90 KB) temporär aufs Handy kopiert. Der verschwindet beim Trennen wieder.</p></details>
   <details><summary>Ist das sicher? Wo landen meine Daten?</summary><p>Das Bild und deine Eingaben laufen nur über das USB-Kabel zwischen Handy und deinem Browser. Es gibt keinen Server, der etwas mitliest. Der ADB-Schlüssel wird lokal in deinem Browser gespeichert. Du kannst die Freigabe jederzeit am Handy unter „USB-Debugging-Autorisierungen aufheben“ widerrufen.</p></details>
   <details><summary>Welche Handys funktionieren?</summary><p>Alle Android-Geräte ab Android 5 (Samsung, Xiaomi, Pixel, OnePlus, Motorola …). Live-Video gibt es ab Android 5, flüssig am besten ab Android 8. Ältere Geräte nutzen automatisch den Bild-Modus. iPhones gehen nicht, weil Apple das nicht erlaubt.</p></details>
-  <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Noch nicht, Browser können nur per USB direkt mit dem Handy sprechen. Ein WLAN-Modus ist geplant.</p></details>
+  <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Ja, mit der <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Tetherlume-App für Android</a> (Test-Version): „Bildschirm teilen“ tippen und den angezeigten Link in einem Browser im selben WLAN öffnen, am PC, Tablet oder sogar am Handy selbst. Das Bild bleibt in deinem WLAN und ist mit einem Code geschützt. Steuern per Maus geht im WLAN-Modus noch nicht, dafür gibt es die USB-Verbindung.</p></details>
   <details><summary>Gibt es Ton?</summary><p>Ton-Übertragung ist in Arbeit. Bis dahin bleibt der Ton am Handy.</p></details>
   <details><summary>„USB belegt“ / Verbindung klappt nicht</summary><p>Meist läuft im Hintergrund schon ein anderes ADB-Programm (adb.exe, Android Studio, Vysor, Smart Switch). Schließen, Kabel neu stecken, nochmal verbinden. Hilft das nicht, klick auf „Diagnose kopieren“ und schick mir den Text.</p></details>
 </section>
