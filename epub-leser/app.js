@@ -370,9 +370,10 @@
     if (!file) return;
     homeMessage('');
     if(file.size > 100 * 1024 * 1024){homeMessage(new URLSearchParams(location.search).get('lang')==='en'?'Please choose an EPUB up to 100 MiB.':'Bitte wähle eine EPUB-Datei bis 100 MiB.',true);return;}
+    if (!file.size) { homeMessage(uiText('Die Datei ist leer. Bitte lade das Buch erneut herunter.','This file is empty. Please download the book again.'), true); return; }
     var name = file.name || 'buch.epub';
     if (!/\.epub$/i.test(name) && file.type && file.type !== 'application/epub+zip' && file.type !== 'application/zip') {
-      homeMessage('„' + name + '“ scheint keine EPUB-Datei zu sein. Bitte wähle eine Datei mit der Endung .epub.', true);
+      homeMessage(uiText('Bitte wähle eine EPUB-Datei mit der Endung .epub.','Please choose a file ending in .epub.'), true);
       return;
     }
     showReader();
@@ -383,8 +384,12 @@
       fr.onerror = function () { rej(fr.error); };
       fr.readAsArrayBuffer(file);
     });
-    p.then(function (buf) { return openBook(buf, { name: name, storeRecent: true }); })
-      .catch(function (e) { if (e && e.handled) return; failOpen('Die Datei „' + name + '“ konnte nicht gelesen werden.'); });
+    p.then(function (buf) {
+      var signature = new Uint8Array(buf, 0, Math.min(buf.byteLength, 4));
+      if (signature.length < 4 || signature[0] !== 80 || signature[1] !== 75 || signature[2] !== 3 || signature[3] !== 4) throw new Error('Invalid EPUB ZIP');
+      return openBook(buf, { name: name, storeRecent: true });
+    })
+      .catch(function (e) { if (e && e.handled) return; failOpen(uiText('Die Datei konnte nicht gelesen werden. Prüfe, ob sie eine vollständige, DRM-freie EPUB-Datei ist.','Could not read the file. Check that it is a complete, DRM-free EPUB.')); });
   }
 
   function safeUrl(raw) {
