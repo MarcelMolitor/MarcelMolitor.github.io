@@ -174,6 +174,38 @@ static void launch(HWND w, BOOL record) {
         tr(L"scrcpy started. Approve USB debugging on your device if prompted.",L"scrcpy gestartet. Bestätige bei Bedarf USB-Debugging auf dem Gerät."));
     SetTimer(w,1,500,NULL);
 }
+static void style_buttons(HWND w) {
+    const int ids[]={102,103,104,119,120,122,123,124};
+    for(size_t i=0;i<sizeof(ids)/sizeof(ids[0]);i++){
+        HWND b=GetDlgItem(w,ids[i]);
+        LONG_PTR style=GetWindowLongPtrW(b,GWL_STYLE);
+        SetWindowLongPtrW(b,GWL_STYLE,(style & ~(LONG_PTR)BS_TYPEMASK)|BS_OWNERDRAW);
+        InvalidateRect(b,NULL,TRUE);
+    }
+}
+static BOOL draw_button(DRAWITEMSTRUCT *d) {
+    if(d->CtlType!=ODT_BUTTON || !backgroundBrush) return FALSE;
+    HDC dc=d->hDC; RECT r=d->rcItem; FillRect(dc,&r,backgroundBrush);
+    BOOL primary=d->CtlID==119||d->CtlID==102;
+    BOOL disabled=(d->itemState & ODS_DISABLED)!=0, pressed=(d->itemState & ODS_SELECTED)!=0;
+    COLORREF bg=disabled?RGB(226,232,240):primary?(pressed?RGB(29,78,216):RGB(37,99,235)):(pressed?RGB(219,234,254):RGB(255,255,255));
+    COLORREF fg=disabled?RGB(100,116,139):primary?RGB(255,255,255):RGB(11,22,40);
+    HBRUSH b=CreateSolidBrush(bg); HPEN p=CreatePen(PS_SOLID,1,primary&&!disabled?bg:RGB(203,213,225));
+    if(!b||!p){if(b)DeleteObject(b);if(p)DeleteObject(p);return FALSE;}
+    HGDIOBJ ob=SelectObject(dc,b),op=SelectObject(dc,p);
+    int radius=MulDiv(10,GetDeviceCaps(dc,LOGPIXELSX),96);
+    RoundRect(dc,r.left,r.top,r.right,r.bottom,radius,radius);
+    SelectObject(dc,ob);SelectObject(dc,op);DeleteObject(b);DeleteObject(p);
+    wchar_t label[160];GetWindowTextW(d->hwndItem,label,160);
+    SetBkMode(dc,TRANSPARENT);SetTextColor(dc,fg);
+    HFONT font=(HFONT)SendMessageW(d->hwndItem,WM_GETFONT,0,0);
+    HGDIOBJ oldFont=font?SelectObject(dc,font):NULL;
+    RECT t=r;InflateRect(&t,-5,-2);
+    DrawTextW(dc,label,-1,&t,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS);
+    if(oldFont)SelectObject(dc,oldFont);
+    if(d->itemState&ODS_FOCUS){InflateRect(&r,-4,-4);DrawFocusRect(dc,&r);}
+    return TRUE;
+}
 static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     (void)lp;
     if (msg==WM_INITDIALOG) {
@@ -181,9 +213,10 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         BOOL highContrast=SystemParametersInfoW(SPI_GETHIGHCONTRAST,sizeof(hc),&hc,0)&&(hc.dwFlags&HCF_HIGHCONTRASTON);
         if(!highContrast){
         backgroundBrush=CreateSolidBrush(RGB(248,250,252));
-        headerBrush=CreateSolidBrush(RGB(17,41,54));
-        statusBrush=CreateSolidBrush(RGB(230,239,245));
+        headerBrush=CreateSolidBrush(RGB(11,22,40));
+        statusBrush=CreateSolidBrush(RGB(219,234,254));
         }
+        if(backgroundBrush) style_buttons(w);
         HDC dc=GetDC(w);
         int dpi=dc?GetDeviceCaps(dc,LOGPIXELSY):96;
         if(dc) ReleaseDC(w,dc);
@@ -204,23 +237,26 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         HDC dc=(HDC)wp;
         int id=GetDlgCtrlID((HWND)lp);
         if(id==112 || id==107) {
-            SetTextColor(dc,RGB(255,255,255)); SetBkColor(dc,RGB(17,41,54));
+            SetTextColor(dc,RGB(255,255,255)); SetBkColor(dc,RGB(11,22,40));
             return (INT_PTR)headerBrush;
         }
         if(id==105) {
-            SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(230,239,245));
+            SetTextColor(dc,RGB(11,22,40)); SetBkColor(dc,RGB(219,234,254));
             return (INT_PTR)statusBrush;
         }
-        SetTextColor(dc,RGB(23,51,84)); SetBkColor(dc,RGB(248,250,252));
+        SetTextColor(dc,RGB(11,22,40)); SetBkColor(dc,RGB(248,250,252));
         return (INT_PTR)backgroundBrush;
     }
     if (msg==WM_ERASEBKGND && backgroundBrush && headerBrush) {
         HDC dc=(HDC)wp; RECT r; GetClientRect(w,&r);
         FillRect(dc,&r,backgroundBrush);
-        RECT header={0,0,350,57}; MapDialogRect(w,&header); header.right=r.right;
+        RECT header={0,0,350,52}; MapDialogRect(w,&header); header.right=r.right;
         FillRect(dc,&header,headerBrush);
+        RECT accent={0,52,350,54};MapDialogRect(w,&accent);accent.right=r.right;
+        HBRUSH blue=CreateSolidBrush(RGB(37,99,235));if(blue){FillRect(dc,&accent,blue);DeleteObject(blue);}
         return TRUE;
     }
+    if(msg==WM_DRAWITEM && wp!=114 && draw_button((DRAWITEMSTRUCT*)lp)) return TRUE;
     if (msg==WM_DRAWITEM && wp==114) {
         DRAWITEMSTRUCT *d=(DRAWITEMSTRUCT*)lp;
         RECT flag=d->rcItem; HDC dc=d->hDC;
