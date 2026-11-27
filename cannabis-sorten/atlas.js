@@ -225,7 +225,7 @@ function draw() {
         const count = items.filter(({row}) => Boolean(row[index])).length;
         return label + ': ' + format(count) + ' von ' + format(items.length);
       });
-      detail.append(node('p', 'Katalogeinträge mit Angabe · ' + coverage.join(' · ')));
+      detail.append(node('p', 'Katalogeinträge mit Angabe · ' + coverage.join(' · ')));const info=node('div','');info.className='coverage-grid';for(const [label,index] of [['THC',8],['CBD',9],['Terpene',7]]){const box=node('div','');box.append(node('small',label+' · Datenabdeckung'),node('strong',Math.round(items.filter(x=>!!x.row[index]).length/items.length*100)+' %'));info.append(box)}detail.append(info);
       const cards = items.map(({row}) => ({row, photo: listingPhoto(row)}));
       cards.sort((a, b) => Number(Boolean(b.photo)) - Number(Boolean(a.photo)));
       for (const {row, photo} of cards) {
@@ -242,6 +242,10 @@ function draw() {
   el('next').disabled=(page+1)*size>=matches.length;
   el('page').textContent=matches.length?'Seite '+(page+1)+' von '+format(Math.ceil(matches.length/size)):'';
 }
+function coverageMatch(row){const v=el('coverage').value;return !v||({thc:!!row[8],cbd:!!row[9],both:!!row[8]&&!!row[9],all:!!row[8]&&!!row[9]&&!!row[7],missing:!row[8]||!row[9]||!row[7]})[v]}
+function dashboard(rows){const grid=el('coverage-grid');grid.hidden=false;grid.replaceChildren();for(const [label,index] of [['THC',8],['CBD',9],['Terpene',7]]){const n=rows.filter(r=>!!r[index]).length;const card=node('div','');card.append(node('small',label+' · Katalogabdeckung'),node('strong',rows.length?Math.round(n/rows.length*100)+' %':'–'));const p=document.createElement('progress');p.max=rows.length||1;p.value=n;p.setAttribute('aria-label',label+' Datenabdeckung');card.append(p,node('small',format(n)+' / '+format(rows.length)));grid.append(card)}const counts=new Map();for(const r of rows)for(const t of new Set((r[7]||'').split(', ').filter(Boolean)))counts.set(t,(counts.get(t)||0)+1);const card=node('div','');card.style.gridColumn='1 / -1';card.append(node('h3','Terpenprofil · häufigste Katalognennungen'),node('p','Häufigkeit der Nennung, keine Konzentration oder Wirkstärke.'));for(const [t,n] of [...counts].sort((a,b)=>b[1]-a[1]).slice(0,8)){const line=node('div','');line.style.border='0';line.style.padding='5px';line.append(node('small',t+' · '+format(n)));const p=document.createElement('progress');p.max=rows.length||1;p.value=n;p.setAttribute('aria-label',t+' Katalognennungen');line.append(p);card.append(line)}grid.append(card);el('export').disabled=!rows.length}
+el('coverage').onchange=search;
+el('export').onclick=()=>{const rows=matches.flatMap(g=>g[1].map(x=>x.row));const cell=v=>'"'+String(v??'').replace(/^[=+@-]/,"'function search() {").replace(/"/g,'""')+'"';const csv=[['Sorte','Variante','Züchter','Typ','Elternlinie 1','Elternlinie 2','Katalog','Terpene','THC Katalog','CBD Katalog','Quelle'],...rows.map(r=>r.map((v,i)=>i===8||i===9?gehalt(v):v))].map(r=>r.map(cell).join(';')).join('\r\n');const u=URL.createObjectURL(new Blob(['\ufeff',csv],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download='molitor-sortenatlas.csv';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
 function search() {
   const url = new URL(location.href);
   if (url.searchParams.has('sorte')) {
@@ -255,7 +259,7 @@ function search() {
   const ranked=[[],[],[],[]];
   for (const [name,items] of catalog) {
     if (el('saved-only').checked && !saved.has(name.toLowerCase())) continue;
-    const hits=items.filter(({row,terms})=>(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&(!terpene || (row[7] && (terpene==='*' || row[7].split(', ').includes(terpene))))&&words.every(w=>terms.includes(w)));
+    const hits=items.filter(({row,terms})=>coverageMatch(row)&&(!breeder||row[2]===breeder)&&(!type||(row[3]||'unknown')===type)&&(!terpene || (row[7] && (terpene==='*' || row[7].split(', ').includes(terpene))))&&words.every(w=>terms.includes(w)));
     if (!hits.length) continue;
     const normalizedName=normalize(name);
     let rank=3;
@@ -265,6 +269,7 @@ function search() {
     ranked[rank].push([name,hits]);
   }
   matches=ranked.flat();
+  dashboard(matches.flatMap(g=>g[1].map(x=>x.row)));
   page=0;
   el('status').textContent=matches.length?format(matches.length)+' Sortennamen gefunden':'Keine Treffer. Ändere den Suchbegriff oder setze die Filter zurück.';
   if (el('saved-only').checked && !saved.size) el('status').textContent = 'Deine Merkliste ist leer. Öffne eine Sorte im Register und wähle „Sorte merken“.';
@@ -301,6 +306,7 @@ async function start() {
     el('q').value = group ? group[0] : requested;
     if (group) {
       matches = [group];
+      dashboard(group[1].map(x=>x.row));
       el('status').textContent = group[0] + ' · ' + format(group[1].length) + (group[1].length===1?' Katalogeintrag':' Katalogeinträge');
       draw();
       el('results').firstElementChild.open = true;
