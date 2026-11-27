@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/android-desk-setup.yml'
 permissions:
-  contents: write
+  contents: read
 concurrency:
   group: android-desk-setup-release
   cancel-in-progress: false
@@ -31,6 +31,15 @@ jobs:
           New-Item -ItemType Directory -Force installer/payload | Out-Null
           & $zig rc /fo icon.res src/app.rc
           & $zig cc -target x86_64-windows-gnu -Os -s -municode '-Wl,--subsystem,windows' src/main.c icon.res -lcomdlg32 -ladvapi32 -lshell32 -luser32 -o installer/payload/Android-Desk.exe
+      - name: Fetch and verify bundled scrcpy
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $zip = Join-Path $env:RUNNER_TEMP scrcpy.zip
+          Invoke-WebRequest 'https://github.com/Genymobile/scrcpy/releases/download/v5.0.1/scrcpy-win64-v5.0.1.zip' -OutFile $zip
+          if ((Get-FileHash $zip -Algorithm SHA256).Hash -ne 'b12a2c4ee8be317422451fc7dcf8ee20a71b5ea7ef9ad73ddd825a25316227a5') { throw 'scrcpy checksum mismatch' }
+          Expand-Archive $zip -DestinationPath (Join-Path $env:RUNNER_TEMP scrcpy)
+          Copy-Item (Join-Path $env:RUNNER_TEMP 'scrcpy/scrcpy-win64-v5.0.1') android-desk/installer/payload/scrcpy -Recurse
       - name: Compile setup
         shell: pwsh
         run: |
@@ -47,7 +56,7 @@ jobs:
           $setup = (Resolve-Path android-desk/installer/output/Tetherlume-Setup.exe).Path
           $p = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $dir + '"')) -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw "Setup failed: $($p.ExitCode)" }
-          foreach ($file in @('Android-Desk.exe','scrcpy/scrcpy.exe','scrcpy/adb.exe','LICENSE-Android-Desk.txt','THIRD-PARTY.txt')) {
+          foreach ($file in @('Android-Desk.exe','scrcpy/scrcpy.exe','scrcpy/adb.exe','LICENSE-Android-Desk.txt','THIRD-PARTY.txt','PRIVACY.md')) {
             if (!(Test-Path (Join-Path $dir $file))) { throw "Missing installed file: $file" }
           }
           & (Join-Path $dir 'scrcpy/scrcpy.exe') --version
@@ -63,20 +72,19 @@ jobs:
           $u = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
           if ($u.ExitCode -ne 0) { throw 'Uninstall failed' }
           (Get-FileHash $setup -Algorithm SHA256).Hash | Set-Content android-desk/installer/output/SHA256.txt
+      - name: Defender scan when available
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if (Get-Command Get-MpComputerStatus -ErrorAction SilentlyContinue) {
+            $status = Get-MpComputerStatus
+            if ($status.AntivirusEnabled) {
+              Start-MpScan -ScanType CustomScan -ScanPath (Resolve-Path android-desk/installer/output).Path
+              Write-Host 'Scan invoked; review Defender results before release.'
+            } else { Write-Warning 'Defender disabled; manual scan required.' }
+          } else { Write-Warning 'Defender unavailable; manual scan required.' }
       - uses: actions/upload-artifact@v4
         with:
           name: Tetherlume-Setup-test
           path: android-desk/installer/output/
           retention-days: 7
-      - name: Publish tested setup as preview
-        if: github.ref == 'refs/heads/main'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          $ErrorActionPreference = 'Stop'
-          $tag = 'tetherlume-v0.3'
-          gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
-          if ($LASTEXITCODE -eq 0) { Write-Host 'Release already exists; refusing to overwrite versioned files'; exit 0 }
-          gh release create $tag android-desk/installer/output/Tetherlume-Setup.exe android-desk/installer/output/SHA256.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --prerelease --title 'Tetherlume 0.3 – Setup Preview' --notes 'Online installer. Installs original scrcpy from Genymobile. Automated installation, startup and uninstall checks passed; physical USB and MP4 tests remain outstanding. Unsigned.'
-          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
