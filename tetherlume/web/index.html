@@ -136,7 +136,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 .flag{display:inline-block;width:16px;height:11px;border-radius:2px;vertical-align:-1px;background:linear-gradient(#171717 0 33.3%,#d00 33.3% 66.6%,#ffce00 66.6%)}
 @media(max-width:1000px){.layout{grid-template-columns:1fr}.layout aside{order:-1}.hero{grid-template-columns:1fr}.badges{justify-content:flex-start}.features{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.features{grid-template-columns:1fr}.support{grid-template-columns:1fr}.stage{height:68vh}nav a{padding:6px 8px;font-size:13px}.keys button{flex:1 1 30%}}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 
 .downloads{margin-top:18px}
 .dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
@@ -243,9 +243,9 @@ footer{margin-bottom:10px}
       <button data-key="3" data-needs-device disabled title="Startbildschirm (Mittelklick)">○ Home</button>
       <button data-key="187" data-needs-device disabled title="Letzte Apps">▢ Apps</button>
       <span class="sep"></span>
-      <button data-key="25" data-needs-device disabled title="Leiser">🔉</button>
-      <button data-key="24" data-needs-device disabled title="Lauter">🔊</button>
-      <button data-key="26" data-needs-device disabled title="Power-Taste">⏻</button>
+      <button data-key="25" data-needs-device disabled title="Leiser" aria-label="Leiser">🔉</button>
+      <button data-key="24" data-needs-device disabled title="Lauter" aria-label="Lauter">🔊</button>
+      <button data-key="26" data-needs-device disabled title="Power-Taste" aria-label="Power-Taste">⏻</button>
       <span class="sep"></span>
       <button id="btn-notify" data-needs-device disabled>🔔 Mitteilungen</button>
       <button id="btn-rotate" data-needs-device disabled>⟳ Drehen</button>
