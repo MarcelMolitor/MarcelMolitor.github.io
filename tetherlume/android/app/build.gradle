@@ -1,0 +1,4 @@
+plugins { id 'com.android.application' }
+android { namespace 'com.molitor.tetherlume'; compileSdk 36
+ defaultConfig { applicationId 'com.molitor.tetherlume'; minSdk 26; targetSdk 36; versionCode 1; versionName '0.1.0' }
+}
