@@ -29,19 +29,10 @@ static void arrange_mirror(HWND launcher) {
     if(!session || mirrorArranged) return;
     mirrorWindow=NULL; EnumWindows(find_mirror,(LPARAM)GetProcessId(session));
     if(!mirrorWindow) return;
-    if(mirrorMode==1 && mirrorControls) {
-        HWND panel=GetDlgItem(launcher,132);
-        RECT area; GetWindowRect(panel,&area);
-        RECT work; GetClientRect(mirrorWindow,&work);
-        int aw=area.right-area.left-16, ah=area.bottom-area.top-16;
-        if(work.right>0 && work.bottom>0 && aw>0 && ah>0){
-            int h=ah, width=MulDiv(h,work.right,work.bottom);
-            if(width>aw){width=aw;h=MulDiv(width,work.bottom,work.right);}
-            SetWindowPos(mirrorWindow,HWND_TOP,area.left+(area.right-area.left-width)/2,area.top+(area.bottom-area.top-h)/2,width,h,SWP_NOACTIVATE);
-            desktopDocked=TRUE; mirrorArranged=TRUE; ShowWindow(GetDlgItem(launcher,133),SW_HIDE); return;
-        }
-    }
-    if(mirrorMode!=1){mirrorArranged=TRUE;if(mirrorMode==2 || !mirrorControls) ShowWindow(launcher,SW_MINIMIZE);return;}
+    /* Large and compact portrait modes fit the real device aspect ratio to the monitor.
+       Do not overlay the launcher with a second top-level window. */
+    if(mirrorMode!=1 && mirrorMode!=4){mirrorArranged=TRUE;if(mirrorMode==2 || !mirrorControls) ShowWindow(launcher,SW_MINIMIZE);return;}
+    if(IsZoomed(mirrorWindow)) ShowWindow(mirrorWindow,SW_RESTORE);
     RECT client,frame; GetClientRect(mirrorWindow,&client); GetWindowRect(mirrorWindow,&frame);
     int cw=client.right, ch=client.bottom;
     if(cw<1 || ch<1) return;
@@ -49,8 +40,9 @@ static void arrange_mirror(HWND launcher) {
     if(!GetMonitorInfoW(MonitorFromWindow(launcher,MONITOR_DEFAULTTONEAREST),&mi)) return;
     RECT a=mi.rcWork; int aw=a.right-a.left, ah=a.bottom-a.top;
     int borderW=frame.right-frame.left-cw, borderH=frame.bottom-frame.top-ch;
-    int h=ah-borderH-48, width=MulDiv(h,cw,ch);
-    if(width>aw-borderW-48){width=aw-borderW-48;h=MulDiv(width,ch,cw);}
+    int h=ah-borderH-32, width=MulDiv(h,cw,ch);
+    if(mirrorMode==4){h=MulDiv(h,75,100);width=MulDiv(h,cw,ch);}
+    if(width>aw-borderW-32){width=aw-borderW-32;h=MulDiv(width,ch,cw);}
     if(width<100||h<100) return;
     width+=borderW;h+=borderH;
     SetWindowPos(mirrorWindow,NULL,a.left+(aw-width)/2,a.top+(ah-h)/2,width,h,SWP_NOZORDER|SWP_NOACTIVATE);
@@ -97,11 +89,12 @@ static void localize(HWND w) {
     SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Large phone view",L"Große Smartphone-Ansicht"));
     SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Fullscreen",L"Vollbild"));
     SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Always on top",L"Immer im Vordergrund"));
+    SendMessageW(combo,CB_ADDSTRING,0,(LPARAM)tr(L"Compact borderless view",L"Kompakte randlose Ansicht"));
     SendMessageW(combo,CB_SETCURSEL,mirrorMode,0);
     SetDlgItemTextW(w,127,tr(L"Keep control center open",L"Kontrollzentrum geöffnet lassen"));
     SetDlgItemTextW(w,128,tr(L"Show device",L"Handy anzeigen"));
     SetDlgItemTextW(w,129,tr(L"End session",L"Verbindung beenden"));
-    SetDlgItemTextW(w,130,tr(L"Keyboard: Alt+F fullscreen, Alt+H home, Alt+B back.",L"Tastatur: Alt+F Vollbild, Alt+H Home, Alt+B zurück."));
+    SetDlgItemTextW(w,130,tr(L"Alt+F fullscreen, Alt+W fit window, Alt+H home, Alt+B back.",L"Alt+F Vollbild, Alt+W Fenster anpassen, Alt+H Home, Alt+B zurück."));
     SetDlgItemTextW(w,131,tr(L"SMARTPHONE VIEW",L"SMARTPHONE-ANSICHT"));
     SetDlgItemTextW(w,133,tr(L"Connect via USB to start the live view.",L"Per USB verbinden, um die Live-Ansicht zu starten."));
     SetDlgItemTextW(w,134,tr(L"QUICK ACTIONS",L"SCHNELLAKTIONEN"));
@@ -250,7 +243,7 @@ static void launch(HWND w, BOOL record) {
     }
     BOOL dark = IsDlgButtonChecked(w,101)==BST_CHECKED;
     if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --window-title=Tetherlume%ls%ls%ls%ls%ls",exe,
-        mirrorMode==2?L" --fullscreen":mirrorMode==3?L" --always-on-top --window-height=560":L"",
+        mirrorMode==2?L" --fullscreen":mirrorMode==3?L" --always-on-top --window-height=560":mirrorMode==4?L" --window-borderless":L"",
         dark?L" --turn-screen-off":L"", record?L" --record=\"":L"", output,record?L"\"":L""))) {
         status(w,tr(L"The file path is too long.",L"Der Dateipfad ist zu lang.")); return;
     }
@@ -329,7 +322,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD language=PRIMARYLANGID(GetUserDefaultUILanguage())==LANG_GERMAN?1:0;
         size=sizeof(value);
         if (RegGetValueW(HKEY_CURRENT_USER,settings,L"GermanUI",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) language=value;
-        german=language!=0; size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"KeepControls",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) mirrorControls=value!=0; CheckDlgButton(w,127,mirrorControls?BST_CHECKED:BST_UNCHECKED); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS && value<=3) mirrorMode=(int)value; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
+        german=language!=0; size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"KeepControls",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS) mirrorControls=value!=0; CheckDlgButton(w,127,mirrorControls?BST_CHECKED:BST_UNCHECKED); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); size=sizeof(value); if(RegGetValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",RRF_RT_REG_DWORD,NULL,&value,&size)==ERROR_SUCCESS && value<=4) mirrorMode=(int)value; localize(w); SendDlgItemMessageW(w,118,EM_LIMITTEXT,255,0); refresh(w); return TRUE;
     }
     if (msg==WM_CTLCOLORDLG && backgroundBrush) return (INT_PTR)backgroundBrush;
     if (msg==WM_CTLCOLORSTATIC && backgroundBrush && headerBrush && statusBrush) {
@@ -405,7 +398,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
                 status(w,tr(L"Closing session safely…",L"Verbindung wird sicher beendet…"));
             } return TRUE;
         case 126: {
-            if(HIWORD(wp)==CBN_SELCHANGE){LRESULT sel=SendDlgItemMessageW(w,126,CB_GETCURSEL,0,0);if(sel>=0 && sel<=3){mirrorMode=(int)sel;DWORD value=(DWORD)sel;RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",REG_DWORD,&value,sizeof(value));}}
+            if(HIWORD(wp)==CBN_SELCHANGE){LRESULT sel=SendDlgItemMessageW(w,126,CB_GETCURSEL,0,0);if(sel>=0 && sel<=4){mirrorMode=(int)sel;DWORD value=(DWORD)sel;RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"MirrorMode",REG_DWORD,&value,sizeof(value));}}
             return TRUE;
         }
         case 101: {
@@ -432,7 +425,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
     if (msg==WM_TIMER && wp==1 && session && WaitForSingleObject(session,0)==WAIT_TIMEOUT) {
         arrange_mirror(w);
         if(mirrorArranged && !mirrorClosing && IsWindow(mirrorWindow)){if(!actionProcess)enable_actions(w,TRUE);EnableWindow(GetDlgItem(w,128),TRUE);EnableWindow(GetDlgItem(w,129),TRUE);}
-        if(mirrorArranged && !mirrorClosing) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Resize or move the device window as needed.",L"USB-Bildschirm verbunden. Gerätefenster frei verschieben oder skalieren."));
+        if(mirrorArranged && !mirrorClosing) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Alt+W fits the window; Alt+F toggles fullscreen.",L"USB-Bildschirm verbunden. Alt+W passt das Fenster an; Alt+F wechselt Vollbild."));
         return TRUE;
     }
     if (msg==WM_TIMER && wp==1 && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
