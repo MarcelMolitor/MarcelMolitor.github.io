@@ -210,6 +210,7 @@ async function startLive(token) {
     setState("Live verbunden", "ok");
     bindInput(canvas);
     fpsMeter(token);
+    thanksLater(token);
     canvas.focus({ preventScroll: true });
   } catch (e) {
     console.error(e);
@@ -232,6 +233,19 @@ function fpsMeter(token) {
     last = n;
   }, 1000);
 }
+
+// ---------- Dezente Spendenbitte (nach 4 Min. erfolgreicher Nutzung, max. alle 7 Tage) ----------
+function thanksLater(token) {
+  let last = 0; try { last = Number(localStorage.getItem("tetherlume.thanks")) || 0; } catch {}
+  if (Date.now() - last < 7 * 864e5) return;
+  setTimeout(() => {
+    if (token !== epoch || mode !== "live") return;
+    $("thanks").hidden = false;
+    try { localStorage.setItem("tetherlume.thanks", String(Date.now())); } catch {}
+  }, 4 * 60 * 1000);
+}
+$("thanks-close").onclick = () => ($("thanks").hidden = true);
+$("thanks-pay").onclick = () => setTimeout(() => ($("thanks").hidden = true), 500);
 
 // ---------- Eingaben ----------
 function point(e) {

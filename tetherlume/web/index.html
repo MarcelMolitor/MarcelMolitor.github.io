@@ -104,6 +104,7 @@ details ol,details ul{padding-left:20px;margin:8px 0}details li{margin:6px 0}
 .share{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .faq{margin-top:18px}
 .faq details{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:8px}
+.thanks{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;border-radius:12px;background:linear-gradient(120deg,#2b2410,#1b2236);border:1px solid #6b5a22}.thanks span{flex:1;min-width:220px}.thanks a.btn{background:#ffc439;color:#111;border-color:#ffd66b}
 footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
 .flag{display:inline-block;width:16px;height:11px;border-radius:2px;vertical-align:-1px;background:linear-gradient(#171717 0 33.3%,#d00 33.3% 66.6%,#ffce00 66.6%)}
 @media(max-width:1000px){.layout{grid-template-columns:1fr}.layout aside{order:-1}.hero{grid-template-columns:1fr}.badges{justify-content:flex-start}.features{grid-template-columns:repeat(2,1fr)}}
@@ -171,6 +172,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
       <button id="btn-screen" data-needs-device disabled>◐ Display aus</button>
       <button id="btn-shot" data-needs-device disabled>📸 Screenshot</button>
     </div>
+    <div id="thanks" class="thanks" hidden role="status"><span>☕ <b>Läuft gut?</b> Tetherlume ist kostenlos und ohne Werbung. Wenn es dir gerade Zeit spart, hilft ein kleiner Kaffee enorm.</span><a class="btn" href="https://www.paypal.biz/molitormarcel93" target="_blank" rel="noopener noreferrer" id="thanks-pay">Kaffee spendieren</a><button type="button" id="thanks-close" aria-label="Schließen">✕</button></div>
     <p class="tip">Tipp: Ins Bild klicken und einfach lostippen. <kbd>Strg</kbd>+<kbd>V</kbd> fügt Text ein (auch Umlaute und Emojis). Rechtsklick = Zurück, Mausrad = Scrollen. Dateien einfach aufs Bild ziehen.</p>
   </section>
 
@@ -278,6 +280,6 @@ document.getElementById("share-btn").onclick = async () => {
   try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(data.url); document.getElementById("share-btn").textContent = "✓ Link kopiert"; } } catch {}
 };
 </script>
-<script type="module" src="app.js?v=5"></script>
+<script type="module" src="app.js?v=5.1"></script>
 </body>
 </html>
