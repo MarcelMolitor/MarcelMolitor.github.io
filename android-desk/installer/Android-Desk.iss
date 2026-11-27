@@ -1,4 +1,4 @@
-#define AppName "MOLITOR LinkDeck"
+#define AppName "Tetherlume"
 #define AppVersion "0.3"
 [Setup]
 AppId=Molitor.AndroidDesk
@@ -6,13 +6,13 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=Marcel Molitor
 AppPublisherURL=https://marcelmolitor.github.io/android-desk/
-DefaultDirName={localappdata}\Programs\MOLITOR LinkDeck
-DefaultGroupName=MOLITOR LinkDeck
+DefaultDirName={localappdata}\Programs\Tetherlume
+DefaultGroupName=Tetherlume
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=output
-OutputBaseFilename=LinkDeck-Setup
+OutputBaseFilename=Tetherlume-Setup
 Compression=lzma2
 SolidCompression=yes
 UninstallDisplayIcon={app}\Android-Desk.exe
@@ -22,11 +22,11 @@ LicenseFile=..\LICENSE
 Source: "payload\Android-Desk.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE-Android-Desk.txt"; Flags: ignoreversion
 Source: "THIRD-PARTY.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{tmp}\android-desk-scrcpy\scrcpy-win64-v5.0.1\*"; DestDir: "{app}\scrcpy"; Flags: external recursesubdirs createallsubdirs ignoreversion skipifsourcedoesntexist
+Source: "{tmp}\android-desk-scrcpy\scrcpy-win64-v5.0.1\*"; DestDir: "{app}\scrcpy"; Flags: external recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
-Name: "{group}\MOLITOR LinkDeck"; Filename: "{app}\Android-Desk.exe"
-Name: "{group}\Uninstall MOLITOR LinkDeck"; Filename: "{uninstallexe}"
+Name: "{group}\Tetherlume"; Filename: "{app}\Android-Desk.exe"
+Name: "{group}\Uninstall Tetherlume"; Filename: "{uninstallexe}"
 
 [Code]
 var
