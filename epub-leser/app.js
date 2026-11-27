@@ -250,14 +250,15 @@
       counts.forEach(function(n,i){var tile=el('div',{});tile.appendChild(el('strong',{text:String(n)}));tile.appendChild(el('span',{text:names[i]}));metrics.appendChild(tile);});
       var reset=$('shelf-reset-filters');
       if(!reset){reset=el('button',{id:'shelf-reset-filters',type:'button',class:'btn',text:en?'Reset filters':'Filter zurücksetzen'});state.after(reset);reset.addEventListener('click',function(){$('shelf-search').value='';controls.value='recent';state.value='all';filter.setAttribute('aria-pressed','false');renderRecent();});}
-      var query=($('shelf-search').value||'').trim().toLocaleLowerCase();
+      function normalizeShelf(v){return String(v).toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss');}
+      var query=normalizeShelf(($('shelf-search').value||'').trim()), terms=query.split(/\s+/).filter(Boolean);
       reset.disabled=!query&&!only&&state.value==='all'&&controls.value==='recent';
       var shown=0;
       all.forEach(function (m) {
         if(only && !favorites.includes(m.id))return;
         var p=progress(m);
         if(state.value==='new'&&p>0||state.value==='active'&&!(p>0&&p<1)||state.value==='done'&&p<1)return;
-        if(query&&!String((m.title||'')+' '+(m.author||'')+' '+(m.name||'')).toLocaleLowerCase().includes(query))return;
+        if(!terms.every(function(term){return normalizeShelf((m.title||'')+' '+(m.author||'')+' '+(m.name||'')).includes(term);}))return;
         shown++;
         var pos = lsGet('pos:' + m.id, null);
         var pct = pos && typeof pos.pct === 'number' ? pos.pct : m.pct;
@@ -295,6 +296,7 @@
   }
 
   function openFromRecent(m) {
+    var request = ++openRequest;
     homeMessage('');
     showReader();
     setLoading(true, uiText("Buch wird geöffnet …","Opening book …"));
@@ -304,9 +306,10 @@
       if (data instanceof Blob) return data.arrayBuffer();
       return data;
     }).then(function (buf) {
+      if (request !== openRequest || reader.hidden) return;
       return openBook(buf, { name: m.name, storeRecent: true });
     }).catch(function (e) {
-      if (e && e.handled) return;
+      if (request !== openRequest || reader.hidden || (e && e.handled)) return;
       if (e && e.message === 'missing') {
         idbDelete(m.id).catch(function () {});
         failOpen(uiText("Die gespeicherte Datei ist nicht mehr vorhanden. Bitte öffne das Buch erneut.","The saved file is no longer available. Please open the book again."));
