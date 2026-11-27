@@ -1,6 +1,6 @@
 plugins { id 'com.android.application' }
 android { namespace 'com.molitor.tetherlume'; compileSdk 36
- defaultConfig { applicationId 'com.molitor.tetherlume'; minSdk 26; targetSdk 36; versionCode 3; versionName '0.3.0' }
+ defaultConfig { applicationId 'com.molitor.tetherlume'; minSdk 26; targetSdk 36; versionCode 4; versionName '0.4.0' }
  // Fester Test-Schluessel (oeffentlich, nur fuer Test-APKs), damit Updates ohne Deinstallation gehen
  signingConfigs { debug { storeFile file('debug.keystore'); storePassword 'android'; keyAlias 'androiddebugkey'; keyPassword 'android' } }
  // Optionale Signatur fuer den Play Store: GitHub-Secrets TL_KEYSTORE_BASE64, TL_KEYSTORE_PASSWORD, TL_KEY_ALIAS, TL_KEY_PASSWORD
