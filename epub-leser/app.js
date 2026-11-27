@@ -563,7 +563,7 @@
       var doc=contents.document, el=doc.getElementById('molitor-reading-spacing');
       if(!el){el=doc.createElement('style');el.id='molitor-reading-spacing';doc.head.appendChild(el);}
       var lh=[1.4,1.65,1.9].includes(settings.lineHeight)?settings.lineHeight:1.65;
-      el.textContent='html body p,html body li,html body blockquote{line-height:'+lh+' !important}';
+      el.textContent='html[data-lt] body p,html[data-lt] body li,html[data-lt] body blockquote{line-height:'+lh+' !important}';
     } catch(e) {}
 
     try { contents.document.documentElement.setAttribute('data-lt', settings.theme); } catch (e) { /* egal */ }
@@ -623,7 +623,9 @@
   }
 
   function applySettingsToRendition() {
-    document.body.setAttribute('data-theme', settings.theme);
+    document.body.setAttribute('data-theme', settings.theme); 
+    $('viewer').style.paddingInline='clamp(4px, 3vw, '+([0,12,24].includes(settings.margin)?settings.margin+4:16)+'px)';
+    if(settings.margin===0)$('viewer').style.paddingInline='4px';
     fontOut.textContent = settings.fontSize + ' %';
     fontDec.disabled = settings.fontSize <= 80;
     fontInc.disabled = settings.fontSize >= 200;
@@ -648,6 +650,9 @@
   var english=new URLSearchParams(location.search).get('lang')==='en';
   readingOptions.innerHTML='<label class="set-label" for="reading-spacing">'+(english?'Line spacing':'Zeilenabstand')+'</label><select id="reading-spacing"><option value="1.4">'+(english?'Compact':'Kompakt')+'</option><option value="1.65">'+(english?'Comfortable':'Komfortabel')+'</option><option value="1.9">'+(english?'Spacious':'Großzügig')+'</option></select><label class="set-label" for="reading-spread">'+(english?'Page layout':'Seitenlayout')+'</label><select id="reading-spread"><option value="auto">'+(english?'Automatic (two pages on wide screens)':'Automatisch (Doppelseite auf breiten Bildschirmen)')+'</option><option value="none">'+(english?'Single page':'Einzelseite')+'</option></select>';
   $('settings').appendChild(readingOptions);
+  readingOptions.insertAdjacentHTML('beforeend','<label class="set-label" for="reading-margin">'+(english?'Page margins':'Seitenränder')+'</label><select id="reading-margin"><option value="0">'+(english?'Narrow':'Schmal')+'</option><option value="12">'+(english?'Medium':'Mittel')+'</option><option value="24">'+(english?'Wide':'Breit')+'</option></select>');
+  $('reading-margin').value=String([0,12,24].includes(settings.margin)?settings.margin:12);
+  $('reading-margin').onchange=function(){settings.margin=Number(this.value);saveSettings();};
   $('reading-spacing').value=String(settings.lineHeight||1.65);
   $('reading-spread').value=settings.spread==='none'?'none':'auto';
   $('reading-spacing').onchange=function(){settings.lineHeight=Number(this.value);saveSettings();};
