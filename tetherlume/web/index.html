@@ -283,7 +283,7 @@ footer{margin-bottom:10px}
     </label>
 
     <label class="field">Text ans Handy senden</label>
-    <form class="inline" id="text-form"><input id="text-input" placeholder="z. B. Nachricht, Link, Passwort …" autocomplete="off" data-needs-device disabled><button data-needs-device disabled>Senden</button></form>
+    <form class="inline" id="text-form"><input id="text-input" placeholder="z. B. Nachricht oder Link …" autocomplete="off" data-needs-device disabled><button data-needs-device disabled>Senden</button></form>
 
     <label class="field">Datei aufs Handy / APK installieren</label>
     <label class="btn" style="width:100%;margin-top:6px"><input type="file" id="file-input" multiple hidden data-needs-device disabled>📁 Datei auswählen …</label>
@@ -322,7 +322,7 @@ footer{margin-bottom:10px}
   <div class="dl-grid">
     <div class="dl-tile web"><em>🌐</em><b>Tetherlume Web</b><span>Direkt im Browser. Chrome oder Edge, Handy per USB. Ohne Installation.</span><a class="dl-btn" href="#workspace">Jetzt starten →</a></div>
     <div class="dl-tile android"><em>📲</em><b>Android-App</b><span>Bildschirm per WLAN in jeden Browser teilen, mit USB-Check und Schnellhilfe. Ab Android 8.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">APK herunterladen</a><small>Test-Version · „Unbekannte Apps zulassen“ erlauben</small></div>
-    <div class="dl-tile windows"><em>🖥</em><b>Windows-App</b><span>Setup inkl. scrcpy: Live-Bild, MP4-Aufnahme, Display aus. Windows 10/11, 64 Bit.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/Tetherlume-Setup.exe">Setup herunterladen</a><small>SmartScreen-Hinweis? „Weitere Informationen → Trotzdem ausführen“</small></div>
+    <div class="dl-tile windows"><em>🖥</em><b>Windows-App</b><span>Setup inkl. scrcpy: Live-Bild, MP4-Aufnahme, Display aus. Windows 10/11, 64 Bit.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/Tetherlume-Setup.exe">Setup herunterladen</a><small>Vor der Installation Herkunft und digitale Signatur prüfen.</small></div>
   </div>
 </section>
 
@@ -351,14 +351,14 @@ footer{margin-bottom:10px}
   <h2>Häufige Fragen</h2>
   <details><summary>Muss ich etwas installieren?</summary><p>Nein. Tetherlume läuft komplett im Browser. Für das Live-Bild wird beim Verbinden ein kleiner Helfer (scrcpy-server, ca. 90 KB) temporär aufs Handy kopiert. Der verschwindet beim Trennen wieder.</p></details>
   <details><summary>Ist das sicher? Wo landen meine Daten?</summary><p>Das Bild und deine Eingaben laufen nur über das USB-Kabel zwischen Handy und deinem Browser. Es gibt keinen Server, der etwas mitliest. Der ADB-Schlüssel wird lokal in deinem Browser gespeichert. Du kannst die Freigabe jederzeit am Handy unter „USB-Debugging-Autorisierungen aufheben“ widerrufen.</p></details>
-  <details><summary>Welche Handys funktionieren?</summary><p>Alle Android-Geräte ab Android 5 (Samsung, Xiaomi, Pixel, OnePlus, Motorola …). Live-Video gibt es ab Android 5, flüssig am besten ab Android 8. Ältere Geräte nutzen automatisch den Bild-Modus. iPhones gehen nicht, weil Apple das nicht erlaubt.</p></details>
+  <details><summary>Welche Handys funktionieren?</summary><p>Viele Android-Geräte ab Android 5 (Samsung, Xiaomi, Pixel, OnePlus, Motorola …). Live-Video gibt es ab Android 5, flüssig am besten ab Android 8. Ältere Geräte nutzen automatisch den Bild-Modus. iPhones gehen nicht, weil Apple das nicht erlaubt.</p></details>
   <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Ja, mit der <a href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">Tetherlume-App für Android</a> (Test-Version): „Bildschirm teilen“ tippen und den angezeigten Link in einem Browser im selben WLAN öffnen, am PC, Tablet oder sogar am Handy selbst. Das Bild bleibt in deinem WLAN und ist mit einem Code geschützt. Steuern per Maus geht im WLAN-Modus noch nicht, dafür gibt es die USB-Verbindung.</p></details>
   <details><summary>Gibt es Ton?</summary><p>Ton-Übertragung ist in Arbeit. Bis dahin bleibt der Ton am Handy.</p></details>
   <details><summary>„USB belegt“ / Verbindung klappt nicht</summary><p>Meist läuft im Hintergrund schon ein anderes ADB-Programm (adb.exe, Android Studio, Vysor, Smart Switch). Schließen, Kabel neu stecken, nochmal verbinden. Hilft das nicht, klick auf „Diagnose kopieren“ und schick mir den Text.</p></details>
 </section>
 
 <footer>
-  <span>◈ Tetherlume Web v5 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
+  <span>◈ Tetherlume Web v5.3 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
   <span><a href="privacy.html">Datenschutz</a> · <a href="/android-desk/de.html">Windows-Version</a> · <a href="/">MOLITOR · Projekte</a> · Live-Video: <a href="https://github.com/Genymobile/scrcpy" target="_blank" rel="noopener">scrcpy</a> (Apache-2.0) &amp; <a href="https://github.com/yume-chan/ya-webadb" target="_blank" rel="noopener">Tango/ya-webadb</a> (MIT)</span>
 </footer>
 <nav class="dock" aria-label="Arbeitsplatz">
@@ -446,6 +446,6 @@ document.getElementById("share-btn").onclick = async () => {
   if (location.hash === "#demo") start();
 })();
 </script>
-<script type="module" src="app.js?v=5.2"></script>
+<script type="module" src="app.js?v=5.3"></script>
 </body>
 </html>
