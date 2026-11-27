@@ -1368,7 +1368,31 @@
   speak.addEventListener('click',function(){if(speak.getAttribute('aria-pressed')==='true'){stopSpeech();return;}if(!S||!S.rendition)return;var voices=window.speechSynthesis.getVoices().filter(function(v){return v.localService;});if(!voices.length){toast(uiText("Keine lokale Vorlesestimme verfügbar.","No local speech voice available."));return;}var contents=S.rendition.getContents()[0];if(!contents||!contents.document.body)return;var lang=contents.document.documentElement.lang||'de';var voice=voices.find(function(v){return v.lang.split('-')[0]===lang.split('-')[0];});if(!voice){toast(uiText("Keine passende lokale Stimme verfügbar.","No matching local speech voice available."));return;}var text=contents.document.body.innerText.trim().slice(0,12000);if(!text)return;var u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.onend=u.onerror=stopSpeech;speak.setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);});
   btnClose.addEventListener('click',stopSpeech);window.addEventListener('pagehide',stopSpeech);
   function paintHighlight(st,h){try{st.rendition.annotations.highlight(h.cfi,{},null,'molitor-highlight',{fill:h.color,'fill-opacity':'0.35','mix-blend-mode':'multiply'});}catch(e){toast(uiText("Markierung konnte nicht angezeigt werden.","Could not display highlight."));}}
-  function renderHighlights(){var list=$('highlight-list');clear(list);if(!S)return;$('highlight-status').textContent=S.pendingHighlight?uiText("Farbe für ausgewählten Text wählen.","Choose a color for the selected text."):uiText("Text im Buch auswählen, um eine Markierung hinzuzufügen.","Select text in the book to add a highlight.");document.querySelectorAll('[data-highlight]').forEach(function(b){b.disabled=!S.pendingHighlight;});(S.highlights||[]).forEach(function(h,i){var jump=el('button',{type:'button',text:h.text||uiText("Markierte Stelle","Highlighted passage")});jump.addEventListener('click',function(){$('highlight-dialog').close();S.rendition.display(h.cfi).catch(function(){toast(uiText("Stelle nicht verfügbar","Location unavailable"));});});var del=el('button',{type:'button',text:uiText("Löschen","Delete")});del.addEventListener('click',function(){var next=S.highlights.filter(function(_,j){return j!==i;});if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;renderHighlights();});list.appendChild(el('li',null,[jump,del]));});}
+  function renderHighlights(){refreshWordTools();var list=$('highlight-list');clear(list);if(!S)return;$('highlight-status').textContent=S.pendingHighlight?uiText("Farbe für ausgewählten Text wählen.","Choose a color for the selected text."):uiText("Text im Buch auswählen, um eine Markierung hinzuzufügen.","Select text in the book to add a highlight.");document.querySelectorAll('[data-highlight]').forEach(function(b){b.disabled=!S.pendingHighlight;});(S.highlights||[]).forEach(function(h,i){var jump=el('button',{type:'button',text:h.text||uiText("Markierte Stelle","Highlighted passage")});jump.addEventListener('click',function(){$('highlight-dialog').close();S.rendition.display(h.cfi).catch(function(){toast(uiText("Stelle nicht verfügbar","Location unavailable"));});});var del=el('button',{type:'button',text:uiText("Löschen","Delete")});del.addEventListener('click',function(){var next=S.highlights.filter(function(_,j){return j!==i;});if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;renderHighlights();});list.appendChild(el('li',null,[jump,del]));});}
+  /* Explicit, privacy-aware external lookup for selected passages. */
+  var wordTools=el('section',{id:'reader-word-tools','aria-label':uiText('Textwerkzeuge','Text tools')});
+  wordTools.style.cssText='margin:14px 0;padding:12px;border:1px solid #7184a066;border-radius:12px;overflow-wrap:anywhere';
+  var wordTitle=el('strong'),wordPreview=el('p'),wordNotice=el('small'),wordActions=el('div');
+  wordActions.style.cssText='display:flex;flex-wrap:wrap;gap:8px;margin:10px 0';
+  var wordLookup=el('button',{type:'button',class:'btn'}),wordTranslate=el('button',{type:'button',class:'btn'}),wordCopy=el('button',{type:'button',class:'btn'});
+  [wordLookup,wordTranslate,wordCopy].forEach(function(b){b.style.minHeight='44px';wordActions.appendChild(b);});
+  wordTools.append(wordTitle,wordPreview,wordActions,wordNotice);
+  $('highlight-colors').after(wordTools);
+  function refreshWordTools(){
+    var selected=S&&S.pendingHighlight&&S.pendingHighlight.text;
+    wordTools.hidden=!selected;
+    wordTitle.textContent=uiText('Ausgewählter Text','Selected text');
+    wordPreview.textContent=selected||'';
+    wordLookup.textContent=uiText('Wörterbuch öffnen','Open dictionary');
+    wordTranslate.textContent=uiText('Übersetzung öffnen','Open translation');
+    wordCopy.textContent=uiText('Text kopieren','Copy text');
+    wordNotice.textContent=uiText('Nur beim ausdrücklichen Öffnen eines externen Dienstes wird der ausgewählte Text an diesen übertragen.','Selected text is sent to an external service only when you explicitly open it.');
+  }
+  function selectedPassage(){return S&&S.pendingHighlight?String(S.pendingHighlight.text||'').trim():'';}
+  wordLookup.onclick=function(){var value=selectedPassage();if(!value)return;window.open('https://'+(englishUI?'en':'de')+'.wiktionary.org/wiki/Special:Search?search='+encodeURIComponent(value.slice(0,100)),'_blank','noopener,noreferrer');};
+  wordTranslate.onclick=function(){var value=selectedPassage();if(!value)return;window.open('https://translate.google.com/?sl=auto&tl='+ (englishUI?'en':'de')+'&text='+encodeURIComponent(value)+'&op=translate','_blank','noopener,noreferrer');};
+  wordCopy.onclick=function(){var value=selectedPassage();if(!value)return;if(!navigator.clipboard){toast(uiText('Kopieren nicht verfügbar.','Clipboard unavailable.'));return;}navigator.clipboard.writeText(value).then(function(){toast(uiText('Text kopiert.','Text copied.'));},function(){toast(uiText('Kopieren fehlgeschlagen.','Could not copy text.'));});};
+  refreshWordTools();
   $('btn-highlight').addEventListener('click',function(){if(!S||!S.key)return;renderHighlights();$('highlight-dialog').showModal();});
   $('highlight-close').addEventListener('click',function(){$('highlight-dialog').close();});
   $('highlight-dialog').addEventListener('close',function(){if(S)S.pendingHighlight=null;});
