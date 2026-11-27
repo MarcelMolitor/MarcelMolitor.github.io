@@ -13,6 +13,17 @@ static wchar_t logPath[MAX_PATH];
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
 
 static BOOL executable(wchar_t *out, DWORD size) {
+    wchar_t local[32768];
+    DWORD n = GetModuleFileNameW(NULL, local, 32768);
+    if (n && n < 32768) {
+        wchar_t *slash = wcsrchr(local, L'\\');
+        if (slash) {
+            slash[1] = 0;
+            if (SUCCEEDED(StringCchCatW(local,32768,L"scrcpy\\scrcpy.exe")) &&
+                GetFileAttributesW(local) != INVALID_FILE_ATTRIBUTES &&
+                SUCCEEDED(StringCchCopyW(out,size,local))) return TRUE;
+        }
+    }
     wchar_t path[32768];
     DWORD len = GetEnvironmentVariableW(L"PATH",path,32768);
     if (!len || len >= 32768) return FALSE;
