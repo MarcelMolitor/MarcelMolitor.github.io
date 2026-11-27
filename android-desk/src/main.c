@@ -1,6 +1,8 @@
 #define UNICODE
 #define _UNICODE
 #include <windows.h>
+#include <winhttp.h>
+#include <process.h>
 #include <commdlg.h>
 #include <shellapi.h>
 #include <strsafe.h>
@@ -9,6 +11,9 @@
 
 static const wchar_t *settings = L"Software\\Molitor\\AndroidDesk";
 static HANDLE session;
+static HANDLE wifiProbe;
+#define WM_WIFI_RESULT (WM_APP+12)
+struct Probe { HWND window; wchar_t host[32]; wchar_t path[96]; };
 static BOOL german;
 static HFONT headingFont;
 static HBRUSH backgroundBrush;
@@ -28,6 +33,7 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,116,tr(L"STATUS",L"STATUS"));
     SetDlgItemTextW(w,117,tr(L"Start sharing in Tetherlume Android and paste its local link here.",L"Starte die Bildschirmfreigabe in Tetherlume Android und füge den lokalen Link hier ein."));
     SetDlgItemTextW(w,122,tr(L"Paste link",L"Link einfügen"));
+    SetDlgItemTextW(w,124,tr(L"Test connection",L"Verbindung testen"));
     SetDlgItemTextW(w,123,tr(L"Wi-Fi help",L"WLAN-Hilfe"));
     SetDlgItemTextW(w,119,tr(L"Open Wi-Fi screen",L"WLAN-Bildschirm öffnen"));
     SetDlgItemTextW(w,120,tr(L"Android app",L"Android-App"));
@@ -49,6 +55,43 @@ static BOOL wifi_url(const wchar_t *url) {
     if(len!=32) return FALSE;
     for(size_t i=0;i<len;i++){wchar_t x=key[i];if(!((x>=L'0'&&x<=L'9')||(len==32&&((x>=L'A'&&x<=L'Z')||(x>=L'a'&&x<=L'z')||x==L'-'||x==L'_'))))return FALSE;}
     return TRUE;
+}
+static unsigned __stdcall probe_worker(void *arg) {
+    struct Probe *p=arg;
+    HINTERNET h=WinHttpOpen(L"Tetherlume Desktop",WINHTTP_ACCESS_TYPE_NO_PROXY,NULL,NULL,0);
+    HINTERNET c=NULL,r=NULL; DWORD result=0, code=0, bytes=sizeof(code);
+    if(h){
+        WinHttpSetTimeouts(h,2000,2000,2000,2500);
+        c=WinHttpConnect(h,p->host,8080,0);
+        if(c) r=WinHttpOpenRequest(c,L"GET",p->path,NULL,WINHTTP_NO_REFERER,WINHTTP_DEFAULT_ACCEPT_TYPES,0);
+        if(r){
+            DWORD redirect=WINHTTP_OPTION_REDIRECT_POLICY_NEVER;
+            if(WinHttpSetOption(r,WINHTTP_OPTION_REDIRECT_POLICY,&redirect,sizeof(redirect)) &&
+               WinHttpSendRequest(r,WINHTTP_NO_ADDITIONAL_HEADERS,0,WINHTTP_NO_REQUEST_DATA,0,0,0) &&
+               WinHttpReceiveResponse(r,NULL) &&
+               WinHttpQueryHeaders(r,WINHTTP_QUERY_STATUS_CODE|WINHTTP_QUERY_FLAG_NUMBER,WINHTTP_HEADER_NAME_BY_INDEX,&code,&bytes,WINHTTP_NO_HEADER_INDEX)) result=code;
+        }
+    }
+    if(r) WinHttpCloseHandle(r); if(c) WinHttpCloseHandle(c); if(h) WinHttpCloseHandle(h);
+    HWND w=p->window; SecureZeroMemory(p,sizeof(*p)); HeapFree(GetProcessHeap(),0,p);
+    PostMessageW(w,WM_WIFI_RESULT,result,0);
+    return 0;
+}
+static void test_wifi(HWND w) {
+    if(wifiProbe) return;
+    wchar_t url[256]; GetDlgItemTextW(w,118,url,256);
+    if(!wifi_url(url)){status(w,tr(L"Paste the complete session link first.",L"Zuerst den vollständigen Sitzungslink einfügen."));return;}
+    struct Probe *p=HeapAlloc(GetProcessHeap(),HEAP_ZERO_MEMORY,sizeof(*p));
+    if(!p){status(w,tr(L"Not enough memory.",L"Nicht genügend Speicher."));return;}
+    p->window=w;
+    const wchar_t *end=wcschr(url+7,L':');
+    StringCchCopyNW(p->host,32,url+7,end-(url+7));
+    StringCchCopyW(p->path,96,end+5);
+    SecureZeroMemory(url,sizeof(url));
+    wifiProbe=(HANDLE)_beginthreadex(NULL,0,probe_worker,p,0,NULL);
+    if(!wifiProbe){HeapFree(GetProcessHeap(),0,p);status(w,tr(L"Test could not start.",L"Test konnte nicht gestartet werden."));return;}
+    EnableWindow(GetDlgItem(w,124),FALSE);
+    status(w,tr(L"Checking local Wi-Fi connection…",L"Lokale WLAN-Verbindung wird geprüft…"));
 }
 static void paste_wifi(HWND w) {
     if(!OpenClipboard(w)){status(w,tr(L"Clipboard unavailable.",L"Zwischenablage nicht verfügbar."));return;}
@@ -208,6 +251,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             DWORD value=IsDlgButtonChecked(w,101)==BST_CHECKED;
             RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"ScreenOff",REG_DWORD,&value,sizeof(value)); return TRUE;
         }
+        case 124: test_wifi(w); return TRUE;
         case 122: paste_wifi(w); return TRUE;
         case 123: ShellExecuteW(w,L"open",L"https://marcelmolitor.github.io/tetherlume/web/#wifi",NULL,NULL,SW_SHOWNORMAL); return TRUE;
         case 119: open_wifi(w); return TRUE;
@@ -228,7 +272,13 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         } else status(w,tr(L"Session ended.",L"Sitzung beendet."));
         return TRUE;
     }
+    if(msg==WM_WIFI_RESULT){
+        if(wifiProbe){CloseHandle(wifiProbe);wifiProbe=NULL;}
+        EnableWindow(GetDlgItem(w,124),TRUE);
+        status(w,wp==200?tr(L"Local HTTP session responded. Open Wi-Fi screen to view.",L"Lokale HTTP-Sitzung antwortet. WLAN-Bildschirm öffnen.") : wp==403?tr(L"Session rejected. Copy a fresh link from the app.",L"Sitzung abgelehnt. Neuen Link aus der App kopieren.") : tr(L"No usable response. Check Wi-Fi, sharing and session link.",L"Keine nutzbare Antwort. WLAN, Freigabe und Sitzungslink prüfen."));return TRUE;
+    }
     if (msg==WM_CLOSE) {
+        if(wifiProbe){status(w,tr(L"Connection test is still running.",L"Verbindungstest läuft noch."));return TRUE;}
         if (session) { MessageBoxW(w,tr(L"Close the mirrored device window first to save any active recording.",L"Schließe zuerst das gespiegelte Gerätefenster, damit die Aufnahme gespeichert wird."),L"Tetherlume",MB_OK); return TRUE; }
         EndDialog(w,0); return TRUE;
     }
