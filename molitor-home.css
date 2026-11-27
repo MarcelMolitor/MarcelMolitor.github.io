@@ -46,3 +46,22 @@ header{background:#fff;border-bottom:1px solid var(--line);padding:14px 0}
 @media(hover:hover){.project-family .projects .card:hover{border-color:#90a8c1;box-shadow:0 5px 16px #17335412}}
 @media(max-width:600px){.project-family{margin:18px 0 26px}.project-family h3.family-heading{font-size:18px}}
 @media(prefers-reduced-motion:reduce){.project-family .projects .card{transition:none}}
+
+/* Unified homepage identity: same visual grammar for every product family. */
+:root{--ink:#173354;--paper:#f4f2ea;--muted:#526171;--line:#cbd5df}
+.project-family{margin:28px 0 36px}
+.project-family .family-heading{font-size:20px;letter-spacing:-.025em;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.projects .card[data-family] .visual{background:linear-gradient(145deg,#10213b,#21466f);color:#fff;height:146px;border-bottom:3px solid #347ff5}
+.projects .card[data-family] .visual .word{font-size:clamp(20px,2.1vw,27px);font-weight:730;letter-spacing:-.025em}
+.projects .card[data-family] .visual svg{opacity:.35}
+.projects .card[data-family] .visual .index,.projects .card[data-family] .visual .caption{color:#d1e2f6}
+.projects .card[data-family] .body{padding:20px;flex:1}
+.projects .card[data-family] h4{font-family:inherit;font-weight:720;font-size:21px;line-height:1.24}
+.projects .card[data-family] .cardlink{background:#173354;color:#fff;border:1px solid #173354;border-radius:8px;min-height:44px;padding:10px 12px;justify-content:center;text-align:center}
+.projects .card[data-family] .cardlink:hover{background:#245080;color:white;text-decoration:none}
+.projects .card[data-family] .cardlink+.cardlink{background:white;color:#173354;border-color:#cbd5df}
+#android-apps .projects{grid-template-columns:repeat(3,minmax(0,1fr))}
+#android-apps .card{grid-column:span 1}
+.book-card .button{background:#173354;border-radius:8px;min-height:44px}
+@media(max-width:950px){#android-apps .projects{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){#android-apps .projects{grid-template-columns:minmax(0,1fr)}.projects .card[data-family] .visual{height:138px}.projects .card[data-family] .body{padding:18px}}
