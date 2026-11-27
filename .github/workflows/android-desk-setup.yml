@@ -1,4 +1,4 @@
-name: Android Desk Setup
+name: Tetherlume Setup
 on:
   workflow_dispatch:
   push:
@@ -44,7 +44,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $dir = Join-Path $env:RUNNER_TEMP AndroidDeskTest
-          $setup = (Resolve-Path android-desk/installer/output/Android-Desk-Setup.exe).Path
+          $setup = (Resolve-Path android-desk/installer/output/Tetherlume-Setup.exe).Path
           $p = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $dir + '"')) -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw "Setup failed: $($p.ExitCode)" }
           foreach ($file in @('Android-Desk.exe','scrcpy/scrcpy.exe','scrcpy/adb.exe','LICENSE-Android-Desk.txt','THIRD-PARTY.txt')) {
@@ -65,7 +65,7 @@ jobs:
           (Get-FileHash $setup -Algorithm SHA256).Hash | Set-Content android-desk/installer/output/SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: Android-Desk-Setup-test
+          name: Tetherlume-Setup-test
           path: android-desk/installer/output/
           retention-days: 7
       - name: Publish tested setup as preview
@@ -75,8 +75,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $tag = 'android-desk-v0.2'
+          $tag = 'tetherlume-v0.3'
           gh release view $tag --repo $env:GITHUB_REPOSITORY 2>$null
           if ($LASTEXITCODE -eq 0) { Write-Host 'Release already exists; refusing to overwrite versioned files'; exit 0 }
-          gh release create $tag android-desk/installer/output/Android-Desk-Setup.exe android-desk/installer/output/SHA256.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --prerelease --title 'Android Desk 0.2 – Setup Preview' --notes 'Online installer. Installs original scrcpy from Genymobile. Automated installation, startup and uninstall checks passed; physical USB and MP4 tests remain outstanding. Unsigned.'
+          gh release create $tag android-desk/installer/output/Tetherlume-Setup.exe android-desk/installer/output/SHA256.txt --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --prerelease --title 'Tetherlume 0.3 – Setup Preview' --notes 'Online installer. Installs original scrcpy from Genymobile. Automated installation, startup and uninstall checks passed; physical USB and MP4 tests remain outstanding. Unsigned.'
           if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
