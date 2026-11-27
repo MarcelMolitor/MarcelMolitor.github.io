@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 if ($ReleaseBaseUrl -notmatch '^https://[^\s]+$' -or $LicenseUrl -notmatch '^https://[^\s]+$') { throw 'HTTPS URLs required.' }
 function Quote-Yaml([string]$Value) { "'" + $Value.Replace("'","''") + "'" }
 $apps = @(
-    @{Id='Molitor.AndroidDesk'; Name='Android Desk'; Version='0.1'; File='MOLITOR-Android-Desk.exe'; Description='Android per USB am Windows-PC steuern.'; Dependency=$true},
+    @{Id='Molitor.AndroidDecks'; Name='Android Decks'; Version='0.1'; File='MOLITOR-Android-Desk.exe'; Description='Android per USB am Windows-PC steuern.'; Dependency=$true},
     @{Id='Molitor.FotoLimit'; Name='MOLITOR FotoLimit'; Version='1.0'; File='MOLITOR-FotoLimit.exe'; Description='Fotos lokal zu kleinen JPEG-Dateien verkleinern.'},
     @{Id='Molitor.QRBruecke'; Name='QR-Bruecke'; Version='1.0'; File='QR-Bruecke.exe'; Description='Webadressen lokal als QR-Code anzeigen.'},
     @{Id='Molitor.DisplayFit'; Name='DisplayFit'; Version='1.0'; File='DisplayFit.exe'; Description='Smartphone-Hintergrundbilder lokal erstellen.'}
