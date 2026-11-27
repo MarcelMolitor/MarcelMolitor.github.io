@@ -6,6 +6,8 @@
   /* ===================== Hilfsfunktionen ===================== */
   var $ = function (id) { return document.getElementById(id); };
   var PREFIX = 'epubleser:';
+  var englishUI = new URLSearchParams(location.search).get('lang') === 'en';
+  function uiText(de,en){return englishUI?en:de;}
 
   var LIBRARY = [
     { file: 'kuechenlabor.epub', title: 'Küchenlabor ohne Labor', sub: 'Vier Gewürze und die Kunst, einen Rezeptorbefund zu lesen', cover: 'c1' },
@@ -299,7 +301,7 @@
   function openFromRecent(m) {
     homeMessage('');
     showReader();
-    setLoading(true, 'Buch wird geöffnet …');
+    setLoading(true, uiText("Buch wird geöffnet …","Opening book …"));
     idbGet('files', m.id).then(function (rec) {
       if (!rec || !rec.data) throw new Error('missing');
       var data = rec.data;
@@ -311,9 +313,9 @@
       if (e && e.handled) return;
       if (e && e.message === 'missing') {
         idbDelete(m.id).catch(function () {});
-        failOpen('Die gespeicherte Datei ist nicht mehr vorhanden. Bitte öffne das Buch erneut.');
+        failOpen(uiText("Die gespeicherte Datei ist nicht mehr vorhanden. Bitte öffne das Buch erneut.","The saved file is no longer available. Please open the book again."));
       } else {
-        failOpen('Das Buch konnte nicht aus dem Speicher geladen werden.');
+        failOpen(uiText("Das Buch konnte nicht aus dem Speicher geladen werden.","Could not load the book from storage."));
       }
     });
   }
@@ -374,7 +376,7 @@
       return;
     }
     showReader();
-    setLoading(true, 'Datei wird gelesen …');
+    setLoading(true, uiText("Datei wird gelesen …","Reading file …"));
     var p = file.arrayBuffer ? file.arrayBuffer() : new Promise(function (res, rej) {
       var fr = new FileReader();
       fr.onload = function () { res(fr.result); };
@@ -399,11 +401,11 @@
     homeMessage('');
     var u = safeUrl(raw);
     if (!u) {
-      homeMessage('Dieses Buch kann nicht geöffnet werden: Aus Sicherheitsgründen lädt der Leser nur Bücher von dieser Website.', true);
+      homeMessage(uiText("Dieses Buch kann nicht geöffnet werden: Aus Sicherheitsgründen lädt der Leser nur Bücher von dieser Website.","For security, the reader only loads remote books hosted on this website."), true);
       return;
     }
     showReader();
-    setLoading(true, 'Buch wird geladen …');
+    setLoading(true, uiText("Buch wird geladen …","Loading book …"));
     fetch(u.href, { credentials: 'same-origin' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.arrayBuffer();
@@ -413,7 +415,7 @@
       return openBook(buf, { name: decodeURIComponent(path.split('/').pop() || 'buch.epub'), libUrl: libEntry ? path : null, storeRecent: !libEntry });
     }).catch(function (e) {
       if (e && e.handled) return;
-      failOpen('Das Buch konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und versuche es erneut.');
+      failOpen(uiText("Das Buch konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und versuche es erneut.","Could not load the book. Check your internet connection and try again."));
     });
   }
 
@@ -433,22 +435,22 @@
   function openBook(buf, opts) {
     opts = opts || {};
     if (typeof window.ePub !== 'function' || typeof window.JSZip !== 'function') {
-      failOpen('Der Leser konnte nicht vollständig geladen werden (epub.js/JSZip fehlen). Bitte lade die Seite neu – eventuell blockiert ein Werbe- oder Skriptblocker jsdelivr.net.');
+      failOpen(uiText("Der Leser konnte nicht vollständig geladen werden (epub.js/JSZip fehlen). Bitte lade die Seite neu – eventuell blockiert ein Werbe- oder Skriptblocker jsdelivr.net.","The reader libraries could not load (epub.js/JSZip). Reload the page and check whether jsdelivr.net is blocked."));
       return Promise.resolve();
     }
-    if (!buf || !buf.byteLength) { failOpen('Die Datei ist leer.'); return Promise.resolve(); }
-    if (!isZip(buf)) { failOpen('Das ist keine gültige EPUB-Datei. Ein EPUB ist intern ein ZIP-Archiv – diese Datei ist es nicht.'); return Promise.resolve(); }
+    if (!buf || !buf.byteLength) { failOpen(uiText("Die Datei ist leer.","The file is empty.")); return Promise.resolve(); }
+    if (!isZip(buf)) { failOpen(uiText("Das ist keine gültige EPUB-Datei. Ein EPUB ist intern ein ZIP-Archiv – diese Datei ist es nicht.","This is not a valid EPUB file. EPUB uses a ZIP container, which this file lacks.")); return Promise.resolve(); }
 
     // Vorheriges Buch sauber schließen, ohne die Ansicht zu wechseln
     destroySession();
     var my = ++session;
     showReader();
-    setLoading(true, 'Buch wird geöffnet …');
+    setLoading(true, uiText("Buch wird geöffnet …","Opening book …"));
 
     var copy = opts.storeRecent && idbOk ? buf.slice(0) : null;
     var book;
     try { book = window.ePub(buf); } catch (e) {
-      failOpen('Das EPUB konnte nicht geöffnet werden. Die Datei ist möglicherweise beschädigt.');
+      failOpen(uiText("Das EPUB konnte nicht geöffnet werden. Die Datei ist möglicherweise beschädigt.","Could not open the EPUB. The file may be damaged."));
       return Promise.resolve();
     }
     S = {
@@ -485,14 +487,14 @@
       setupRendition(st);
 
       var pos = lsGet('pos:' + st.key, null);
-      setLoading(true, 'Seite wird aufgebaut …');
+      setLoading(true, uiText("Seite wird aufgebaut …","Rendering page …"));
       var shown = pos && pos.cfi
         ? rendition.display(pos.cfi).catch(function () { return rendition.display(); })
         : rendition.display();
       return withTimeout(shown, 30000, 'Zeitüberschreitung').then(function () {
         if (my !== session) return;
         setLoading(false);
-        if (pos && pos.cfi) toast('Weiter an deiner letzten Leseposition');
+        if (pos && pos.cfi) toast(uiText("Weiter an deiner letzten Leseposition","Resuming your last reading position"));
 
         // Inhaltsverzeichnis
         book.loaded.navigation.then(function (nav) {
@@ -538,7 +540,7 @@
 
   function generateLocations(st, my) {
     var book = st.book;
-    progPage.textContent = 'Seiten werden berechnet …';
+    progPage.textContent = uiText("Seiten werden berechnet …","Calculating pages …");
     var cached = null;
     try { cached = localStorage.getItem(PREFIX + 'loc:' + st.key); } catch (e) { cached = null; }
     var p;
@@ -607,7 +609,7 @@
     r.on('relocated', function (loc) { if (S === st) { stopSpeech(); onRelocated(st, loc); } });
     r.on('keyup', onKey);
     r.on('click', function () { closeSettings(); });
-    r.on('displayError', function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
+    r.on('displayError', function () { toast(uiText("Diese Stelle konnte nicht angezeigt werden.","This location could not be displayed.")); });
 
     // Wischen + Tippen an den Rand (im iframe)
     r.hooks.content.register(function (contents) {
@@ -786,7 +788,7 @@
           st.rendition.display(item.href).catch(function () {
             if (entry.index >= 0) return st.rendition.display(entry.index);
             throw new Error('x');
-          }).catch(function () { toast('Dieses Kapitel konnte nicht geöffnet werden.'); });
+          }).catch(function () { toast(uiText("Dieses Kapitel konnte nicht geöffnet werden.","Could not open this chapter.")); });
         });
         var li = el('li', null, [a]);
         if (item.subitems && item.subitems.length) {
@@ -839,7 +841,7 @@
     var p = Math.max(0, Math.min(1, range.value / 1000));
     var cfi = null;
     try { cfi = S.book.locations.cfiFromPercentage(p); } catch (e) { cfi = null; }
-    if (cfi) S.rendition.display(cfi).catch(function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
+    if (cfi) S.rendition.display(cfi).catch(function () { toast(uiText("Diese Stelle konnte nicht angezeigt werden.","This location could not be displayed.")); });
   });
 
   /* ===================== Lesezeichen ===================== */
@@ -895,14 +897,14 @@
     var idx = markIndexAtLocation(st);
     if (idx >= 0) {
       st.marks.splice(idx, 1);
-      toast('Lesezeichen entfernt');
+      toast(uiText("Lesezeichen entfernt","Bookmark removed"));
     } else {
       var loc = st.location;
       var pct = null;
       if (st.locationsReady) { try { pct = st.book.locations.percentageFromCfi(loc.start.cfi); } catch (e) { pct = null; } }
       st.marks.push({ cfi: loc.start.cfi, index: loc.start.index, chapter: chapterLabel(st, loc.start.index), pct: pct, text: currentExcerpt(st), time: Date.now() });
       st.marks.sort(function (a, b) { try { return cfiCompare(a.cfi, b.cfi); } catch (e) { return 0; } });
-      toast('Lesezeichen gesetzt');
+      toast(uiText("Lesezeichen gesetzt","Bookmark added"));
     }
     lsSet('marks:' + st.key, st.marks);
     renderMarks(st);
@@ -922,7 +924,7 @@
       a.addEventListener('click', function (e) {
         e.preventDefault();
         closeDrawer();
-        st.rendition.display(m.cfi).catch(function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
+        st.rendition.display(m.cfi).catch(function () { toast(uiText("Diese Stelle konnte nicht angezeigt werden.","This location could not be displayed.")); });
       });
       var rm = el('button', { class: 'remove', type: 'button', 'aria-label': 'Lesezeichen entfernen', title: 'Entfernen', text: '×' });
       rm.addEventListener('click', function () {
@@ -952,10 +954,10 @@
     q = String(q || '').trim();
     var token = ++st.searchToken;
     clear(searchResults);
-    if (q.length < 2) { searchStatus.textContent = 'Bitte gib mindestens 2 Zeichen ein.'; return; }
+    if (q.length < 2) { searchStatus.textContent = uiText("Bitte gib mindestens 2 Zeichen ein.","Enter at least 2 characters."); return; }
     var items = (st.book.spine && st.book.spine.spineItems) || [];
     var total = 0, LIMIT = 300, i = 0;
-    searchStatus.textContent = 'Suche läuft …';
+    searchStatus.textContent = uiText("Suche läuft …","Searching …");
 
     function step() {
       if (token !== st.searchToken || S !== st) return;
@@ -1003,7 +1005,7 @@
         st.rendition.annotations.highlight(cfi, {}, null, 'search-hl', { fill: '#ffd54a', 'fill-opacity': '0.45', 'mix-blend-mode': 'multiply' });
         st.hl = cfi;
       } catch (e) { /* Markierung optional */ }
-    }).catch(function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
+    }).catch(function () { toast(uiText("Diese Stelle konnte nicht angezeigt werden.","This location could not be displayed.")); });
   }
 
   searchForm.addEventListener('submit', function (e) {
@@ -1115,9 +1117,9 @@
       } else {
         var req = fsTarget.requestFullscreen || fsTarget.webkitRequestFullscreen;
         var p = req && req.call(fsTarget);
-        if (p && p.catch) p.catch(function () { toast('Vollbild ist hier nicht möglich.'); });
+        if (p && p.catch) p.catch(function () { toast(uiText("Vollbild ist hier nicht möglich.","Fullscreen is unavailable here.")); });
       }
-    } catch (e) { toast('Vollbild ist hier nicht möglich.'); }
+    } catch (e) { toast(uiText("Vollbild ist hier nicht möglich.","Fullscreen is unavailable here.")); }
   });
   function onFsChange() {
     var on = !!fsElement();
@@ -1213,8 +1215,8 @@
   recentClear.addEventListener('click', function () {
     idbClear().then(function () {
       renderRecent();
-      homeMessage('Die Liste „Zuletzt gelesen“ wurde geleert.');
-    }).catch(function () { homeMessage('Die Liste konnte nicht geleert werden.', true); });
+      homeMessage(uiText("Die Liste „Zuletzt gelesen“ wurde geleert.","Recently read list cleared."));
+    }).catch(function () { homeMessage(uiText("Die Liste konnte nicht geleert werden.","Could not clear the list."), true); });
   });
 
   // Drag & Drop (überall auf der Seite)
@@ -1267,20 +1269,20 @@
   var shelfSearchTimer; $('shelf-search').addEventListener('input',function(){clearTimeout(shelfSearchTimer);shelfSearchTimer=setTimeout(renderRecent,180);});
   var nd=$('note-dialog'), nt=$('note-text'), nl=$('note-list'), ns=$('note-status'), speak=$('btn-speak');
   function notes(){var a=S&&S.key?lsGet('notes:'+S.key,[]):[];return Array.isArray(a)?a:[];}
-  function showNotes(){clear(nl);notes().forEach(function(n,i){var jump=el('button',{type:'button',text:n.text});jump.addEventListener('click',function(){if(S&&S.rendition){nd.close();S.rendition.display(n.cfi).catch(function(){toast('Stelle nicht verfügbar');});}});var del=el('button',{type:'button',text:'Löschen'});del.addEventListener('click',function(){var a=notes();a.splice(i,1);if(lsSet('notes:'+S.key,a))showNotes();else ns.textContent='Speichern fehlgeschlagen';});nl.appendChild(el('li',null,[jump,del]));});}
+  function showNotes(){clear(nl);notes().forEach(function(n,i){var jump=el('button',{type:'button',text:n.text});jump.addEventListener('click',function(){if(S&&S.rendition){nd.close();S.rendition.display(n.cfi).catch(function(){toast(uiText("Stelle nicht verfügbar","Location unavailable"));});}});var del=el('button',{type:'button',text:uiText("Löschen","Delete")});del.addEventListener('click',function(){var a=notes();a.splice(i,1);if(lsSet('notes:'+S.key,a))showNotes();else ns.textContent=uiText("Speichern fehlgeschlagen","Could not save");});nl.appendChild(el('li',null,[jump,del]));});}
   $('btn-note').addEventListener('click',function(){if(!S||!S.key||!S.location||!S.location.start)return;nt.value='';ns.textContent='';showNotes();nd.showModal();});
   $('note-close').addEventListener('click',function(){nd.close();});
-  $('note-save').addEventListener('click',function(){if(!S||!S.location||!nt.value.trim())return;var a=notes();a.push({cfi:S.location.start.cfi,text:nt.value.trim()});if(lsSet('notes:'+S.key,a)){nt.value='';ns.textContent='Gespeichert';showNotes();}else ns.textContent='Speicher nicht verfügbar';});
+  $('note-save').addEventListener('click',function(){if(!S||!S.location||!nt.value.trim())return;var a=notes();a.push({cfi:S.location.start.cfi,text:nt.value.trim()});if(lsSet('notes:'+S.key,a)){nt.value='';ns.textContent=uiText("Gespeichert","Saved");showNotes();}else ns.textContent=uiText("Speicher nicht verfügbar","Storage unavailable");});
   function stopSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();speak.setAttribute('aria-pressed','false');}
   if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))speak.hidden=true;
-  speak.addEventListener('click',function(){if(speak.getAttribute('aria-pressed')==='true'){stopSpeech();return;}if(!S||!S.rendition)return;var voices=window.speechSynthesis.getVoices().filter(function(v){return v.localService;});if(!voices.length){toast('Keine lokale Vorlesestimme verfügbar.');return;}var contents=S.rendition.getContents()[0];if(!contents||!contents.document.body)return;var lang=contents.document.documentElement.lang||'de';var voice=voices.find(function(v){return v.lang.split('-')[0]===lang.split('-')[0];});if(!voice){toast('Keine passende lokale Stimme verfügbar.');return;}var text=contents.document.body.innerText.trim().slice(0,12000);if(!text)return;var u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.onend=u.onerror=stopSpeech;speak.setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);});
+  speak.addEventListener('click',function(){if(speak.getAttribute('aria-pressed')==='true'){stopSpeech();return;}if(!S||!S.rendition)return;var voices=window.speechSynthesis.getVoices().filter(function(v){return v.localService;});if(!voices.length){toast(uiText("Keine lokale Vorlesestimme verfügbar.","No local speech voice available."));return;}var contents=S.rendition.getContents()[0];if(!contents||!contents.document.body)return;var lang=contents.document.documentElement.lang||'de';var voice=voices.find(function(v){return v.lang.split('-')[0]===lang.split('-')[0];});if(!voice){toast(uiText("Keine passende lokale Stimme verfügbar.","No matching local speech voice available."));return;}var text=contents.document.body.innerText.trim().slice(0,12000);if(!text)return;var u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.onend=u.onerror=stopSpeech;speak.setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);});
   btnClose.addEventListener('click',stopSpeech);window.addEventListener('pagehide',stopSpeech);
-  function paintHighlight(st,h){try{st.rendition.annotations.highlight(h.cfi,{},null,'molitor-highlight',{fill:h.color,'fill-opacity':'0.35','mix-blend-mode':'multiply'});}catch(e){toast('Markierung konnte nicht angezeigt werden.');}}
-  function renderHighlights(){var list=$('highlight-list');clear(list);if(!S)return;$('highlight-status').textContent=S.pendingHighlight?'Farbe für ausgewählten Text wählen.':'Text im Buch auswählen, um eine Markierung hinzuzufügen.';document.querySelectorAll('[data-highlight]').forEach(function(b){b.disabled=!S.pendingHighlight;});(S.highlights||[]).forEach(function(h,i){var jump=el('button',{type:'button',text:h.text||'Markierte Stelle'});jump.addEventListener('click',function(){$('highlight-dialog').close();S.rendition.display(h.cfi).catch(function(){toast('Stelle nicht verfügbar');});});var del=el('button',{type:'button',text:'Löschen'});del.addEventListener('click',function(){var next=S.highlights.filter(function(_,j){return j!==i;});if(!lsSet('highlights:'+S.key,next)){toast('Speicher nicht verfügbar');return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;renderHighlights();});list.appendChild(el('li',null,[jump,del]));});}
+  function paintHighlight(st,h){try{st.rendition.annotations.highlight(h.cfi,{},null,'molitor-highlight',{fill:h.color,'fill-opacity':'0.35','mix-blend-mode':'multiply'});}catch(e){toast(uiText("Markierung konnte nicht angezeigt werden.","Could not display highlight."));}}
+  function renderHighlights(){var list=$('highlight-list');clear(list);if(!S)return;$('highlight-status').textContent=S.pendingHighlight?uiText("Farbe für ausgewählten Text wählen.","Choose a color for the selected text."):uiText("Text im Buch auswählen, um eine Markierung hinzuzufügen.","Select text in the book to add a highlight.");document.querySelectorAll('[data-highlight]').forEach(function(b){b.disabled=!S.pendingHighlight;});(S.highlights||[]).forEach(function(h,i){var jump=el('button',{type:'button',text:h.text||uiText("Markierte Stelle","Highlighted passage")});jump.addEventListener('click',function(){$('highlight-dialog').close();S.rendition.display(h.cfi).catch(function(){toast(uiText("Stelle nicht verfügbar","Location unavailable"));});});var del=el('button',{type:'button',text:uiText("Löschen","Delete")});del.addEventListener('click',function(){var next=S.highlights.filter(function(_,j){return j!==i;});if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;renderHighlights();});list.appendChild(el('li',null,[jump,del]));});}
   $('btn-highlight').addEventListener('click',function(){if(!S||!S.key)return;renderHighlights();$('highlight-dialog').showModal();});
   $('highlight-close').addEventListener('click',function(){$('highlight-dialog').close();});
   $('highlight-dialog').addEventListener('close',function(){if(S)S.pendingHighlight=null;});
-  document.querySelectorAll('[data-highlight]').forEach(function(b){b.addEventListener('click',function(){if(!S||!S.pendingHighlight)return;var h=Object.assign({},S.pendingHighlight,{color:b.dataset.highlight});var next=(S.highlights||[]).filter(function(x){return x.cfi!==h.cfi;}).concat(h);if(!lsSet('highlights:'+S.key,next)){toast('Speicher nicht verfügbar');return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;paintHighlight(S,h);S.pendingHighlight=null;renderHighlights();$('highlight-dialog').close();});});
+  document.querySelectorAll('[data-highlight]').forEach(function(b){b.addEventListener('click',function(){if(!S||!S.pendingHighlight)return;var h=Object.assign({},S.pendingHighlight,{color:b.dataset.highlight});var next=(S.highlights||[]).filter(function(x){return x.cfi!==h.cfi;}).concat(h);if(!lsSet('highlights:'+S.key,next)){toast(uiText("Speicher nicht verfügbar","Storage unavailable"));return;}S.rendition.annotations.remove(h.cfi,'highlight');S.highlights=next;paintHighlight(S,h);S.pendingHighlight=null;renderHighlights();$('highlight-dialog').close();});});
   /* ===================== Start ===================== */
   applySettingsToRendition();
   renderLibrary();
