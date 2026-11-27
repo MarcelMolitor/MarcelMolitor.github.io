@@ -1,4 +1,4 @@
-#define AppName "Android Desk"
+#define AppName "MOLITOR HandyBrücke"
 #define AppVersion "0.2"
 [Setup]
 AppId=Molitor.AndroidDesk
@@ -6,8 +6,8 @@ AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher=Marcel Molitor
 AppPublisherURL=https://marcelmolitor.github.io/android-desk/
-DefaultDirName={localappdata}\Programs\Android Desk
-DefaultGroupName=Android Desk
+DefaultDirName={localappdata}\Programs\MOLITOR HandyBrücke
+DefaultGroupName=MOLITOR HandyBrücke
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
@@ -25,8 +25,8 @@ Source: "THIRD-PARTY.txt"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{tmp}\android-desk-scrcpy\scrcpy-win64-v5.0.1\*"; DestDir: "{app}\scrcpy"; Flags: external recursesubdirs createallsubdirs ignoreversion
 
 [Icons]
-Name: "{group}\Android Desk"; Filename: "{app}\Android-Desk.exe"
-Name: "{group}\Android Desk deinstallieren"; Filename: "{uninstallexe}"
+Name: "{group}\MOLITOR HandyBrücke"; Filename: "{app}\Android-Desk.exe"
+Name: "{group}\MOLITOR HandyBrücke deinstallieren"; Filename: "{uninstallexe}"
 
 [Code]
 var
