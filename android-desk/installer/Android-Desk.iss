@@ -1,5 +1,5 @@
 #define AppName "Tetherlume"
-#define AppVersion "0.6"
+#define AppVersion "0.7"
 [Setup]
 AppId=Molitor.AndroidDesk
 AppName={#AppName}
@@ -9,6 +9,9 @@ AppPublisherURL=https://marcelmolitor.github.io/android-desk/
 DefaultDirName={localappdata}\Programs\Tetherlume
 DefaultGroupName=Tetherlume
 PrivilegesRequired=lowest
+CloseApplications=yes
+CloseApplicationsFilter=*.exe,*.dll
+RestartApplications=no
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=output
@@ -22,7 +25,7 @@ LicenseFile=..\LICENSE
 Source: "payload\Android-Desk.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE-Android-Desk.txt"; Flags: ignoreversion
 Source: "THIRD-PARTY.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "payload\scrcpy\*"; DestDir: "{app}\scrcpy"; Flags: recursesubdirs createallsubdirs ignoreversion
+Source: "payload\scrcpy\*"; DestDir: "{app}\scrcpy"; Flags: recursesubdirs createallsubdirs ignoreversion restartreplace
 
 Source: "..\PRIVACY.md"; DestDir: "{app}"; Flags: ignoreversion
 
