@@ -1,0 +1,42 @@
+/* MOLITOR Corporate Design · basiert auf dem Tetherlume-OS-Look
+   Einbinden ganz am Ende des <head>: <link rel="stylesheet" href="/molitor.css">
+   Optional: <body class="mo"> für das komplette Seitenlayout. */
+:root{
+  --mo-bg:#0a111c;--mo-bg2:#101a28;--mo-surface:#111c2c;--mo-surface2:#142236;--mo-line:#36485e;--mo-line2:#456080;
+  --mo-text:#eaf3ff;--mo-muted:#b9c5d6;--mo-blue:#347ff5;--mo-blue2:#6ba5ff;--mo-link:#8abfff;--mo-gold:#ffc439;
+  --mo-ok:#3ccf8e;--mo-radius:12px;--mo-font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mo-flag:linear-gradient(90deg,#181818 0 33.33%,#dd2029 33.33% 66.66%,#ffce00 66.66%);
+  color-scheme:dark
+}
+/* ---- Basis (nur mit body.mo) ---- */
+body.mo{margin:0;background:radial-gradient(ellipse at 75% 15%,#263d5a 0,transparent 58%),var(--mo-bg);color:var(--mo-text);font:15px/1.6 var(--mo-font);min-height:100vh}
+body.mo a{color:var(--mo-link)}
+body.mo h1,body.mo h2,body.mo h3{letter-spacing:-.035em;font-weight:720;line-height:1.15}
+body.mo h1{font-size:clamp(28px,4vw,48px);letter-spacing:-.045em}
+body.mo ::selection{background:#347ff566}
+/* ---- Bausteine (überall nutzbar) ---- */
+.mo-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#101a28e8;border:1px solid var(--mo-line);border-radius:var(--mo-radius);padding:13px 18px;backdrop-filter:blur(8px);color:var(--mo-text);font-family:var(--mo-font)}
+.mo-bar .mo-brand{font-weight:800;letter-spacing:.06em;text-decoration:none;color:var(--mo-text);display:flex;align-items:center;gap:10px}
+.mo-bar .mo-brand i{font-style:normal;width:28px;height:28px;border-radius:8px;background:var(--mo-blue);display:grid;place-items:center;color:#fff}
+.mo-bar .mo-brand small{font-weight:600;letter-spacing:0;color:var(--mo-muted)}
+.mo-bar nav{display:flex;gap:4px;flex-wrap:wrap}
+.mo-bar nav a{color:var(--mo-text);text-decoration:none;padding:8px 11px;border-radius:8px;font-size:14px}
+.mo-bar nav a:hover{background:#263c57}
+.mo-bar nav a.mo-heart{background:#245ba9}
+.mo-panel{background:var(--mo-surface);border:1px solid var(--mo-line);border-radius:var(--mo-radius);padding:18px}
+.mo-window{display:flex;justify-content:space-between;align-items:center;font-weight:700;border-bottom:1px solid var(--mo-line);padding-bottom:12px;margin-bottom:12px}
+.mo-window small{font-size:10px;letter-spacing:.12em;color:var(--mo-muted)}
+.mo-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;font-weight:650;min-height:42px;padding:10px 16px;border-radius:10px;border:1px solid #31496b;background:#183353;color:var(--mo-text);text-decoration:none;cursor:pointer}
+.mo-btn:hover{filter:brightness(1.15)}
+.mo-btn.mo-primary{background:var(--mo-blue);border-color:var(--mo-blue2);color:#fff}
+.mo-btn.mo-coffee{background:var(--mo-gold);border-color:#ffd66b;color:#111}
+.mo-origin{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#a7bbd5}
+.mo-origin:before{content:"";width:18px;height:12px;border-radius:2px;background:linear-gradient(#171717 0 33.33%,#d00 33.33% 66.66%,#ffce00 66.66%)}
+.mo-accent{height:3px;width:120px;border-radius:3px;background:var(--mo-flag)}
+.mo-support{margin:24px 0;padding:22px;border-radius:var(--mo-radius);border:1px solid #345780;background:linear-gradient(140deg,#172e4d,#101d30);color:var(--mo-text);font-family:var(--mo-font)}
+.mo-support h2{margin:10px 0 6px}
+.mo-support p{color:#c7d6ec;margin:0 0 12px}
+.mo-support small{display:block;margin-top:10px;color:var(--mo-muted);font-size:12px}
+.mo-footer{margin-top:28px;padding:16px 4px;border-top:1px solid var(--mo-line);color:var(--mo-muted);font:13px/1.6 var(--mo-font);display:flex;gap:10px 18px;flex-wrap:wrap;justify-content:space-between}
+.mo-footer a{color:var(--mo-link)}
+@media(prefers-reduced-motion:reduce){.mo-btn{transition:none}}

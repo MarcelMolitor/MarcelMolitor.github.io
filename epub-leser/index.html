@@ -1,1 +1,210 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>MOLITOR · eBook Reader</title><meta name="theme-color" content="#142d40"><style>*{box-sizing:border-box}body{margin:0;background:#f5f2e9;color:#142d40;font:16px system-ui}header{background:#142d40;color:white;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}header a{color:white}button,select{font:inherit;padding:10px;border:1px solid #9aacae;border-radius:8px;background:white;color:#142d40}#viewer{height:calc(100dvh - 180px);min-height:240px;max-width:1000px;margin:auto}nav{display:flex;justify-content:center;gap:12px;padding:12px;flex-wrap:wrap}#status{text-align:center;padding:8px}body.dark{background:#17242d;color:#eee}a{color:inherit}</style><script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script></head><body><header><a href="/ecs-lesereihe/">← Bibliothek</a><strong>MOLITOR READER</strong><button id="theme">Nachtmodus</button><button id="minus">A−</button><button id="plus">A+</button><select id="toc" aria-label="Kapitel"><option value="">Kapitel wählen</option></select></header><div id="status" role="status">Buch wird geladen …</div><main id="viewer"></main><nav><button id="prev">← Zurück</button><button id="next">Weiter →</button><a id="download" download>EPUB laden</a></nav><script>const q=id=>document.getElementById(id);const allowed=['kuechenlabor','gegenprobe','bildatlas'];const path=new URLSearchParams(location.search).get('book');let rendition,size=110,dark=false;const key='molitor-reader:'+path;function save(k,v){try{localStorage.setItem(k,v)}catch{}}function read(k){try{return localStorage.getItem(k)}catch{return null}}async function init(){if(!allowed.some(x=>path==='/ecs-lesereihe/'+x+'.epub'))throw Error('Bitte ein Buch in der Bibliothek auswählen.');q('download').href=path;if(!window.ePub)throw Error('Reader-Bibliothek konnte nicht geladen werden.');const response=await fetch(path);if(!response.ok)throw Error('Buchdatei nicht erreichbar.');const book=ePub(await response.arrayBuffer());rendition=book.renderTo('viewer',{width:'100%',height:'100%',spread:'none',allowScriptedContent:false});rendition.themes.register('light',{body:{background:'#f5f2e9',color:'#142d40'}});rendition.themes.register('dark',{body:{background:'#17242d',color:'#eee'}});rendition.themes.select('light');rendition.themes.fontSize(size+'%');rendition.on('relocated',loc=>{save(key,loc.start.cfi);q('status').textContent='Leseposition gespeichert · '+(loc.start.displayed?.page||1)+' / '+(loc.start.displayed?.total||1)+' im Abschnitt'});const saved=read(key);try{await rendition.display(saved||undefined)}catch{await rendition.display()}const n=await book.loaded.navigation;function add(items,depth=0){for(const i of items){const o=document.createElement('option');o.value=i.href;o.textContent='—'.repeat(depth)+i.label;q('toc').append(o);add(i.subitems||[],depth+1)}}add(n.toc);q('toc').onchange=()=>{if(q('toc').value)rendition.display(q('toc').value)};q('prev').onclick=()=>rendition.prev();q('next').onclick=()=>rendition.next();q('plus').onclick=()=>rendition.themes.fontSize((size=Math.min(220,size+10))+'%');q('minus').onclick=()=>rendition.themes.fontSize((size=Math.max(80,size-10))+'%');q('theme').onclick=()=>{dark=!dark;document.body.classList.toggle('dark',dark);rendition.themes.select(dark?'dark':'light');q('theme').textContent=dark?'Tagmodus':'Nachtmodus'};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')rendition.next();if(e.key==='ArrowLeft')rendition.prev()})}init().catch(e=>q('status').textContent=e.message+' – EPUB-Download als Alternative nutzen.');</script></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EPUB-Leser im Browser – kostenlos, ohne Upload · MOLITOR</title>
+<meta name="description" content="Kostenloser EPUB-Leser für Handy und PC: E-Books direkt im Browser lesen, ohne Upload und ohne Konto. Inhaltsverzeichnis, Lesezeichen, Suche, Sepia- und Dunkelmodus.">
+<link rel="canonical" href="https://marcelmolitor.github.io/epub-leser/">
+<meta name="theme-color" content="#0a111c">
+<meta name="color-scheme" content="light dark">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="de_DE">
+<meta property="og:site_name" content="MOLITOR">
+<meta property="og:title" content="EPUB-Leser im Browser – kostenlos, ohne Upload">
+<meta property="og:description" content="E-Books direkt im Browser lesen: Inhaltsverzeichnis, Lesezeichen, Suche, Hell-, Sepia- und Dunkelmodus. Deine Bücher bleiben auf deinem Gerät.">
+<meta property="og:url" content="https://marcelmolitor.github.io/epub-leser/">
+<meta property="og:image" content="https://marcelmolitor.github.io/epub-leser/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="MOLITOR EPUB-Leser: Deine EPUBs. Schön gelesen.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="EPUB-Leser im Browser – kostenlos, ohne Upload">
+<meta name="twitter:description" content="E-Books direkt im Browser lesen. Deine Bücher bleiben auf deinem Gerät.">
+<meta name="twitter:image" content="https://marcelmolitor.github.io/epub-leser/og.png">
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/molitor.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"MOLITOR EPUB-Leser","url":"https://marcelmolitor.github.io/epub-leser/","applicationCategory":"BookReaderApplication","operatingSystem":"Browser","inLanguage":"de","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Marcel Molitor"}}
+</script>
+</head>
+<body data-theme="hell">
+
+<!-- ===================== STARTSEITE ===================== -->
+<div id="home" class="home">
+  <header class="topbar">
+    <a class="brand" href="/de.html" aria-label="Zurück zu den MOLITOR Projekten"><span aria-hidden="true">◈</span> MOLITOR <span class="brand-sub">· EPUB-Leser</span></a>
+    <a class="back" href="/de.html">← Alle Projekte</a>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow">Kostenlos · ohne Konto · ohne Upload</p>
+      <h1>Deine EPUBs.<br><span>Schön gelesen.</span></h1>
+      <p class="lead">Öffne ein E-Book direkt im Browser – auf Handy, Tablet oder PC. Deine Bücher werden nicht hochgeladen, sondern nur auf deinem Gerät verarbeitet.</p>
+
+      <div id="dropzone" class="dropzone" tabindex="0" role="button" aria-describedby="drop-hint">
+        <svg aria-hidden="true" width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h13v15H6.5A2.5 2.5 0 0 0 4 20.5 2.5 2.5 0 0 0 6.5 23H19v-5"/><path d="M12 7v6M9 10l3-3 3 3"/></svg>
+        <strong>EPUB-Datei hier ablegen</strong>
+        <span id="drop-hint">oder antippen, um eine Datei auszuwählen</span>
+        <span class="btn primary">Datei auswählen</span>
+      </div>
+      <input id="file-input" type="file" accept=".epub,application/epub+zip" hidden>
+      <p id="home-msg" class="msg" role="status" aria-live="polite"></p>
+    </section>
+
+    <section id="recent-section" class="section" hidden aria-labelledby="recent-h">
+      <div class="section-head">
+        <h2 id="recent-h">Zuletzt gelesen</h2>
+        <button id="recent-clear" class="link-btn" type="button">Liste leeren</button>
+      </div>
+      <ul id="recent-list" class="shelf"></ul>
+    </section>
+
+    <section class="section" aria-labelledby="lib-h">
+      <div class="section-head">
+        <h2 id="lib-h">Bibliothek: Kostenlose Bücher von Marcel Molitor</h2>
+      </div>
+      <p class="section-lead">Drei kurze Bücher aus der <a href="/ecs-lesereihe/">ECS-Lesereihe</a> – mit einem Tipp direkt hier im Leser öffnen.</p>
+      <ul id="library-list" class="shelf"></ul>
+    </section>
+
+    <section class="section features" aria-labelledby="feat-h">
+      <h2 id="feat-h">Was der Leser kann</h2>
+      <ul class="feature-grid">
+        <li><b>Inhaltsverzeichnis</b><span>Springe direkt zu jedem Kapitel.</span></li>
+        <li><b>Blättern, wie du willst</b><span>Buttons, Pfeiltasten, Wischen oder Tippen an den Seitenrand.</span></li>
+        <li><b>Leseposition &amp; Lesezeichen</b><span>Automatisch gespeichert – pro Buch, lokal im Browser.</span></li>
+        <li><b>Hell, Sepia, Dunkel</b><span>Dazu Schriftgröße und Serif- oder Sans-Schrift.</span></li>
+        <li><b>Suche im Buch</b><span>Finde Begriffe im ganzen Text samt Textausschnitt.</span></li>
+        <li><b>Vollbild</b><span>Ablenkungsfrei lesen, wo es der Browser erlaubt.</span></li>
+      </ul>
+    </section>
+
+    <section class="section privacy" aria-labelledby="priv-h">
+      <h2 id="priv-h">Datenschutz</h2>
+      <p>Deine Bücher bleiben lokal in deinem Browser. Es findet kein Upload an einen Server statt. Leseposition, Lesezeichen und Einstellungen werden im <i>localStorage</i>, die Liste „Zuletzt gelesen“ (inklusive der geöffneten Datei) in der <i>IndexedDB</i> deines Browsers gespeichert. Du kannst die Liste jederzeit leeren. Die Leser-Bibliotheken epub.js und JSZip werden vom CDN jsDelivr geladen.</p>
+    </section>
+
+    <aside class="support" aria-labelledby="support-h">
+      <h2 id="support-h">Projekt unterstützen</h2>
+      <p>Der EPUB-Leser ist kostenlos. Wenn er dir gefällt, kannst du meine unabhängige Arbeit freiwillig über PayPal unterstützen – ohne Gegenleistung, kein Abo. Es handelt sich nicht um eine steuerlich absetzbare Spende.</p>
+      <a class="btn support-btn" href="https://www.paypal.biz/molitormarcel93" rel="noopener" target="_blank"><span aria-hidden="true">♥</span> Freiwillig mit PayPal unterstützen</a>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <p>Created by Marcel Molitor · Entwickelt in Deutschland</p>
+    <p><a href="/de.html">MOLITOR Projekte</a> · <a href="/ecs-lesereihe/">ECS-Lesereihe</a></p>
+  </footer>
+</div>
+
+<!-- ===================== LESEANSICHT ===================== -->
+<div id="reader" class="reader" hidden>
+  <header class="r-bar r-top">
+    <button id="btn-close" class="icon-btn" type="button" aria-label="Buch schließen, zurück zur Startseite" title="Zurück zur Startseite">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="r-title">
+      <strong id="r-book-title">Buch</strong>
+      <span id="r-chapter"></span>
+    </div>
+    <div class="r-actions">
+      <button id="btn-toc" class="icon-btn" type="button" aria-label="Inhaltsverzeichnis" title="Inhalt">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      </button>
+      <button id="btn-search" class="icon-btn" type="button" aria-label="Im Buch suchen" title="Suchen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+      <button id="btn-bookmark" class="icon-btn" type="button" aria-label="Lesezeichen setzen" aria-pressed="false" title="Lesezeichen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+      </button>
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Darstellung anpassen" aria-expanded="false" title="Darstellung">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l5-14h2l5 14M6.5 14h7"/><path d="M17 11h4M19 9v4"/></svg>
+      </button>
+      <button id="btn-fullscreen" class="icon-btn" type="button" aria-label="Vollbild" title="Vollbild">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="r-stage">
+    <button id="btn-prev-side" class="side-nav left" type="button" aria-label="Vorherige Seite" tabindex="-1">‹</button>
+    <div id="viewer" class="viewer" aria-label="Buchinhalt"></div>
+    <button id="btn-next-side" class="side-nav right" type="button" aria-label="Nächste Seite" tabindex="-1">›</button>
+    <div id="r-loading" class="r-loading" role="status" aria-live="polite"><div class="spinner" aria-hidden="true"></div><span id="r-loading-text">Buch wird geöffnet …</span></div>
+  </div>
+
+  <footer class="r-bar r-bottom">
+    <button id="btn-prev" class="nav-btn" type="button" aria-label="Vorherige Seite">‹ <span>Zurück</span></button>
+    <div class="progress">
+      <input id="progress-range" type="range" min="0" max="1000" value="0" step="1" aria-label="Fortschritt im Buch" disabled>
+      <div class="progress-text"><span id="progress-pct">–</span><span id="progress-page"></span></div>
+    </div>
+    <button id="btn-next" class="nav-btn" type="button" aria-label="Nächste Seite"><span>Weiter</span> ›</button>
+  </footer>
+
+  <!-- Seitenleiste: Inhalt / Suche / Lesezeichen -->
+  <div id="drawer-backdrop" class="backdrop" hidden></div>
+  <aside id="drawer" class="drawer" aria-label="Navigation im Buch" hidden>
+    <div class="drawer-head">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-toc" aria-controls="pane-toc" aria-selected="true" type="button">Inhalt</button>
+        <button role="tab" id="tab-search" aria-controls="pane-search" aria-selected="false" type="button">Suche</button>
+        <button role="tab" id="tab-marks" aria-controls="pane-marks" aria-selected="false" type="button">Lesezeichen</button>
+      </div>
+      <button id="drawer-close" class="icon-btn" type="button" aria-label="Seitenleiste schließen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div id="pane-toc" class="pane" role="tabpanel" aria-labelledby="tab-toc"><ol id="toc-list" class="toc"></ol></div>
+    <div id="pane-search" class="pane" role="tabpanel" aria-labelledby="tab-search" hidden>
+      <form id="search-form" class="search-form" role="search">
+        <input id="search-input" type="search" placeholder="Begriff im Buch suchen …" aria-label="Suchbegriff" autocomplete="off" enterkeyhint="search">
+        <button class="btn primary" type="submit">Suchen</button>
+      </form>
+      <p id="search-status" class="pane-note" role="status" aria-live="polite"></p>
+      <ol id="search-results" class="results"></ol>
+    </div>
+    <div id="pane-marks" class="pane" role="tabpanel" aria-labelledby="tab-marks" hidden>
+      <p class="pane-note">Deine Leseposition wird automatisch gespeichert. Zusätzlich kannst du mit dem Lesezeichen-Symbol oben beliebig viele Stellen markieren.</p>
+      <ol id="marks-list" class="results"></ol>
+    </div>
+  </aside>
+
+  <!-- Darstellung -->
+  <div id="settings" class="settings" role="dialog" aria-label="Darstellung" hidden>
+    <div class="set-row">
+      <span class="set-label">Schriftgröße</span>
+      <div class="stepper">
+        <button id="font-dec" type="button" aria-label="Schrift kleiner">A−</button>
+        <output id="font-size-out">100 %</output>
+        <button id="font-inc" type="button" aria-label="Schrift größer">A+</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">Farbschema</span>
+      <div class="seg" role="radiogroup" aria-label="Farbschema">
+        <button type="button" role="radio" data-theme-set="hell" class="sw sw-hell">Hell</button>
+        <button type="button" role="radio" data-theme-set="sepia" class="sw sw-sepia">Sepia</button>
+        <button type="button" role="radio" data-theme-set="dunkel" class="sw sw-dunkel">Dunkel</button>
+      </div>
+    </div>
+    <div class="set-row">
+      <span class="set-label">Schriftart</span>
+      <div class="seg" role="radiogroup" aria-label="Schriftart">
+        <button type="button" role="radio" data-font-set="serif" class="f-serif">Serif</button>
+        <button type="button" role="radio" data-font-set="sans" class="f-sans">Sans</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</div>
+
+<div id="drop-overlay" class="drop-overlay" hidden><div>EPUB loslassen zum Öffnen</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
