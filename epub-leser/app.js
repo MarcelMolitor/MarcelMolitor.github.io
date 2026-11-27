@@ -458,7 +458,7 @@
       }
 
       // Rendition aufbauen
-      var rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated', spread: 'auto' });
+      var rendition = book.renderTo('viewer', { width: '100%', height: '100%', flow: 'paginated', spread: settings.spread === 'none' ? 'none' : 'auto' });
       st.rendition = rendition;
       setupRendition(st);
 
@@ -559,6 +559,13 @@
     return rules;
   }
   function applyThemeToContents(contents) {
+    try {
+      var doc=contents.document, el=doc.getElementById('molitor-reading-spacing');
+      if(!el){el=doc.createElement('style');el.id='molitor-reading-spacing';doc.head.appendChild(el);}
+      var lh=[1.4,1.65,1.9].includes(settings.lineHeight)?settings.lineHeight:1.65;
+      el.textContent='html body p,html body li,html body blockquote{line-height:'+lh+' !important}';
+    } catch(e) {}
+
     try { contents.document.documentElement.setAttribute('data-lt', settings.theme); } catch (e) { /* egal */ }
   }
 
@@ -636,6 +643,16 @@
     try { r.themes.font(FONTS[settings.font]); } catch (e) { /* egal */ }
   }
   function saveSettings() { lsSet('settings', settings); applySettingsToRendition(); }
+  var readingOptions=document.createElement('div');
+  readingOptions.className='set-row';
+  var english=new URLSearchParams(location.search).get('lang')==='en';
+  readingOptions.innerHTML='<label class="set-label" for="reading-spacing">'+(english?'Line spacing':'Zeilenabstand')+'</label><select id="reading-spacing"><option value="1.4">'+(english?'Compact':'Kompakt')+'</option><option value="1.65">'+(english?'Comfortable':'Komfortabel')+'</option><option value="1.9">'+(english?'Spacious':'Großzügig')+'</option></select><label class="set-label" for="reading-spread">'+(english?'Page layout':'Seitenlayout')+'</label><select id="reading-spread"><option value="auto">'+(english?'Automatic (two pages on wide screens)':'Automatisch (Doppelseite auf breiten Bildschirmen)')+'</option><option value="none">'+(english?'Single page':'Einzelseite')+'</option></select>';
+  $('settings').appendChild(readingOptions);
+  $('reading-spacing').value=String(settings.lineHeight||1.65);
+  $('reading-spread').value=settings.spread==='none'?'none':'auto';
+  $('reading-spacing').onchange=function(){settings.lineHeight=Number(this.value);saveSettings();};
+  $('reading-spread').onchange=function(){settings.spread=this.value;saveSettings();if(S&&S.rendition){try{S.rendition.spread(settings.spread);}catch(e){}}};
+
 
   /* ===================== Navigation ===================== */
   function goForward() { if (S && S.rendition) S.rendition.next(); }
