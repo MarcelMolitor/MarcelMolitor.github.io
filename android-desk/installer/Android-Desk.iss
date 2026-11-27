@@ -21,6 +21,14 @@ SolidCompression=yes
 UninstallDisplayIcon={app}\Android-Desk.exe
 LicenseFile=..\LICENSE
 
+[Code]
+function InitializeSetup(): Boolean;
+begin
+  Result := True;
+  if (not WizardSilent) and FileExists(ExpandConstant('{localappdata}\Programs\Tetherlume\scrcpy\adb.exe')) then
+    Result := MsgBox('Please close Tetherlume, scrcpy and active Android debugging sessions before updating. / Bitte Tetherlume, scrcpy und laufende Android-Debugging-Sitzungen vor dem Update schließen.', mbInformation, MB_OKCANCEL) = IDOK;
+end;
+
 [Files]
 Source: "payload\Android-Desk.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\LICENSE"; DestDir: "{app}"; DestName: "LICENSE-Android-Desk.txt"; Flags: ignoreversion
