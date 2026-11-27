@@ -22,3 +22,14 @@ header{background:#fff;border-bottom:1px solid var(--line);padding:14px 0}
 @media(max-width:950px){.projects,.book-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.wrap{width:calc(100% - 28px)}.projects,.book-grid{grid-template-columns:minmax(0,1fr);gap:14px}.home-intro{gap:12px 16px;padding:20px 0}.home-intro h1{font-size:30px}.section-top{flex-wrap:wrap;gap:5px}.nav .navlinks{gap:2px 14px}.nav .navlinks a{min-height:36px;font-size:13px}.nav .support-link{min-height:40px;padding:6px 12px}.projects .card .visual{height:122px}.projects .body{padding:18px}.book-cover{min-height:180px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* Explicit three-row artwork layout: metadata never overlaps long names. */
+.projects .card .visual{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:16px minmax(0,1fr) 24px;gap:4px;height:156px;padding:12px 16px;align-items:center;justify-items:stretch}
+.projects .card .visual .index,.projects .card .visual .caption{position:relative;inset:auto;z-index:1;line-height:1.2;overflow-wrap:anywhere}
+.projects .card .visual .index{grid-row:1;text-align:left}
+.projects .card .visual .word{grid-row:2;align-self:center;justify-self:center;width:100%;font-size:clamp(20px,2vw,27px);line-height:1.12;text-wrap:balance}
+.projects .card .visual .caption{grid-row:3;align-self:end;text-align:right}
+.projects .card .visual svg{pointer-events:none}
+.projects .card .cardlink{background:none;color:#075db5;border:0;border-top:1px solid var(--line);border-radius:0;padding:12px 0 0}
+.projects .card .cardlink+.cardlink{margin-top:8px}
+@media(max-width:600px){.projects .card .visual{height:146px}.projects .card .visual .word{font-size:25px}}
