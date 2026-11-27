@@ -475,7 +475,7 @@
       st.key = makeKey(st.title, st.size);
       st.rtl = md.direction === 'rtl' || (book.package && book.package.metadata && book.package.metadata.direction === 'rtl');
       rTitle.textContent = st.title;
-      document.title = st.title + ' · EPUB-Leser · MOLITOR';
+      document.title = st.title + (englishUI ? ' · EPUB Reader · MOLITOR' : ' · EPUB-Leser · MOLITOR');
       st.marks = lsGet('marks:' + st.key, []) || [];
 
       if (opts.libUrl) {
