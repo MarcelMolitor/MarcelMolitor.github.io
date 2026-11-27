@@ -10,6 +10,19 @@
 
 <meta name="description" content="EPUB-Dateien kostenlos online öffnen: mit Notizen, Lesezeichen, Textsuche, Dunkelmodus und Lesestatistik. Für PC, Tablet und Handy, ohne Buch-Upload.">
 <link rel="canonical" href="https://marcelmolitor.github.io/epub-leser/">
+<meta property="og:locale:alternate" content="en_US">
+<script id="reader-english-metadata">
+if(new URLSearchParams(location.search).get("lang")==="en"){
+ document.documentElement.lang="en";
+ document.addEventListener("DOMContentLoaded",()=>{
+ const title="Free Online EPUB Reader – Open and Read EPUB Books";
+ const description="Read EPUB books in your browser for free, with bookmarks, notes, search, dark mode and reading statistics. No book upload required.";
+ document.title=title;
+ for(const [selector,value] of [['meta[name="description"]',description],['meta[property="og:title"]',title],['meta[property="og:description"]',description],['meta[property="og:locale"]',"en_US"],['meta[property="og:locale:alternate"]',"de_DE"],['meta[name="twitter:title"]',title],['meta[name="twitter:description"]',description]]){const el=document.querySelector(selector);if(el)el.content=value;}
+ });
+ document.title="Free Online EPUB Reader – Open and Read EPUB Books";
+}
+</script>
 <meta name="theme-color" content="#0a111c">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
@@ -30,7 +43,7 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="/molitor.css">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebApplication","name":"EPUB Reader","url":"https://marcelmolitor.github.io/epub-leser/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web browser","inLanguage":"de","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Marcel Molitor"}}
+{"@context":"https://schema.org","@type":"WebApplication","name":"EPUB Reader","url":"https://marcelmolitor.github.io/epub-leser/","applicationCategory":"UtilitiesApplication","operatingSystem":"Web browser","inLanguage":["de","en"],"isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Marcel Molitor"}}
 </script>
 <link rel="stylesheet" href="/molitor-identity.css?v=brand-1"><style id="reader-prism-v2">
 /* reader-prism-v2 */
