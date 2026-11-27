@@ -3,16 +3,16 @@
 1 ICON "android-desk.ico"
 100 DIALOGEX 0,0,309,204
 STYLE DS_SETFONT | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
-CAPTION "MOLITOR HandyBrücke"
+CAPTION "MOLITOR LinkDeck"
 FONT 10, "Segoe UI"
 BEGIN
  ICON 1,-1,13,12,26,26
- LTEXT "MOLITOR HandyBrücke",-1,48,12,248,14
- LTEXT "Android per USB am PC bedienen",-1,48,28,248,12
- LTEXT "Verbinde ein entsperrtes Android-Gerät per Datenkabel. Aktiviere USB-Debugging und erlaube den Zugriff auf dem Gerät.",-1,13,54,281,32
- CONTROL "Handydisplay beim Start ausschalten",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,280,14
- DEFPUSHBUTTON "Gerät öffnen",102,13,117,83,20
- PUSHBUTTON "MP4 aufnehmen …",103,102,117,94,20
- PUSHBUTTON "Anleitung",104,203,117,91,20
+ LTEXT "MOLITOR LinkDeck",-1,48,12,248,14
+ LTEXT "Control your phone over USB",-1,48,28,248,12
+ LTEXT "Connect one unlocked Android device with a data cable. Enable USB debugging and approve access on the device.",-1,13,54,281,32
+ CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,280,14
+ DEFPUSHBUTTON "Open device",102,13,117,83,20
+ PUSHBUTTON "Record MP4 ...",103,102,117,94,20
+ PUSHBUTTON "Help",104,203,117,91,20
  LTEXT "",105,13,151,282,43
 END
