@@ -27,6 +27,8 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,115,tr(L"DEVICE CONNECTION",L"GERÄTEVERBINDUNG"));
     SetDlgItemTextW(w,116,tr(L"STATUS",L"STATUS"));
     SetDlgItemTextW(w,117,tr(L"Start sharing in Tetherlume Android and paste its local link here.",L"Starte die Bildschirmfreigabe in Tetherlume Android und füge den lokalen Link hier ein."));
+    SetDlgItemTextW(w,122,tr(L"Paste link",L"Link einfügen"));
+    SetDlgItemTextW(w,123,tr(L"Wi-Fi help",L"WLAN-Hilfe"));
     SetDlgItemTextW(w,119,tr(L"Open Wi-Fi screen",L"WLAN-Bildschirm öffnen"));
     SetDlgItemTextW(w,120,tr(L"Android app",L"Android-App"));
     SetDlgItemTextW(w,121,tr(L"USB control (optional)",L"USB-Steuerung (optional)"));
@@ -40,11 +42,23 @@ static BOOL wifi_url(const wchar_t *url) {
     unsigned a,b,c,d; int n=0;
     if (swscanf(url,L"http://%u.%u.%u.%u:8080/?k=%n",&a,&b,&c,&d,&n)!=4 || n<=0) return FALSE;
     if(a>255||b>255||c>255||d>255) return FALSE;
+    wchar_t canonical[80];
+    if(FAILED(StringCchPrintfW(canonical,80,L"http://%u.%u.%u.%u:8080/?k=",a,b,c,d)) || wcsncmp(url,canonical,wcslen(canonical))!=0) return FALSE;
     if(!(a==10||(a==192&&b==168)||(a==172&&b>=16&&b<=31))) return FALSE;
     const wchar_t *key=url+n; size_t len=wcslen(key);
-    if(len!=32 && len!=4) return FALSE;
+    if(len!=32) return FALSE;
     for(size_t i=0;i<len;i++){wchar_t x=key[i];if(!((x>=L'0'&&x<=L'9')||(len==32&&((x>=L'A'&&x<=L'Z')||(x>=L'a'&&x<=L'z')||x==L'-'||x==L'_'))))return FALSE;}
     return TRUE;
+}
+static void paste_wifi(HWND w) {
+    if(!OpenClipboard(w)){status(w,tr(L"Clipboard unavailable.",L"Zwischenablage nicht verfügbar."));return;}
+    HANDLE data=GetClipboardData(CF_UNICODETEXT);
+    wchar_t url[256]=L"";
+    if(data){const wchar_t *v=GlobalLock(data);if(v){SIZE_T bytes=GlobalSize(data);size_t max=bytes/sizeof(wchar_t),i=0;while(i<max&&i<255&&v[i]){url[i]=v[i];i++;}url[i]=0;GlobalUnlock(data);}}
+    CloseClipboard();
+    if(!wifi_url(url)){status(w,tr(L"No valid private session link in clipboard.",L"Kein gültiger privater Sitzungslink in der Zwischenablage."));return;}
+    SetDlgItemTextW(w,118,url);
+    status(w,tr(L"Link ready. Open Wi-Fi screen to connect.",L"Link bereit. WLAN-Bildschirm öffnen, um zu verbinden."));
 }
 static void open_wifi(HWND w) {
     wchar_t url[512];
@@ -53,7 +67,7 @@ static void open_wifi(HWND w) {
     INT_PTR result=(INT_PTR)ShellExecuteW(w,L"open",url,NULL,NULL,SW_SHOWNORMAL);
     if(result<=32){status(w,tr(L"Could not open browser.",L"Browser konnte nicht geöffnet werden."));return;}
     SetDlgItemTextW(w,118,L"");
-    status(w,tr(L"Browser opened. Use the same trusted Wi-Fi; stop sharing when finished.",L"Browser geöffnet. Gleiches privates WLAN nutzen und Freigabe danach beenden."));
+    status(w,tr(L"Browser requested. HTTP is not encrypted. Use trusted Wi-Fi only.",L"Browser angefordert. HTTP ist unverschlüsselt. Nur privates WLAN nutzen."));
 }
 static BOOL executable(wchar_t *out, DWORD size) {
     wchar_t local[32768];
@@ -194,6 +208,8 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             DWORD value=IsDlgButtonChecked(w,101)==BST_CHECKED;
             RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"ScreenOff",REG_DWORD,&value,sizeof(value)); return TRUE;
         }
+        case 122: paste_wifi(w); return TRUE;
+        case 123: ShellExecuteW(w,L"open",L"https://marcelmolitor.github.io/tetherlume/web/#wifi",NULL,NULL,SW_SHOWNORMAL); return TRUE;
         case 119: open_wifi(w); return TRUE;
         case 120: ShellExecuteW(w,L"open",L"https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk",NULL,NULL,SW_SHOWNORMAL); return TRUE;
         case 102: case 103: launch(w,LOWORD(wp)==103); return TRUE;
