@@ -1,2 +1,283 @@
-<!doctype html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#081426"><meta name="description" content="Tetherlume Web: Experimentelle direkte Android-Steuerung per USB im Browser."><title>Tetherlume OS – Marcel Molitor | Android Workspace</title><style>
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top right,#153b70,#081426 55%);color:#eaf3ff;font:15px/1.5 system-ui,sans-serif;min-height:100vh}main{max-width:1440px;margin:auto;padding:clamp(16px,3vw,40px)}header,.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}a{color:#9acbff}header strong{font-size:24px;letter-spacing:-1px}small,.muted{color:#a7bbd5}h1{font-size:clamp(28px,4vw,48px);letter-spacing:-1.5px;margin:28px 0 4px}h2{font-size:18px}button,.btn{font:inherit;font-weight:600;color:#eaf3ff;background:#183353;border:1px solid #365578;border-radius:12px;padding:12px 16px;cursor:pointer;text-decoration:none;display:inline-block}button[aria-pressed=true],.primary{background:#2469d9;border-color:#629cff}button:focus-visible,a:focus-visible{outline:3px solid #9acbff;outline-offset:3px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;margin-top:24px}.panel{background:#0d1d32;border:1px solid #294362;border-radius:22px;padding:18px;min-width:0}.stage{min-height:460px;display:grid;place-items:center;padding:24px 8px;background:radial-gradient(ellipse,#1c3e68,#0a1729 75%);border-radius:16px;margin-top:16px}.device{width:min(100%,240px);aspect-ratio:9/19.5;border:6px solid #304762;border-radius:30px;background:linear-gradient(145deg,#102846,#0a1424);display:grid;place-items:center;text-align:center;padding:20px;box-shadow:0 20px 50px #0006;transition:width .2s,aspect-ratio .2s}.landscape .device{width:min(100%,650px);aspect-ratio:19.5/9;border-radius:25px}.device svg{width:42px;color:#75b5ff}.device p{margin:8px 0}.controls{display:flex;gap:8px;flex-wrap:wrap}.status{display:inline-flex;align-items:center;gap:8px;color:#b8cce4}.status:before{content:'';width:8px;height:8px;border-radius:50%;background:#e8b66a}.panel ol{padding-left:22px}.panel li{margin:10px 0}.stage:fullscreen{background:#081426;width:100%;height:100%;padding:20px}.stage:fullscreen .device{width:auto;height:85%;max-width:95%}.stage.landscape:fullscreen .device{height:auto;width:90%;max-height:90%}footer{margin-top:24px;border-top:1px solid #294362;padding-top:16px}@media(max-width:800px){.layout{grid-template-columns:1fr}.stage{min-height:350px}.landscape{min-height:240px}}@media(prefers-reduced-motion:reduce){*{transition:none!important}}</style><meta property="og:type" content="website"><meta property="og:title" content="Tetherlume Web – Android im Browser | Vorschau"><meta property="og:description" content="Tetherlume Web: Experimentelle direkte Android-Steuerung per USB im Browser."><meta property="og:url" content="https://marcelmolitor.github.io/tetherlume/web/"><meta name="twitter:card" content="summary"><link rel="canonical" href="https://marcelmolitor.github.io/tetherlume/web/"><style>details{margin-top:18px;border-top:1px solid #294362;padding-top:14px}summary{cursor:pointer;font-weight:650}summary:focus-visible{outline:2px solid #9acbff}.origin{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#a7bbd5}.origin span{width:18px;height:12px;border-radius:2px;background:linear-gradient(#171717 0 33.33%,#d00 33.33% 66.66%,#ffce00 66.66%)}.btn.primary{border-radius:24px;width:100%;text-align:center}.panel{padding:clamp(16px,3vw,24px)}@media(max-width:800px){.layout{display:flex;flex-direction:column}.layout aside{order:-1}.stage{min-height:280px}.device{width:min(100%,180px)}.landscape .device{width:min(100%,400px)}}</style><style id="tetherlume-material">:root{color-scheme:dark;--tl-bg:#101722;--tl-surface:#192534;--tl-blue:#a8c7fa;--tl-onblue:#102b50}body{background:var(--tl-bg);color:#e5eaf2;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}a{color:var(--tl-blue)}h1,h2{letter-spacing:-.035em;font-weight:650}button,.btn,.download,.action,.support-link{border-radius:100px;min-height:44px;box-shadow:none}button,.btn,.action,.download{transition:background .16s ease,filter .16s ease}button:hover,.btn:hover,.download:hover,.action:hover{filter:brightness(1.12)}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #a8c7fa;outline-offset:4px}button[aria-pressed=true],.primary,.btn.primary,.download,.action{background:var(--tl-blue);color:var(--tl-onblue);border:1px solid transparent}footer{border-color:#344357}small,.muted{color:#b9c5d6}@media(prefers-reduced-motion:reduce){*{transition:none!important}}.panel,section{background:var(--tl-surface);border:1px solid #344357;border-radius:28px}.tile{background:#233248;border-color:#344357;border-radius:20px}.stage{background:radial-gradient(ellipse,#2b4568,#121d2d 80%);border-radius:24px}input,select{border-radius:14px;background:#233248;color:#e5eaf2}header{gap:16px}.controls button{min-height:44px}button:disabled{opacity:.5}</style><style id="tetherlume-brand">:root{--tl-bg:#080f1c;--tl-surface:#101d30;--tl-blue:#80b8ff;--tl-onblue:#08172b}body{background:var(--tl-bg);color:#edf4ff}h1{font-weight:760;letter-spacing:-.055em}h2{font-weight:700;letter-spacing:-.035em}button,.btn,.download,.action,.support-link,header .download,header .support-link{border-radius:10px}button[aria-pressed=true],.primary,.btn.primary,.download,.action{background:#347ff5;color:#fff;border:1px solid #6ba5ff}header{border-radius:20px}a{color:#8abfff}.panel,section,.tile{border-radius:16px}.stage{border-radius:12px}footer{border-color:#263b55}nav a:first-child,header strong{letter-spacing:.035em}header .support-link{border-color:#527aa8}header a[href="/tetherlume/web/"]{background:#172d4a;color:#dbeaff}button:hover,.btn:hover,.download:hover{filter:brightness(1.13)}@media(prefers-reduced-motion:reduce){*{transition:none!important}}.panel,section{background:#101d30;border-color:#263b55}.stage{background:radial-gradient(ellipse,#203e68,#0a1424 80%)}.tile{background:#14243b;border-color:#263b55}</style><style>.layout{grid-template-columns: minmax(0,1fr) 340px}.layout aside .primary{padding:16px;background:#347ff5;color:white;border:1px solid #6ba5ff}.layout aside .primary:hover{background:#2469d9}.layout aside h2{font-size:23px;margin-top:0}.layout aside details{line-height:1.6}@media(max-width:800px){.layout{display:flex;flex-direction:column}}</style><style>#phone-screen{max-width:100%;max-height:65vh;object-fit:contain;touch-action:none;cursor:crosshair}#phone-screen[hidden],#placeholder[hidden]{display:none}#disconnect{margin-top:8px;width:100%}.stage:fullscreen #phone-screen{max-height:96vh}.controls{margin-top:10px}</style><meta name="author" content="Marcel Molitor"><style>.creator{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.creator small{display:block;letter-spacing:.11em;text-transform:uppercase}.creator a{font-weight:750}.support-card{margin-top:20px;padding:20px;border:1px solid #345780;border-radius:16px;background:linear-gradient(140deg,#172e4d,#101d30)}.support-card h2{margin:0 0 8px}.support-card a{display:block;text-align:center;background:#347ff5;color:white;padding:13px;border-radius:10px;font-weight:750;text-decoration:none}.support-card small{display:block;margin-top:12px}.brand-accent{height:3px;background:linear-gradient(90deg,#181818 0 33.33%,#dd2029 33.33% 66.66%,#ffce00 66.66%);border-radius:3px;margin-bottom:12px}</style><style id="os-desktop">:root{color-scheme:dark}body{background:radial-gradient(ellipse at 75% 15%,#263d5a 0,transparent 58%),#0a111c}main{max-width:1800px;padding:18px 24px 92px}header{background:#101a28e8;border:1px solid #35465b;padding:15px 20px;border-radius:12px}header strong{font-size:21px}.workspace-heading{display:flex;align-items:end;justify-content:space-between;margin:20px 0 12px;gap:12px}.workspace-heading h1{font-size:clamp(24px,3vw,38px);margin:2px 0;letter-spacing:-.04em}.layout{margin-top:0;grid-template-columns:minmax(0,1fr) 330px;align-items:start;gap:14px}.panel{background:#111c2c;border:1px solid #36485e;border-radius:12px;padding:16px}.window-title{display:flex;justify-content:space-between;align-items:center;font-weight:700;border-bottom:1px solid #36485e;padding-bottom:12px}.window-title small{font-size:10px;letter-spacing:.12em}.stage{min-height:320px;height:clamp(320px,51vh,700px);padding:12px;background:radial-gradient(ellipse,#233b57,#0a1422 80%)}.device{width:auto;height:100%;max-width:100%;max-height:420px}.landscape .device{height:auto;width:min(100%,520px)}#phone-screen{max-height:100%;max-width:100%}.stage:fullscreen{height:100%;width:100%}.toolbar .controls{margin-top:0}.layout aside .primary{border-radius:8px}.support-card{padding:14px}.support-card h2{font-size:17px!important}.support-card p{font-size:13px}.dock{position:fixed;z-index:10;bottom:12px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:#101b2af5;border:1px solid #41536b;border-radius:12px;padding:8px;box-shadow:0 12px 40px #0008;max-width:calc(100% - 24px);width:max-content}.dock a,.dock button{color:#eaf3ff;text-decoration:none;padding:10px 12px;border-radius:7px;white-space:nowrap;font-size:13px}.dock a:hover{background:#263c57}.dock-support{background:#245ba9}.dock span{padding:0 12px;color:#b9c5d6;font-variant-numeric:tabular-nums}#launcher{position:fixed;z-index:11;bottom:80px;left:50%;transform:translateX(-50%);width:min(360px,calc(100% - 32px));padding:20px;background:#142236;border:1px solid #456080;border-radius:12px;box-shadow:0 12px 40px #0008}#launcher:not([hidden]){display:grid;gap:10px}#launcher a{padding:10px;border-radius:6px;background:#1c304a;text-decoration:none}footer{font-size:12px}@media(max-width:850px){main{padding:12px 12px 100px}.layout{display:flex;flex-direction:column}.layout>*{width:100%}.layout aside{order:-1}.dock{overflow-x:auto;justify-content:start;width:calc(100% - 24px)}.workspace-heading>small{display:none}.stage{height:50vh}.window-title small{display:none}}</style><style>main{width:100%;margin:0 auto;padding-inline:clamp(12px,2vw,28px)}@media(min-width:851px){.stage{height:clamp(250px,43vh,620px);min-height:250px}.layout aside details{margin-top:10px;padding-top:10px}.workspace-heading{margin-top:12px}.dock{bottom:12px}}</style></head><body><main><header><div class="creator"><strong>◈ TETHERLUME OS <small>Web · Early Access</small></strong><div><small>Created by</small><a href="/de.html">Marcel Molitor</a></div></div><nav><a href="account.html">Optionales Konto</a> · <a href="../../android-desk/de.html?lang=de">Desktop-Version</a></nav></header><div class="workspace-heading"><div><p class="origin"><span aria-hidden="true"></span> German Engineering · Digital Freedom</p><h1>Dein digitaler Arbeitsplatz.</h1></div><small>Android · USB · Browser</small></div><div class="layout"><section class="panel" id="workspace"><div class="window-title"><span>◈ &nbsp; Smartphone</span><small>ANDROID WORKSPACE</small></div><div class="toolbar"><span class="status" id="connection-state">Nicht verbunden</span><div class="controls" role="group" aria-label="Vorschauformat"><button id="portrait" aria-pressed="true">▯ Hochformat</button><button id="landscape" aria-pressed="false">▭ Querformat</button><button id="full">Vollbild</button></div></div><div class="stage" id="stage"><div class="device" id="placeholder"><div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 18h4"/></svg><p><strong>Bereit für dein Gerät</strong></p><small>Bildschirm-Vorschau</small></div></div><img id="phone-screen" alt="Android-Bildschirm" tabindex="0" hidden></div><div class="controls"><button data-key="4" disabled>Zurück</button><button data-key="3" disabled>Home</button><button data-key="187" disabled>Apps</button><button id="save-shot" disabled>Screenshot</button><button id="retry-screen" disabled>Bild neu laden</button></div><p class="muted">Experimentelle Bildschirmaktualisierung mit Einzelbildern; noch kein flüssiger Videostream.</p></section><aside class="panel" id="device-center"><h2>Gerät verbinden</h2><p class="muted">Verbinde ein autorisiertes Android-Gerät per USB mit deinem Computer.</p><p id="support" role="status"></p><p id="usb-help" class="muted" hidden>Nutze Chrome oder Edge auf einem Computer mit USB-Datenkabel. Schließe andere ADB-Anwendungen, falls das Gerät nicht erkannt wird.</p><button class="btn primary" id="connect" disabled>Verbindung wird vorbereitet …</button><button id="disconnect" disabled>Trennen</button><p id="direct-note" class="muted" role="status" aria-live="polite">Die USB-Bibliothek wird geladen.</p><noscript>JavaScript ist erforderlich.</noscript><p><a class="btn" href="/android-desk/de.html">Windows-Version · Release in Vorbereitung</a></p><details open><summary>Einrichtung in vier Schritten</summary><ol><li>Chrome oder Edge am Computer öffnen.</li><li>USB-Debugging auf Android aktivieren.</li><li>Gerät per USB-Datenkabel verbinden.</li><li>In Tetherlume auswählen und am Handy bestätigen.</li></ol></details><details><summary>Privatsphäre & Sicherheit</summary><p class="muted">Die App verarbeitet Bildschirmbilder im Browser und speichert ADB-Schlüssel lokal im Browser. JavaScript-Bibliotheken werden von esm.sh geladen. Verbinde nur autorisierte Geräte und widerrufe USB-Debugging-Berechtigungen nach Bedarf.</p><a href="privacy.html">Datenschutzhinweise</a></details><div class="support-card" id="support-creator"><div class="brand-accent"></div><h2>Unabhängige Entwicklung unterstützen</h2><p>Ich bin Marcel Molitor, der Entwickler von Tetherlume. Wenn dir das Projekt gefällt, kannst du seine Weiterentwicklung freiwillig unterstützen.</p><a href="https://www.paypal.biz/molitormarcel93" rel="noopener noreferrer" target="_blank">♡ Mit PayPal unterstützen</a><small>Freiwillige Zahlung ohne Gegenleistung. Kein Abo, keine steuerlich absetzbare Spende.</small></div></aside></div><footer><a href="../../">MOLITOR · Projekte</a> · Tetherlume Web Early Access · <a href="/de.html#unterstuetzen">♡ Projekte unterstützen</a> · <span class="origin"><span aria-hidden="true"></span> Entwickelt in Deutschland</span></footer><nav class="dock" aria-label="Arbeitsplatz"><button id="start-menu" aria-expanded="false" aria-controls="launcher">◈ Start</button><a href="#workspace">▯ Smartphone</a><a href="#device-center">⌁ Gerätecenter</a><a href="privacy.html">Datenschutz</a><a class="dock-support" href="https://www.paypal.biz/molitormarcel93" target="_blank" rel="noopener noreferrer">♡ Unterstützen</a><span id="clock"></span></nav><div id="launcher" hidden><strong>Tetherlume OS</strong><small>Created by Marcel Molitor</small><a href="#workspace">Smartphone öffnen</a><a href="#device-center">Gerät verbinden</a><a href="/android-desk/de.html">Windows-Version</a><a href="/de.html">Über den Entwickler</a></div></main><script>const start=document.getElementById("start-menu"),menu=document.getElementById("launcher");function closeMenu(){menu.hidden=true;start.setAttribute("aria-expanded","false")}start.onclick=()=>{menu.hidden=!menu.hidden;start.setAttribute("aria-expanded",String(!menu.hidden))};menu.querySelectorAll("a").forEach(a=>a.addEventListener("click",closeMenu));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});function tick(){document.getElementById("clock").textContent=new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"})}tick();setInterval(tick,15000);const stage=document.getElementById('stage'),p=document.getElementById('portrait'),l=document.getElementById('landscape');function orient(wide){stage.classList.toggle('landscape',wide);p.setAttribute('aria-pressed',String(!wide));l.setAttribute('aria-pressed',String(wide))}try{orient(localStorage.getItem('tetherlume.orientation')==='landscape')}catch(e){}p.onclick=()=>{orient(false);try{localStorage.setItem('tetherlume.orientation','portrait')}catch(e){}};l.onclick=()=>{orient(true);try{localStorage.setItem('tetherlume.orientation','landscape')}catch(e){}};const f=document.getElementById('full');if(!stage.requestFullscreen)f.disabled=true;f.onclick=async()=>{try{if(document.fullscreenElement)await document.exitFullscreen();else await stage.requestFullscreen()}catch(e){document.getElementById('support').textContent='Vollbild konnte nicht geöffnet werden.'}};document.addEventListener('fullscreenchange',()=>f.textContent=document.fullscreenElement?'Vollbild beenden':'Vollbild');document.getElementById('support').textContent=isSecureContext&&'usb'in navigator?'WebUSB wird von diesem Browser unterstützt.':'WebUSB nicht verfügbar. Bitte einen kompatiblen Desktop-Browser verwenden.';;document.getElementById("usb-help").hidden=Boolean(isSecureContext&&"usb" in navigator);</script><script type="module" src="direct-usb.js?v=4"></script></body></html>
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#070d18">
+<title>Tetherlume Web – Android-Handy im Browser steuern, live per USB | Marcel Molitor</title>
+<meta name="description" content="Spiegle und steuere dein Android-Handy live im Browser – per USB, ohne Installation, ohne Konto. Maus, Tastatur, Dateien &amp; APKs per Drag-and-Drop. Kostenlos.">
+<meta name="author" content="Marcel Molitor">
+<link rel="canonical" href="https://marcelmolitor.github.io/tetherlume/web/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tetherlume">
+<meta property="og:title" content="Tetherlume Web – dein Android live im Browser">
+<meta property="og:description" content="Handy per USB anstecken, Chrome öffnen, fertig: Live-Bild, Maus &amp; Tastatur, Dateien und APKs – ohne Installation, kostenlos.">
+<meta property="og:url" content="https://marcelmolitor.github.io/tetherlume/web/">
+<meta property="og:image" content="https://marcelmolitor.github.io/tetherlume/web/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://marcelmolitor.github.io/tetherlume/web/og.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23347ff5'/%3E%3Cpath d='M16 6l9 10-9 10-9-10z' fill='none' stroke='white' stroke-width='2.5'/%3E%3C/svg%3E">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Tetherlume Web","url":"https://marcelmolitor.github.io/tetherlume/web/","applicationCategory":"UtilitiesApplication","operatingSystem":"Chrome, Edge (Windows, macOS, Linux, ChromeOS, Android)","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Marcel Molitor"},"inLanguage":"de"}</script>
+<style>
+:root{color-scheme:dark;--bg:#070d18;--s1:#0e1828;--s2:#142238;--line:#243652;--text:#ecf3ff;--mut:#9fb1ca;--blue:#347ff5;--blue2:#6ba5ff;--ok:#3ccf8e;--warn:#f2b84b;--bad:#ff6b6b;--r:14px}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(1100px 600px at 80% -10%,#1d3a66 0,transparent 60%),radial-gradient(800px 500px at -10% 30%,#122a4a 0,transparent 60%),var(--bg);color:var(--text);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+a{color:#8abfff}
+main{max-width:1500px;margin:auto;padding:16px clamp(12px,2.5vw,32px) 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;border:1px solid var(--line);border-radius:var(--r);background:#0c1626cc;backdrop-filter:blur(8px)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.06em;text-decoration:none;color:var(--text)}
+.logo i{width:28px;height:28px;border-radius:8px;background:var(--blue);display:grid;place-items:center;font-style:normal}
+.logo small{font-weight:600;letter-spacing:.02em;color:var(--mut)}
+nav{display:flex;gap:6px;flex-wrap:wrap}
+nav a{padding:8px 12px;border-radius:9px;text-decoration:none;color:var(--text);font-size:14px}
+nav a:hover{background:var(--s2)}
+nav .heart{background:#1f3e6b}
+.hero{display:grid;grid-template-columns:1.2fr 1fr;gap:20px;align-items:end;margin:26px 4px 18px}
+.hero h1{font-size:clamp(30px,4.6vw,58px);line-height:1.03;letter-spacing:-.045em;margin:6px 0 10px}
+.hero h1 span{background:linear-gradient(90deg,#8abfff,#c6a8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{color:var(--mut);font-size:17px;margin:0;max-width:640px}
+.badges{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.badge{border:1px solid var(--line);background:var(--s1);padding:6px 11px;border-radius:99px;font-size:13px;color:#cfe0f7}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start}
+.panel{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.status{display:inline-flex;align-items:center;gap:8px;font-weight:650;color:#cfe0f7}
+.status:before{content:"";width:9px;height:9px;border-radius:50%;background:#6c7f99}
+.status[data-kind=ok]:before{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.status[data-kind=busy]:before,.status[data-kind=warn]:before{background:var(--warn)}
+.status[data-kind=bad]:before{background:var(--bad)}
+#fps{color:var(--mut);font-variant-numeric:tabular-nums;font-size:13px;margin-left:6px}
+button,.btn,select{font:inherit;font-weight:650;color:var(--text);background:var(--s2);border:1px solid #31496b;border-radius:10px;padding:9px 13px;cursor:pointer;min-height:40px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+button:hover:not(:disabled),.btn:hover{filter:brightness(1.18)}
+button:disabled{opacity:.42;cursor:not-allowed}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid #8abfff;outline-offset:3px}
+.primary{background:var(--blue);border-color:var(--blue2);color:#fff}
+.big{width:100%;padding:15px;font-size:17px;border-radius:12px}
+.stage{position:relative;margin-top:12px;height:min(72vh,820px);min-height:340px;border-radius:12px;background:radial-gradient(ellipse at center,#1a3358,#08111e 75%);display:grid;place-items:center;overflow:hidden;padding:10px}
+.stage:fullscreen{height:100vh;border-radius:0;background:#000}
+#screen,#screen canvas,#fallback-img{max-width:100%;max-height:100%}
+#screen{display:grid;place-items:center;width:100%;height:100%}
+#screen canvas,#fallback-img{width:auto;height:100%;object-fit:contain;border-radius:10px;touch-action:none;cursor:pointer;box-shadow:0 18px 60px #0009;background:#000}
+.landscape #screen canvas,.landscape #fallback-img{width:100%;height:auto}
+[hidden]{display:none!important}
+.placeholder{text-align:center;max-width:420px;padding:20px}
+.phone{width:120px;height:230px;margin:0 auto 16px;border:5px solid #34507a;border-radius:24px;background:linear-gradient(160deg,#16325a,#0a1424);display:grid;place-items:center;font-size:34px;animation:float 4s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-8px)}}
+.placeholder strong{font-size:20px;display:block;margin-bottom:6px}
+.placeholder p{color:var(--mut);margin:0}
+#drop-hint{position:absolute;inset:10px;border:3px dashed var(--blue2);border-radius:12px;background:#0b1a30e6;display:grid;place-items:center;font-size:20px;font-weight:700;pointer-events:none}
+.keys{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.keys .sep{width:1px;background:var(--line);margin:0 2px}
+.tip{color:var(--mut);font-size:13px;margin:10px 2px 0}
+kbd{background:var(--s2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:0 5px;font-size:12px}
+aside h2{margin:0 0 6px;font-size:22px;letter-spacing:-.02em}
+aside .muted,.muted{color:var(--mut)}
+#direct-note{margin:12px 0 0;padding:10px 12px;border-radius:10px;background:var(--s2);border-left:3px solid #6c7f99;font-size:14px}
+#direct-note[data-kind=ok]{border-color:var(--ok)}#direct-note[data-kind=warn]{border-color:var(--warn)}#direct-note[data-kind=bad]{border-color:var(--bad)}
+.row{display:flex;gap:8px;margin-top:8px}.row>*{flex:1}
+dl#device-info{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;margin:12px 0 0;padding:12px;border-radius:10px;background:var(--s2);font-size:14px}
+dl#device-info dt{color:var(--mut)}dl#device-info dd{margin:0;font-weight:650}
+label.field{display:block;margin-top:14px;font-size:13px;color:var(--mut)}
+label.field select{width:100%;margin-top:4px;font-weight:500}
+form.inline{display:flex;gap:6px;margin-top:8px}
+form.inline input{flex:1;min-width:0;font:inherit;color:var(--text);background:#0a1322;border:1px solid #31496b;border-radius:10px;padding:9px 11px}
+details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:700}
+details ol,details ul{padding-left:20px;margin:8px 0}details li{margin:6px 0}
+#shell-output{white-space:pre-wrap;max-height:220px;overflow:auto;background:#050a13;border:1px solid var(--line);border-radius:10px;padding:10px;font:12px/1.45 ui-monospace,Consolas,monospace;margin:8px 0 0}
+#help-box{margin-top:12px;padding:12px 14px;border-radius:10px;background:#2a1d0c;border:1px solid #5d4317}
+#help-box h3{margin:0 0 6px;font-size:16px}
+#help-box ol{margin:6px 0;padding-left:20px}
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.apps button{font-size:13px;padding:8px 6px}
+.features{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:18px}
+.feature{background:var(--s1);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.feature b{display:block;font-size:16px;margin-bottom:4px}
+.feature span{color:var(--mut);font-size:14px}
+.feature em{font-style:normal;font-size:22px;display:block;margin-bottom:6px}
+.support{margin-top:18px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center;padding:22px;border-radius:var(--r);border:1px solid #3a5f92;background:linear-gradient(120deg,#16305a,#111d33)}
+.support h2{margin:0 0 4px}
+.support p{margin:0;color:#c7d6ec}
+.support a.btn{background:#ffc439;color:#111;border-color:#ffd66b;font-size:16px;padding:13px 22px}
+.share{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.faq{margin-top:18px}
+.faq details{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:8px}
+footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+.flag{display:inline-block;width:16px;height:11px;border-radius:2px;vertical-align:-1px;background:linear-gradient(#171717 0 33.3%,#d00 33.3% 66.6%,#ffce00 66.6%)}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.layout aside{order:-1}.hero{grid-template-columns:1fr}.badges{justify-content:flex-start}.features{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.features{grid-template-columns:1fr}.support{grid-template-columns:1fr}.stage{height:68vh}nav a{padding:6px 8px;font-size:13px}.keys button{flex:1 1 30%}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <a class="logo" href="./"><i>◈</i> TETHERLUME <small>Web · Early Access</small></a>
+  <nav aria-label="Hauptmenü">
+    <a href="#so-gehts">So geht's</a>
+    <a href="#faq">Hilfe</a>
+    <a href="account.html">Konto</a>
+    <a href="/de.html">Mehr Projekte</a>
+    <a class="heart" href="#unterstuetzen">♡ Unterstützen</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="muted"><span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland · von Marcel Molitor</p>
+    <h1>Dein Android.<br><span>Live im Browser.</span></h1>
+    <p>Handy per USB anstecken, Chrome oder Edge öffnen, fertig. Du siehst dein Display flüssig am PC und bedienst es mit Maus und Tastatur. Dateien und Apps schiebst du einfach rüber. Nichts installieren, kein Konto, kostenlos.</p>
+  </div>
+  <div class="badges">
+    <span class="badge">⚡ Live-Video bis 60 FPS</span>
+    <span class="badge">🖱 Maus &amp; Tastatur</span>
+    <span class="badge">📦 APK per Drag &amp; Drop</span>
+    <span class="badge">🔒 Alles lokal im Browser</span>
+  </div>
+</section>
+
+<div class="layout">
+  <section class="panel" id="workspace" aria-label="Smartphone">
+    <div class="bar">
+      <span><span class="status" id="connection-state">Wird geladen …</span><span id="fps"></span></span>
+      <div class="row" style="margin:0;flex:0 1 auto">
+        <button id="btn-restart" data-needs-device disabled title="Live-Bild neu starten">↻ Bild neu starten</button>
+        <button id="full">⤢ Vollbild</button>
+      </div>
+    </div>
+    <div class="stage" id="stage">
+      <div class="placeholder" id="placeholder">
+        <div class="phone" aria-hidden="true">📱</div>
+        <strong>Bereit für dein Handy</strong>
+        <p>Verbinde dein Android per USB-Datenkabel und klicke auf <b>„Android verbinden“</b>.</p>
+      </div>
+      <div id="screen" hidden></div>
+      <img id="fallback-img" alt="Android-Bildschirm" tabindex="0" hidden>
+      <div id="drop-hint" hidden>Loslassen: Datei → Download-Ordner · APK → installieren</div>
+    </div>
+    <div class="keys" role="toolbar" aria-label="Android-Tasten">
+      <button data-key="4" data-needs-device disabled title="Zurück (Rechtsklick)">◁ Zurück</button>
+      <button data-key="3" data-needs-device disabled title="Startbildschirm (Mittelklick)">○ Home</button>
+      <button data-key="187" data-needs-device disabled title="Letzte Apps">▢ Apps</button>
+      <span class="sep"></span>
+      <button data-key="25" data-needs-device disabled title="Leiser">🔉</button>
+      <button data-key="24" data-needs-device disabled title="Lauter">🔊</button>
+      <button data-key="26" data-needs-device disabled title="Power-Taste">⏻</button>
+      <span class="sep"></span>
+      <button id="btn-notify" data-needs-device disabled>🔔 Mitteilungen</button>
+      <button id="btn-rotate" data-needs-device disabled>⟳ Drehen</button>
+      <button id="btn-screen" data-needs-device disabled>◐ Display aus</button>
+      <button id="btn-shot" data-needs-device disabled>📸 Screenshot</button>
+    </div>
+    <p class="tip">Tipp: Ins Bild klicken und einfach lostippen. <kbd>Strg</kbd>+<kbd>V</kbd> fügt Text ein (auch Umlaute und Emojis). Rechtsklick = Zurück, Mausrad = Scrollen. Dateien einfach aufs Bild ziehen.</p>
+  </section>
+
+  <aside class="panel" id="device-center" aria-label="Gerätecenter">
+    <h2>Gerät verbinden</h2>
+    <p class="muted">Läuft in Chrome und Edge am PC/Mac, auch am Android-Handy mit OTG-Adapter.</p>
+    <button class="primary big" id="connect" disabled>Wird geladen …</button>
+    <button id="disconnect" class="big" style="margin-top:8px;padding:10px" disabled>Trennen</button>
+    <p id="direct-note" role="status" aria-live="polite">Bibliotheken werden geladen …</p>
+    <noscript><p>JavaScript ist erforderlich.</p></noscript>
+
+    <div id="help-box" hidden>
+      <div data-help="browser" hidden><h3>Browser wird nicht unterstützt</h3><p>Nutze <b>Google Chrome</b> oder <b>Microsoft Edge</b> (Version 89+). Firefox und Safari können kein WebUSB. Am iPhone geht es leider gar nicht.</p></div>
+      <div data-help="libs" hidden><h3>Laden fehlgeschlagen</h3><ol><li>Adblocker/Firewall für diese Seite pausieren (es wird esm.sh geladen).</li><li>Seite mit <kbd>Strg</kbd>+<kbd>F5</kbd> neu laden.</li></ol></div>
+      <div data-help="notlisted" hidden><h3>Handy taucht nicht in der Liste auf?</h3><ol><li><b>Entwickleroptionen</b> freischalten: Einstellungen → Über das Telefon → 7× auf „Build-Nummer“ tippen.</li><li>In den Entwickleroptionen <b>USB-Debugging</b> einschalten.</li><li>Ein <b>Datenkabel</b> nutzen (viele Ladekabel können keine Daten). Direkt am PC einstecken, nicht am Hub.</li><li>In der Benachrichtigung „USB“ den Modus <b>Dateiübertragung</b> wählen.</li><li>Windows: Wenn das Handy immer noch fehlt, den <a href="https://developer.android.com/studio/run/win-usb" target="_blank" rel="noopener">Google-USB-Treiber</a> installieren.</li></ol></div>
+      <div data-help="busy" hidden><h3>USB ist von einem anderen Programm belegt</h3><ol><li>Andere Tabs mit Tetherlume, WebADB oder Tango schließen.</li><li>Android Studio, scrcpy, Vysor, Samsung Smart Switch schließen.</li><li>Windows: Task-Manager → <b>adb.exe</b> beenden (oder <code>adb kill-server</code>).</li><li>Kabel ab- und wieder anstecken, dann neu verbinden.</li></ol></div>
+      <div data-help="auth" hidden><h3>Handy hat nicht geantwortet</h3><ol><li>Handy <b>entsperren</b> – die Abfrage „USB-Debugging zulassen?“ erscheint nur auf dem entsperrten Display.</li><li>„Immer von diesem Computer zulassen“ anhaken und <b>Zulassen</b> tippen.</li><li>Keine Abfrage? Entwickleroptionen → „USB-Debugging-Autorisierungen aufheben“, Kabel neu stecken.</li></ol></div>
+      <div data-help="general" hidden><h3>Das hilft fast immer</h3><ol><li>Kabel ab- und anstecken, Handy entsperren.</li><li>Alle anderen ADB-Programme schließen (siehe oben).</li><li>USB-Debugging aus- und wieder einschalten.</li><li>Klappt es nicht: „Diagnose kopieren“ und mir schicken.</li></ol></div>
+    </div>
+
+    <dl id="device-info" hidden></dl>
+
+    <label class="field">Bildqualität
+      <select id="quality">
+        <option value="1280,4000000,60">Schnell · 1280 px · 4 Mbit/s</option>
+        <option value="1920,8000000,60" selected>Ausgewogen · 1920 px · 8 Mbit/s</option>
+        <option value="0,16000000,60">Maximal · Originalauflösung · 16 Mbit/s</option>
+        <option value="800,2000000,30">Sparsam · 800 px · 2 Mbit/s</option>
+      </select>
+    </label>
+
+    <label class="field">Text ans Handy senden</label>
+    <form class="inline" id="text-form"><input id="text-input" placeholder="z. B. Nachricht, Link, Passwort …" autocomplete="off" data-needs-device disabled><button data-needs-device disabled>Senden</button></form>
+
+    <label class="field">Datei aufs Handy / APK installieren</label>
+    <label class="btn" style="width:100%;margin-top:6px"><input type="file" id="file-input" multiple hidden data-needs-device disabled>📁 Datei auswählen …</label>
+
+    <details>
+      <summary>Schnellstart-Apps</summary>
+      <div class="apps">
+        <button data-app="com.android.settings" data-needs-device disabled>⚙ Einstellungen</button>
+        <button data-app="com.android.chrome" data-needs-device disabled>🌐 Chrome</button>
+        <button data-app="com.whatsapp" data-needs-device disabled>💬 WhatsApp</button>
+        <button data-app="com.google.android.youtube" data-needs-device disabled>▶ YouTube</button>
+        <button data-app="com.instagram.android" data-needs-device disabled>📷 Instagram</button>
+        <button data-app="com.google.android.apps.maps" data-needs-device disabled>🗺 Maps</button>
+      </div>
+    </details>
+    <details>
+      <summary>Profi: ADB-Shell</summary>
+      <form class="inline" id="shell-form"><input id="shell-input" placeholder="z. B. pm list packages -3" autocomplete="off" spellcheck="false" data-needs-device disabled><button data-needs-device disabled>Ausführen</button></form>
+      <pre id="shell-output">Befehle laufen direkt auf deinem Handy.</pre>
+    </details>
+    <details id="so-gehts" open>
+      <summary>So geht's – in 1 Minute</summary>
+      <ol>
+        <li>Am Handy: Einstellungen → Über das Telefon → <b>7× auf „Build-Nummer“</b> tippen.</li>
+        <li>Entwickleroptionen → <b>USB-Debugging</b> einschalten.</li>
+        <li>Handy per <b>USB-Datenkabel</b> anstecken.</li>
+        <li>Hier <b>„Android verbinden“</b> klicken, Handy auswählen und am Handy <b>„Zulassen“</b> tippen.</li>
+      </ol>
+    </details>
+    <p style="margin-top:14px"><button id="diag" class="big" style="padding:8px;font-size:14px">Diagnose kopieren</button></p>
+  </aside>
+</div>
+
+<section class="features" aria-label="Funktionen">
+  <div class="feature"><em>⚡</em><b>Flüssig wie ein Video</b><span>Echtes Live-Bild mit bis zu 60 FPS, Hardware-dekodiert in deinem Browser. Basiert auf dem bewährten scrcpy.</span></div>
+  <div class="feature"><em>🖱</em><b>Volle Kontrolle</b><span>Tippen, wischen, scrollen, schreiben. Zurück, Home, Lautstärke, Drehen, Mitteilungen – alles per Klick.</span></div>
+  <div class="feature"><em>📦</em><b>Dateien &amp; Apps</b><span>Fotos, PDFs oder Musik aufs Bild ziehen, und sie landen im Download-Ordner. APKs werden direkt installiert.</span></div>
+  <div class="feature"><em>🔒</em><b>Privat by Design</b><span>Keine Cloud, kein Server, kein Konto. Das Bild geht direkt per Kabel vom Handy in deinen Browser.</span></div>
+</section>
+
+<section class="support" id="unterstuetzen">
+  <div>
+    <h2>Gefällt dir Tetherlume? ♡</h2>
+    <p>Ich entwickle Tetherlume allein und in meiner Freizeit, ohne Werbung, ohne Abo und ohne Tracking. Wenn dir das Tool Zeit oder Nerven spart, freue ich mich über einen Kaffee. Jeder Euro fließt in die Weiterentwicklung (als Nächstes: Ton-Übertragung und WLAN-Modus).</p>
+    <div class="share">
+      <button id="share-btn" type="button">↗ Tetherlume teilen</button>
+      <a class="btn" href="https://wa.me/?text=Krass%3A%20Android-Handy%20live%20im%20Browser%20steuern%2C%20ohne%20Installation%20%F0%9F%91%89%20https%3A%2F%2Fmarcelmolitor.github.io%2Ftetherlume%2Fweb%2F" target="_blank" rel="noopener">WhatsApp</a>
+      <a class="btn" href="https://x.com/intent/post?text=Android-Handy%20live%20im%20Browser%20steuern%20%E2%80%93%20per%20USB%2C%20ohne%20Installation%3A&url=https%3A%2F%2Fmarcelmolitor.github.io%2Ftetherlume%2Fweb%2F" target="_blank" rel="noopener">X</a>
+    </div>
+  </div>
+  <div><a class="btn" href="https://www.paypal.biz/molitormarcel93" target="_blank" rel="noopener noreferrer">☕ Mit PayPal unterstützen</a><p class="muted" style="font-size:12px;margin-top:8px;text-align:center">Freiwillig, ohne Gegenleistung.<br>Kein Abo, keine steuerlich absetzbare Spende.</p></div>
+</section>
+
+<section class="faq" id="faq" aria-label="Häufige Fragen">
+  <h2>Häufige Fragen</h2>
+  <details><summary>Muss ich etwas installieren?</summary><p>Nein. Tetherlume läuft komplett im Browser. Für das Live-Bild wird beim Verbinden ein kleiner Helfer (scrcpy-server, ca. 90 KB) temporär aufs Handy kopiert. Der verschwindet beim Trennen wieder.</p></details>
+  <details><summary>Ist das sicher? Wo landen meine Daten?</summary><p>Das Bild und deine Eingaben laufen nur über das USB-Kabel zwischen Handy und deinem Browser. Es gibt keinen Server, der etwas mitliest. Der ADB-Schlüssel wird lokal in deinem Browser gespeichert. Du kannst die Freigabe jederzeit am Handy unter „USB-Debugging-Autorisierungen aufheben“ widerrufen.</p></details>
+  <details><summary>Welche Handys funktionieren?</summary><p>Alle Android-Geräte ab Android 5 (Samsung, Xiaomi, Pixel, OnePlus, Motorola …). Live-Video gibt es ab Android 5, flüssig am besten ab Android 8. Ältere Geräte nutzen automatisch den Bild-Modus. iPhones gehen nicht, weil Apple das nicht erlaubt.</p></details>
+  <details><summary>Geht das auch ohne Kabel (WLAN)?</summary><p>Noch nicht, Browser können nur per USB direkt mit dem Handy sprechen. Ein WLAN-Modus ist geplant.</p></details>
+  <details><summary>Gibt es Ton?</summary><p>Ton-Übertragung ist in Arbeit. Bis dahin bleibt der Ton am Handy.</p></details>
+  <details><summary>„USB belegt“ / Verbindung klappt nicht</summary><p>Meist läuft im Hintergrund schon ein anderes ADB-Programm (adb.exe, Android Studio, Vysor, Smart Switch). Schließen, Kabel neu stecken, nochmal verbinden. Hilft das nicht, klick auf „Diagnose kopieren“ und schick mir den Text.</p></details>
+</section>
+
+<footer>
+  <span>◈ Tetherlume Web v5 · Early Access · Created by <a href="/de.html">Marcel Molitor</a> · <span class="flag" aria-hidden="true"></span> Entwickelt in Deutschland</span>
+  <span><a href="privacy.html">Datenschutz</a> · <a href="/android-desk/de.html">Windows-Version</a> · <a href="/">MOLITOR · Projekte</a> · Live-Video: <a href="https://github.com/Genymobile/scrcpy" target="_blank" rel="noopener">scrcpy</a> (Apache-2.0) &amp; <a href="https://github.com/yume-chan/ya-webadb" target="_blank" rel="noopener">Tango/ya-webadb</a> (MIT)</span>
+</footer>
+</main>
+<script>
+document.getElementById("share-btn").onclick = async () => {
+  const data = { title: "Tetherlume Web", text: "Android-Handy live im Browser steuern – per USB, ohne Installation:", url: "https://marcelmolitor.github.io/tetherlume/web/" };
+  try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(data.url); document.getElementById("share-btn").textContent = "✓ Link kopiert"; } } catch {}
+};
+</script>
+<script type="module" src="app.js?v=5"></script>
+</body>
+</html>
