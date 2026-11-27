@@ -1,9 +1,9 @@
 Tetherlume is an independent project by Marcel Molitor (MIT license).
 It is not affiliated with Google or Genymobile.
 
-The online installer obtains the unmodified scrcpy Windows x64 distribution v5.0.1 directly from Genymobile:
+The build process obtains the unmodified scrcpy Windows x64 distribution v5.0.1 directly from Genymobile:
 https://github.com/Genymobile/scrcpy/releases/tag/v5.0.1
 scrcpy: Apache License 2.0, Copyright (C) 2018 Genymobile.
 https://github.com/Genymobile/scrcpy/blob/v5.0.1/LICENSE
 All files and license notices in the downloaded distribution are retained, including those for bundled dependencies. The Tetherlume MIT license does not apply to these components.
-The setup executable itself does not redistribute the scrcpy archive. Internet access is required during installation.
+The offline installer bundles the extracted upstream distribution. Upstream source: https://github.com/Genymobile/scrcpy/tree/v5.0.1 . Before public redistribution verify all bundled license notices and corresponding-source obligations, including those of FFmpeg and other dependencies. Internet access is needed for downloading the installer, not for running it.
