@@ -70,7 +70,7 @@ static void launch(HWND w, BOOL record) {
         if (!GetSaveFileNameW(&file)) return;
     }
     BOOL dark = IsDlgButtonChecked(w,101)==BST_CHECKED;
-    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync%ls%ls%ls%ls",exe,
+    if (FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" --select-usb --no-audio --no-clipboard-autosync --window-title=Tetherlume%ls%ls%ls%ls",exe,
         dark?L" --turn-screen-off":L"", record?L" --record=\"":L"", output,record?L"\"":L""))) {
         status(w,tr(L"The file path is too long.",L"Der Dateipfad ist zu lang.")); return;
     }
@@ -178,7 +178,11 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
         KillTimer(w,1); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
-            status(w,tr(L"Connection ended. Unlock the phone, approve USB debugging, use a data cable, connect exactly one device and close other ADB tools (Android Studio, Vysor, browser tabs with Tetherlume Web).",L"Verbindung beendet. Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen, genau ein Gerät anschließen und andere ADB-Programme schließen (Android Studio, Vysor, Browser-Tabs mit Tetherlume Web)."));
+            wchar_t detail[768];
+            StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
+            status(w,detail);
+            /* Previous generic diagnostic: */
+            if (FALSE) status(w,tr(L"Connection ended. Unlock the phone, approve USB debugging, use a data cable, connect exactly one device and close other ADB tools (Android Studio, Vysor, browser tabs with Tetherlume Web).",L"Verbindung beendet. Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen, genau ein Gerät anschließen und andere ADB-Programme schließen (Android Studio, Vysor, Browser-Tabs mit Tetherlume Web)."));
 
         } else status(w,tr(L"Session ended.",L"Sitzung beendet."));
         return TRUE;
