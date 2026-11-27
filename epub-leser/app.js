@@ -118,7 +118,7 @@
   }
 
   /* ===================== IndexedDB: Zuletzt gelesen ===================== */
-  var DB_NAME = 'molitor-epub-leser', DB_VER = 1, MAX_RECENT = 8;
+  var DB_NAME = 'molitor-epub-leser', DB_VER = 1, MAX_RECENT = 40;
   var dbPromise = null, idbOk = true;
 
   function openDB() {
@@ -232,6 +232,7 @@
           }
         });
         recentList.appendChild(card);
+        card.hidden = !card.textContent.toLowerCase().includes(($('shelf-search').value || '').toLowerCase());
       });
     }).catch(function () { recentSection.hidden = true; });
   }
@@ -528,7 +529,7 @@
     } catch (e) { /* ältere Versionen */ }
     applySettingsToRendition();
 
-    r.on('relocated', function (loc) { if (S === st) onRelocated(st, loc); });
+    r.on('relocated', function (loc) { stopSpeech(); if (S === st) onRelocated(st, loc); });
     r.on('keyup', onKey);
     r.on('click', function () { closeSettings(); });
     r.on('displayError', function () { toast('Diese Stelle konnte nicht angezeigt werden.'); });
@@ -1168,6 +1169,17 @@
     if (S && S.key && S.location) lsSet('pos:' + S.key, Object.assign(lsGet('pos:' + S.key, {}) || {}, { cfi: S.location.start.cfi, time: Date.now() }));
   });
 
+  $('shelf-search').addEventListener('input',function(){var q=this.value.toLowerCase();Array.from(recentList.children).forEach(function(n){n.hidden=!n.textContent.toLowerCase().includes(q);});});
+  var nd=$('note-dialog'), nt=$('note-text'), nl=$('note-list'), ns=$('note-status'), speak=$('btn-speak');
+  function notes(){var a=S&&S.key?lsGet('notes:'+S.key,[]):[];return Array.isArray(a)?a:[];}
+  function showNotes(){clear(nl);notes().forEach(function(n,i){var jump=el('button',{type:'button',text:n.text});jump.addEventListener('click',function(){if(S&&S.rendition){nd.close();S.rendition.display(n.cfi).catch(function(){toast('Stelle nicht verfügbar');});}});var del=el('button',{type:'button',text:'Löschen'});del.addEventListener('click',function(){var a=notes();a.splice(i,1);if(lsSet('notes:'+S.key,a))showNotes();else ns.textContent='Speichern fehlgeschlagen';});nl.appendChild(el('li',null,[jump,del]));});}
+  $('btn-note').addEventListener('click',function(){if(!S||!S.key||!S.location||!S.location.start)return;nt.value='';ns.textContent='';showNotes();nd.showModal();});
+  $('note-close').addEventListener('click',function(){nd.close();});
+  $('note-save').addEventListener('click',function(){if(!S||!S.location||!nt.value.trim())return;var a=notes();a.push({cfi:S.location.start.cfi,text:nt.value.trim()});if(lsSet('notes:'+S.key,a)){nt.value='';ns.textContent='Gespeichert';showNotes();}else ns.textContent='Speicher nicht verfügbar';});
+  function stopSpeech(){if('speechSynthesis' in window)window.speechSynthesis.cancel();speak.setAttribute('aria-pressed','false');}
+  if(!('speechSynthesis' in window)||!('SpeechSynthesisUtterance' in window))speak.hidden=true;
+  speak.addEventListener('click',function(){if(speak.getAttribute('aria-pressed')==='true'){stopSpeech();return;}if(!S||!S.rendition)return;var voices=window.speechSynthesis.getVoices().filter(function(v){return v.localService;});if(!voices.length){toast('Keine lokale Vorlesestimme verfügbar.');return;}var contents=S.rendition.getContents()[0];if(!contents||!contents.document.body)return;var lang=contents.document.documentElement.lang||'de';var voice=voices.find(function(v){return v.lang.split('-')[0]===lang.split('-')[0];});if(!voice){toast('Keine passende lokale Stimme verfügbar.');return;}var text=contents.document.body.innerText.trim().slice(0,12000);if(!text)return;var u=new SpeechSynthesisUtterance(text);u.voice=voice;u.lang=voice.lang;u.onend=u.onerror=stopSpeech;speak.setAttribute('aria-pressed','true');window.speechSynthesis.speak(u);});
+  btnClose.addEventListener('click',stopSpeech);window.addEventListener('pagehide',stopSpeech);
   /* ===================== Start ===================== */
   applySettingsToRendition();
   renderLibrary();
