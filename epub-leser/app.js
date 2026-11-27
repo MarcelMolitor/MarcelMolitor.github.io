@@ -215,12 +215,22 @@
         $('shelf-search').parentNode.after(controls);
         controls.addEventListener('change',renderRecent);
       }
+      var favorites = lsGet('shelf-favorites', []);
+      if(!Array.isArray(favorites)) favorites=[];
+      var filter=$('shelf-favorites-only');
+      if(!filter){
+        filter=el('button',{id:'shelf-favorites-only',type:'button',class:'btn','aria-pressed':'false',text:en?'Favorites only':'Nur Favoriten'});
+        controls.after(filter);
+        filter.addEventListener('click',function(){filter.setAttribute('aria-pressed',String(filter.getAttribute('aria-pressed')!=='true'));renderRecent();});
+      }
+      var only=filter.getAttribute('aria-pressed')==='true';
       function progress(m){var p=lsGet('pos:'+m.id,null);return p&&typeof p.pct==='number'?p.pct:Number(m.pct)||0;}
       if(controls.value==='title')all.sort(function(a,b){return String(a.title||'').localeCompare(String(b.title||''),en?'en':'de');});
       if(controls.value==='author')all.sort(function(a,b){return String(a.author||'').localeCompare(String(b.author||''),en?'en':'de');});
       if(controls.value==='progress')all.sort(function(a,b){return progress(b)-progress(a);});
       recentSection.hidden = all.length === 0;
       all.forEach(function (m) {
+        if(only && !favorites.includes(m.id))return;
         var pos = lsGet('pos:' + m.id, null);
         var pct = pos && typeof pos.pct === 'number' ? pos.pct : m.pct;
         var coverImg = null;
@@ -243,6 +253,10 @@
             idbDelete(m.id).then(renderRecent).catch(function () { /* still */ });
           }
         });
+        var fav=el('button',{type:'button',class:'btn shelf-favorite','aria-pressed':String(favorites.includes(m.id)),text:favorites.includes(m.id)?'★':'☆','aria-label':en?'Toggle favorite':'Favorit umschalten'});
+        fav.style.cssText='position:relative;z-index:3;min-width:44px;min-height:44px;margin:6px;color:#3458d4;background:white;border:1px solid #d5deeb;border-radius:8px';
+        fav.addEventListener('click',function(e){e.stopPropagation();var current=lsGet('shelf-favorites',[]);if(!Array.isArray(current))current=[];var next=current.includes(m.id)?current.filter(function(id){return id!==m.id;}):current.concat(m.id);if(lsSet('shelf-favorites',next))renderRecent();else homeMessage(en?'Unable to save favorite.':'Favorit konnte nicht gespeichert werden.',true);});
+        card.appendChild(fav);
         recentList.appendChild(card);
         card.hidden = !card.textContent.toLowerCase().includes(($('shelf-search').value || '').toLowerCase());
       });
