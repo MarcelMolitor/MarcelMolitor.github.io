@@ -71,6 +71,14 @@ jobs:
           } finally {
             if (!$app.HasExited) { $null = $app.CloseMainWindow(); if (!$app.WaitForExit(3000)) { Stop-Process -Id $app.Id -Force } }
           }
+          # Verify an ordinary in-place upgrade before publishing the installer.
+          $upgrade = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $dir + '"')) -PassThru -Wait
+          if ($upgrade.ExitCode -ne 0) { throw "Upgrade failed: $($upgrade.ExitCode)" }
+          foreach ($file in @('Android-Desk.exe','scrcpy/scrcpy.exe','scrcpy/adb.exe','scrcpy/AdbWinApi.dll')) {
+            if (!(Test-Path (Join-Path $dir $file))) { throw "Missing file after upgrade: $file" }
+          }
+          & (Join-Path $dir 'scrcpy/scrcpy.exe') --version
+          if ($LASTEXITCODE -ne 0) { throw 'scrcpy failed after upgrade' }
           $u = Start-Process (Join-Path $dir 'unins000.exe') -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
           if ($u.ExitCode -ne 0) { throw 'Uninstall failed' }
           (Get-FileHash $setup -Algorithm SHA256).Hash | Set-Content android-desk/installer/output/SHA256.txt
@@ -99,5 +107,6 @@ jobs:
           $out = 'android-desk/installer/output'
           gh release view tetherlume-windows-latest 2>$null | Out-Null
           if ($LASTEXITCODE -ne 0) { gh release create tetherlume-windows-latest --title 'Tetherlume fuer Windows' --notes 'Tetherlume-Setup fuer Windows 10/11 (64 Bit) inkl. scrcpy. Android per USB am PC steuern. Pruefsumme: SHA256.txt' }
+          if ($LASTEXITCODE -ne 0) { throw 'Release creation failed' }
           gh release upload tetherlume-windows-latest "$out/Tetherlume-Setup.exe" "$out/SHA256.txt" --clobber
-          $global:LASTEXITCODE = 0
+          if ($LASTEXITCODE -ne 0) { throw 'Release upload failed' }
