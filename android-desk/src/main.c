@@ -181,8 +181,6 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             wchar_t detail[768];
             StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
             status(w,detail);
-            /* Previous generic diagnostic: */
-            if (FALSE) status(w,tr(L"Connection ended. Unlock the phone, approve USB debugging, use a data cable, connect exactly one device and close other ADB tools (Android Studio, Vysor, browser tabs with Tetherlume Web).",L"Verbindung beendet. Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen, genau ein Gerät anschließen und andere ADB-Programme schließen (Android Studio, Vysor, Browser-Tabs mit Tetherlume Web)."));
 
         } else status(w,tr(L"Session ended.",L"Sitzung beendet."));
         return TRUE;
