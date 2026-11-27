@@ -1,35 +1,52 @@
-# EPUB Reader
+# MOLITOR EPUB Reader
 
-**Read freely. Anywhere.**
+**Your books. Your reading space.**
 
 A free browser-based reader for DRM-free EPUB books, independently developed in Germany by Marcel Molitor.
 
-[Open EPUB Reader (English beta)](https://marcelmolitor.github.io/epub-leser/?lang=en) · [Deutsch](https://marcelmolitor.github.io/epub-leser/) · [English guide](https://marcelmolitor.github.io/epub-leser/english.html)
+- [Open the reader](https://marcelmolitor.github.io/epub-leser/)
+- [English product page](https://marcelmolitor.github.io/epub-leser/english.html)
+- [Deutsch](https://marcelmolitor.github.io/epub-leser/)
 
-## Features
+## What it does
 
-- Open local EPUB files without uploading book contents or creating an account.
-- Adjustable reading appearance, bookmarks, notes and text highlights.
-- Local recent-book library, favorites and reading statistics.
-- Dashboard light, dark, system and time-of-day appearance.
-- Export and import supported reading data as JSON. Original EPUB files are not included.
-- Responsive browser interface and installable web app on supported browsers.
+- Open local EPUB files in a modern browser.
+- Keep book contents on the user's device instead of uploading them to a reading account.
+- Navigate by table of contents, page controls and in-book search.
+- Save reading position, bookmarks, notes and text highlights.
+- Choose light, sepia or dark reading themes and adjust typography.
+- Keep a local recent-books shelf, reading goals and reading statistics.
+- Export supported reading notes, highlights and reading data.
+- Install the web app in browsers that support PWA installation.
 
-## Getting started
+## Compatibility and limitations
 
-Open the web app, select a DRM-free EPUB file and start reading. PDF and DRM-protected books are not supported. Internet access may be required to load third-party reader libraries. English interface support is currently in beta.
+- Designed for DRM-free EPUB files.
+- PDF and proprietary Kindle formats are not supported.
+- DRM-protected EPUB files may be incompatible.
+- The reader loads epub.js and JSZip from jsDelivr; an internet connection may be needed when starting the reader.
+- The application shell can be cached by a supported browser, but full offline reading is not guaranteed.
+- The English product page is available. The reader interface is only partially translated into English; some controls and messages may still appear in German.
 
-## Privacy and data
+## Privacy and local data
 
-Book contents are processed locally. Browser storage may be cleared by the user or browser, so keep original book files and export reading data regularly. See the [privacy notice](https://marcelmolitor.github.io/datenschutz.html).
+Book contents are processed in the browser. Recent-book information and reading data can be stored in IndexedDB and localStorage on the device. Browser site-data cleanup can remove this information. Users should keep original EPUB files and export reading data regularly. See the [privacy notice](https://marcelmolitor.github.io/datenschutz.html).
 
 ## Development
 
-The implementation is in `index.html`, `app.js`, `style.css`, `manifest.webmanifest` and `sw.js`. It uses epub.js and JSZip. Review their upstream licenses and the repository's applicable licensing terms before redistribution. A dedicated reader license is planned but not established by this README.
+The application is implemented in:
+- `index.html`
+- `english.html`
+- `app.js`
+- `style.css`
+- `manifest.webmanifest`
+- `sw.js`
+
+It uses epub.js and JSZip. Check upstream dependency licences and the repository's licence before redistributing bundled code. This README does not claim that every dependency is covered by an open-source licence compatible with every redistribution scenario.
 
 ## Feedback
 
-Reproducible bug reports, accessibility feedback and translation suggestions are welcome through the [repository issue tracker](https://github.com/MarcelMolitor/marcelmolitor.github.io/issues). Do not attach private books or reading data.
+Please report reproducible bugs, accessibility issues and translation suggestions in the [GitHub issue tracker](https://github.com/MarcelMolitor/marcelmolitor.github.io/issues). Do not attach private EPUB files or personal reading data.
 
 ## Support
 
