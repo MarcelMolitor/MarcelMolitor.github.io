@@ -1,21 +1,22 @@
 #pragma code_page(65001)
 #include <windows.h>
 1 ICON "android-desk.ico"
-100 DIALOGEX 0,0,309,227
+100 DIALOGEX 0,0,350,264
 STYLE DS_SETFONT | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX
 CAPTION "Tetherlume"
 FONT 10, "Segoe UI"
 BEGIN
- ICON 1,-1,13,12,26,26
- LTEXT "Tetherlume",-1,48,12,248,14
- LTEXT "Control your phone over USB",107,48,28,248,12
- LTEXT "Connect one unlocked Android device with a data cable. Enable USB debugging and approve access on the device.",108,13,54,281,32
- CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,280,14
- DEFPUSHBUTTON "Open device",102,13,117,83,20
- PUSHBUTTON "Record MP4 ...",103,102,117,94,20
- PUSHBUTTON "Help",104,203,117,91,20
- LTEXT "Language / Sprache",109,13,145,112,12
- CONTROL "English",110,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,132,144,70,14
- CONTROL "Deutsch",111,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,210,144,80,14
- LTEXT "",105,13,172,282,43
+ ICON 1,-1,16,15,28,28
+ LTEXT "Tetherlume",112,54,12,278,23
+ LTEXT "Control your phone over USB",107,55,36,275,14
+ LTEXT "Connect one unlocked Android device with a data cable. Enable USB debugging and approve access on the device.",108,16,67,318,33
+ CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,107,318,16
+ DEFPUSHBUTTON "Open device",102,16,132,105,27
+ PUSHBUTTON "Record MP4 ...",103,128,132,116,27
+ PUSHBUTTON "Help",104,251,132,83,27
+ LTEXT "Language / Sprache",109,16,174,113,14
+ CONTROL "English",110,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,143,173,77,16
+ CONTROL "Deutsch",111,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,230,173,95,16
+ LTEXT "",105,16,200,318,33
+ LTEXT "",113,16,242,318,14
 END
