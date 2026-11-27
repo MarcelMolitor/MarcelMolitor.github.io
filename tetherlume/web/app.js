@@ -1,6 +1,6 @@
 // Tetherlume Web v5 – Android im Browser per WebUSB (ADB + scrcpy Live-Video)
 // Created by Marcel Molitor
-const VERSION = "5.0";
+const VERSION = "5.3";
 const SERVER_VERSION = "3.3.3";
 const SERVER_FILE = "scrcpy-server-v3.3.3";
 const LIBS = {
@@ -113,7 +113,7 @@ async function connect() {
     setState("Verbunden", "ok");
     message("ADB verbunden. Live-Bild wird gestartet …");
     loadDeviceInfo();
-    transport.disconnected?.then?.(() => { if (token === epoch && adb) { stop(); message("Verbindung zum Handy verloren.", "warn"); } });
+    transport.disconnected?.then?.(() => { if (adb?.transport === transport) { stop(); message("Verbindung zum Handy verloren.", "warn"); } });
     await startLive(token);
   } catch (e) {
     console.error(e);
@@ -167,7 +167,9 @@ async function startLive(token) {
   }
   try {
     message("Live-Server wird aufs Handy kopiert …");
-    const buf = new Uint8Array(await (await fetch(SERVER_FILE)).arrayBuffer());
+    const response = await fetch(SERVER_FILE, { cache: "no-cache" });
+    if (!response.ok) throw new Error("Server-Datei: HTTP " + response.status);
+    const buf = new Uint8Array(await response.arrayBuffer());
     if (buf.length < 50000) throw new Error("Server-Datei fehlt");
     await L.AdbScrcpyClient.pushServer(adb, new ReadableStream({ start(c) { c.enqueue(buf); c.close(); } }));
     if (token !== epoch) return;
@@ -197,9 +199,19 @@ async function startLive(token) {
     ui.screen.replaceChildren(canvas);
     decoder = new L.WebCodecsVideoDecoder({ codec: video.metadata.codec, renderer });
     let first = true;
+    const watchdog = setTimeout(() => {
+      if (token === epoch && mode === "live" && first) {
+        message("Kein Live-Bild nach 15 Sekunden. Bild-Modus wird versucht …", "warn");
+        const next = ++epoch;
+        mode = "none";
+        try { decoder?.dispose(); } catch {}
+        const old = client; client = decoder = undefined;
+        Promise.resolve().then(() => old?.close()).catch(() => {}).finally(() => { if (next === epoch && adb) startFallback(next); });
+      }
+    }, 15000);
     decoder.sizeChanged(({ width, height }) => {
       ui.stage.classList.toggle("landscape", width > height);
-      if (first) { first = false; message(`Live! ${video.metadata.deviceName || "Android"} · ${width} × ${height}. Klicke ins Bild zum Steuern, tippe zum Schreiben.`, "ok"); }
+      if (first) { first = false; clearTimeout(watchdog); setState("Live verbunden", "ok"); message(`Live! ${video.metadata.deviceName || "Android"} · ${width} × ${height}. Klicke ins Bild zum Steuern, tippe zum Schreiben.`, "ok"); }
     });
     video.stream.pipeTo(decoder.writable).catch((e) => { if (token === epoch) message("Videostream beendet: " + e.message, "warn"); });
     client.exited.then(() => { if (token === epoch && mode === "live") { message("Live-Server wurde beendet. Klicke „Bild neu starten“.", "warn"); setState("Verbunden · kein Bild", "warn"); } });
@@ -208,7 +220,7 @@ async function startLive(token) {
     ui.placeholder.hidden = true;
     ui.screen.hidden = false;
     ui.fallbackImg.hidden = true;
-    setState("Live verbunden", "ok");
+    if (first) setState("Warte auf Live-Bild …", "busy");
     bindInput(canvas);
     fpsMeter(token);
     thanksLater(token);
@@ -335,7 +347,7 @@ async function keyCombo(letter) {
 
 async function sendText(text) {
   if (!text) return;
-  if (mode === "fallback") return shell("input text " + JSON.stringify(text.replace(/ /g, "%s")));
+  if (mode === "fallback") return shell("input text '" + text.replace(/ /g, "%s").replace(/'/g, "'\\''") + "'");
   if (!client?.controller) return;
   try {
     if (/^[\x20-\x7e]*$/.test(text)) await client.controller.injectText(text);
@@ -384,7 +396,7 @@ async function startFallback(token) {
   while (token === epoch && mode === "fallback") {
     try {
       const blob = await capturePng();
-      if (token !== epoch) return;
+      if (token !== epoch) { if (url) URL.revokeObjectURL(url); return; }
       const next = URL.createObjectURL(blob);
       img.src = next;
       await img.decode().catch(() => {});
@@ -392,10 +404,11 @@ async function startFallback(token) {
       url = next; fails = 0;
       ui.stage.classList.toggle("landscape", img.naturalWidth > img.naturalHeight);
     } catch (e) {
-      if (++fails >= 3) { message("Bild-Modus: " + e.message, "bad"); return; }
+      if (++fails >= 3) { if (url) URL.revokeObjectURL(url); setState("Verbunden · kein Bild", "warn"); message("Bild-Modus: " + e.message + ". Bitte Handy entsperren und Bild neu starten.", "bad"); return; }
     }
     await new Promise((r) => setTimeout(r, 400));
   }
+  if (url) URL.revokeObjectURL(url);
 }
 
 // ---------- Trennen ----------
@@ -426,6 +439,7 @@ async function stop(silent) {
 async function pushFile(file) {
   if (!adb) return;
   const isApk = /\.apk$/i.test(file.name);
+  if (isApk && !window.confirm("APK auf dem verbundenen Android installieren?\n" + file.name)) return;
   const safe = file.name.replace(/[^\w.\-äöüÄÖÜß ]/g, "_");
   const target = isApk ? "/data/local/tmp/tetherlume.apk" : "/sdcard/Download/" + safe;
   message(`${file.name} wird übertragen …`);
