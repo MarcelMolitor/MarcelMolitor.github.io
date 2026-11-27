@@ -104,6 +104,29 @@ details ol,details ul{padding-left:20px;margin:8px 0}details li{margin:6px 0}
 .share{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .faq{margin-top:18px}
 .faq details{background:var(--s1);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-top:8px}
+.demo-btn{margin-top:14px;background:#1f3e6b;border-color:#4a76b0}
+.demo{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;background:radial-gradient(ellipse at center,#1a3358,#08111e 75%)}
+.demo-badge{font-size:12px;font-weight:800;letter-spacing:.08em;background:#ffc439;color:#111;border-radius:99px;padding:4px 6px 4px 12px;display:flex;align-items:center;gap:8px}
+.demo-badge button{min-height:24px;padding:0 8px;border-radius:99px;background:#111;color:#fff;border:0;font-size:12px}
+.dphone{height:min(100%,600px);flex:1 1 auto;max-height:calc(100% - 80px);aspect-ratio:9/19;background:#000;border:6px solid #2c3e57;border-radius:28px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 18px 60px #0009}
+.dscreen{flex:1;position:relative;overflow:hidden;font-family:system-ui,sans-serif;color:#fff}
+.dnav{height:38px;display:flex;justify-content:space-around;align-items:center;background:#000}
+.dnav button{background:none;border:0;color:#ddd;font-size:18px;min-height:30px;padding:0 16px}
+.dhome{position:absolute;inset:0;background:linear-gradient(160deg,#4a2f8f,#1d5fa8 55%,#0f9a8a);padding:14px 12px;display:flex;flex-direction:column}
+.dstatus{display:flex;justify-content:space-between;font-size:11px;opacity:.9}
+.dclock{font-size:44px;font-weight:300;text-align:center;margin:18px 0 2px}
+.ddate{text-align:center;font-size:12px;opacity:.85;margin-bottom:auto}
+.dgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px 6px;margin-top:16px}
+.dapp{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;background:none;border:0;color:#fff;padding:0;min-height:0;cursor:pointer}
+.dapp i{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-style:normal;font-size:21px;box-shadow:0 3px 10px #0005}
+.dview{position:absolute;inset:0;background:#f4f6fa;color:#111;display:flex;flex-direction:column;animation:din .18s ease-out}
+@keyframes din{from{transform:scale(.92);opacity:0}}
+.dbar{padding:16px 14px 12px;font-weight:700;font-size:16px;color:#fff}
+.dbody{padding:12px;font-size:13px;display:flex;flex-direction:column;gap:8px;overflow:auto}
+.dcard{background:#fff;border-radius:12px;padding:10px 12px;box-shadow:0 1px 4px #0002}
+.dtap{position:absolute;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff6;border:2px solid #fff;pointer-events:none;animation:dtap .45s ease-out forwards}
+@keyframes dtap{to{transform:scale(1.8);opacity:0}}
+.demo-cap{font-size:13px;color:#c7d6ec;text-align:center;max-width:420px}
 .mobile-hint{margin:0 0 16px;padding:16px;border-radius:14px;border:1px solid #3a5f92;background:linear-gradient(120deg,#16305a,#111d33)}.mobile-hint p{margin:6px 0 10px;color:#c7d6ec}
 .thanks{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;padding:12px 14px;border-radius:12px;background:linear-gradient(120deg,#2b2410,#1b2236);border:1px solid #6b5a22}.thanks span{flex:1;min-width:220px}.thanks a.btn{background:#ffc439;color:#111;border-color:#ffd66b}
 footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:var(--mut);font-size:13px;display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
@@ -143,7 +166,7 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 <section id="mobile-hint" class="mobile-hint" hidden>
   <b>📱 Du bist gerade am Handy</b>
   <p>Tetherlume steuert dein Android vom <b>PC aus</b>. Schick dir den Link an den Computer, öffne ihn dort in Chrome oder Edge und steck dein Handy per USB an.</p>
-  <div class="row"><button class="primary" id="send-to-pc" type="button">📤 Link an meinen PC senden</button><button id="copy-link" type="button">🔗 Link kopieren</button></div>
+  <div class="row"><button class="primary" id="send-to-pc" type="button">📤 Link an meinen PC senden</button><button id="copy-link" type="button">🔗 Link kopieren</button></div><button type="button" class="demo-btn" data-demo style="width:100%;margin-top:8px">▶ Erst mal die Demo ansehen</button>
   <p class="muted" style="font-size:13px;margin:10px 0 0">Profi-Tipp: Mit einem OTG-Adapter kannst du von hier aus auch ein <b>zweites</b> Android-Handy steuern. Einfach anstecken und unten auf „Android verbinden“ tippen.</p>
 </section>
 <div class="layout">
@@ -159,10 +182,16 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
       <div class="placeholder" id="placeholder">
         <div class="phone" aria-hidden="true">📱</div>
         <strong>Bereit für dein Handy</strong>
-        <p>Verbinde dein Android per USB-Datenkabel und klicke auf <b>„Android verbinden“</b>.</p>
+        <p>Verbinde dein Android per USB-Datenkabel und klicke auf <b>„Android verbinden“</b>.</p><button type="button" class="demo-btn" data-demo>▶ Demo ansehen</button>
       </div>
       <div id="screen" hidden></div>
       <img id="fallback-img" alt="Android-Bildschirm" tabindex="0" hidden>
+      <div id="demo" class="demo" hidden aria-label="Demo-Ansicht">
+        <div class="demo-badge">DEMO · kein echtes Gerät <button type="button" id="demo-close" aria-label="Demo beenden">✕</button></div>
+        <div class="dphone"><div class="dscreen" id="dscreen"></div>
+          <div class="dnav"><button type="button" data-dnav="back" aria-label="Zurück">◁</button><button type="button" data-dnav="home" aria-label="Home">○</button><button type="button" data-dnav="apps" aria-label="Apps">▢</button></div></div>
+        <div class="demo-cap" id="demo-cap">Tippe auf eine App – so steuerst du dein echtes Handy später mit Maus oder Finger.</div>
+      </div>
       <div id="drop-hint" hidden>Loslassen: Datei → Download-Ordner · APK → installieren</div>
     </div>
     <div class="keys" role="toolbar" aria-label="Android-Tasten">
@@ -298,6 +327,40 @@ document.getElementById("share-btn").onclick = async () => {
   const data = { title: "Tetherlume Web", text: "Android-Handy live im Browser steuern – per USB, ohne Installation:", url: "https://marcelmolitor.github.io/tetherlume/web/" };
   try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(data.url); document.getElementById("share-btn").textContent = "✓ Link kopiert"; } } catch {}
 };
+</script>
+<script>
+(() => {
+  const demo = document.getElementById("demo"), scr = document.getElementById("dscreen"), cap = document.getElementById("demo-cap");
+  const apps = [["💬","Nachrichten","#25d366"],["📷","Kamera","#444"],["🖼","Galerie","#e85a7a"],["🌐","Chrome","#4285f4"],["▶","YouTube","#ff0000"],["🗺","Maps","#34a853"],["⚙","Einstellungen","#607d8b"],["🎵","Musik","#ff7a00"]];
+  const t = () => new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+  function home() {
+    scr.innerHTML = `<div class="dhome"><div class="dstatus"><span>${t()}</span><span>📶 🔋 87 %</span></div><div class="dclock">${t()}</div><div class="ddate">${new Date().toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</div><div class="dgrid">${apps.map((a,i)=>`<button type="button" class="dapp" data-i="${i}"><i style="background:${a[2]}">${a[0]}</i>${a[1]}</button>`).join("")}</div></div>`;
+    cap.textContent = "Tippe auf eine App – so steuerst du später dein echtes Handy mit Maus oder Finger.";
+  }
+  function open(i) {
+    const [ico,name,col] = apps[i];
+    const body = name === "Nachrichten"
+      ? `<div class="dcard"><b>Lisa</b><br>Kommst du heute noch? 😊</div><div class="dcard"><b>Mama</b><br>Ruf mal an ❤️</div><div class="dcard" style="background:#dcf8c6;align-self:flex-end">Am PC getippt – mit Tetherlume ⌨️</div>`
+      : `<div class="dcard">${ico} <b>${name}</b> ist geöffnet.</div><div class="dcard">Mit Tetherlume bedienst du jede App: tippen, wischen, scrollen und schreiben – direkt vom PC.</div><div class="dcard">◁ unten = Zurück · ○ = Startbildschirm</div>`;
+    scr.insertAdjacentHTML("beforeend", `<div class="dview"><div class="dbar" style="background:${col}">${ico} ${name}</div><div class="dbody">${body}</div></div>`);
+    cap.textContent = `„${name}“ geöffnet. Unten ◁ für Zurück oder ○ für Home.`;
+  }
+  scr.addEventListener("pointerdown", (e) => {
+    const r = scr.getBoundingClientRect(), d = document.createElement("span");
+    d.className = "dtap"; d.style.left = (e.clientX - r.left) + "px"; d.style.top = (e.clientY - r.top) + "px";
+    scr.append(d); setTimeout(() => d.remove(), 500);
+    const a = e.target.closest(".dapp"); if (a) setTimeout(() => open(+a.dataset.i), 120);
+  });
+  document.querySelectorAll("[data-dnav]").forEach((b) => b.onclick = () => {
+    const v = scr.querySelectorAll(".dview");
+    if (b.dataset.dnav === "back" && v.length) { v[v.length-1].remove(); if (v.length === 1) home(); } else if (b.dataset.dnav === "apps") { cap.textContent = "Letzte Apps – im echten Modus siehst du hier deine offenen Apps."; } else home();
+  });
+  const start = () => { demo.hidden = false; home(); document.getElementById("stage").scrollIntoView({behavior:"smooth",block:"center"}); };
+  document.querySelectorAll("[data-demo]").forEach((b) => b.onclick = start);
+  document.getElementById("demo-close").onclick = () => (demo.hidden = true);
+  document.getElementById("connect").addEventListener("click", () => (demo.hidden = true));
+  if (location.hash === "#demo") start();
+})();
 </script>
 <script type="module" src="app.js?v=5.2"></script>
 </body>
