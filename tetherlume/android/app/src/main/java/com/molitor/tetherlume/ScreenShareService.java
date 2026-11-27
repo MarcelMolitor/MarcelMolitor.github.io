@@ -38,7 +38,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Collections;
 
-/** Teilt den Bildschirm per MJPEG-Stream im lokalen WLAN (http://IP:8080/?k=CODE). Keine Cloud. */
+/** Teilt den Bildschirm per MJPEG-Stream im lokalen WLAN (http://IP:8080/?k=TOKEN). Keine Cloud. */
 public class ScreenShareService extends Service {
     public static final String ACTION_START = "com.molitor.tetherlume.START";
     public static final String ACTION_STOP = "com.molitor.tetherlume.STOP";
@@ -69,7 +69,8 @@ public class ScreenShareService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null || ACTION_STOP.equals(intent.getAction())) { stopSelf(); return START_NOT_STICKY; }
         if (running) return START_NOT_STICKY;
-        key = String.format("%04d", new SecureRandom().nextInt(10000));
+        byte[] secret = new byte[24]; new SecureRandom().nextBytes(secret);
+        key = android.util.Base64.encodeToString(secret, android.util.Base64.URL_SAFE | android.util.Base64.NO_WRAP | android.util.Base64.NO_PADDING);
         String ip = localIp();
         shareUrl = "http://" + (ip == null ? "IP-ADRESSE" : ip) + ":" + PORT + "/?k=" + key;
         Notification n = notification();
@@ -136,24 +137,26 @@ public class ScreenShareService extends Service {
 
     private void startServer() {
         new Thread(() -> {
-            try (ServerSocket s = new ServerSocket(PORT)) {
+            try (ServerSocket s = new ServerSocket(PORT, 8, InetAddress.getByName(localIp()))) {
                 server = s;
                 while (running) {
                     Socket c = s.accept();
                     new Thread(() -> handle(c), "client").start();
                 }
-            } catch (Exception ignored) { }
+            } catch (Exception ignored) { stopSelf(); }
         }, "server").start();
     }
 
     private void handle(Socket c) {
         try (Socket socket = c; OutputStream out = socket.getOutputStream()) {
             socket.setTcpNoDelay(true);
+            socket.setSoTimeout(5000);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
             String line = in.readLine();
             if (line == null) return;
             String path = line.split(" ").length > 1 ? line.split(" ")[1] : "/";
-            if (!path.contains("k=" + key)) {
+            String query = android.net.Uri.parse(path).getQueryParameter("k");
+            if (!key.equals(query)) {
                 write(out, "403 Forbidden", "text/html; charset=utf-8", page(false));
                 return;
             }
@@ -161,7 +164,7 @@ public class ScreenShareService extends Service {
             else if (path.startsWith("/shot")) {
                 byte[] f; synchronized (frameLock) { f = frame; }
                 if (f == null) f = new byte[0];
-                out.write(("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: " + f.length + "\r\nCache-Control: no-store\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
+                out.write(("HTTP/1.1 200 OK\r\nContent-Type: image/jpeg\r\nContent-Length: " + f.length + "\r\nCache-Control: no-store\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n\r\n").getBytes(StandardCharsets.US_ASCII));
                 out.write(f);
             } else write(out, "200 OK", "text/html; charset=utf-8", page(true));
         } catch (Exception ignored) { }
