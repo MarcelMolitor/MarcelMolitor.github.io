@@ -95,7 +95,7 @@
   var toastEl = $('toast');
 
   /* ===================== Zustand ===================== */
-  var settings = Object.assign({ fontSize: 100, theme: 'hell', font: 'serif' }, lsGet('settings', {}));
+  var settings = Object.assign({ fontSize: 110, theme: 'hell', font: 'serif' }, lsGet('settings', {}));
   if (!THEMES[settings.theme]) settings.theme = 'hell';
   if (!FONTS[settings.font]) settings.font = 'serif';
   settings.fontSize = Math.max(80, Math.min(200, Number(settings.fontSize) || 100));
@@ -551,6 +551,8 @@
     Object.keys(THEMES).forEach(function (name) {
       var t = THEMES[name], sc = 'html[data-lt="' + name + '"] ';
       rules[sc + 'body'] = { background: t.bg + ' !important', color: t.fg + ' !important' };
+      rules[sc + 'p, ' + sc + 'li, ' + sc + 'blockquote'] = { 'line-height': '1.65 !important', 'overflow-wrap': 'break-word' };
+      rules[sc + 'img'] = { 'max-width': '100%', 'object-fit': 'contain' };
       rules[sc + 'a, ' + sc + 'a:link, ' + sc + 'a:visited'] = { color: t.link + ' !important' };
       if (name !== 'hell') rules[txt.map(function (x) { return sc + x; }).join(', ')] = { color: t.fg + ' !important' };
     });
