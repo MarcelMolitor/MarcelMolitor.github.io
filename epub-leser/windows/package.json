@@ -1,0 +1,12 @@
+{
+  "name": "molitor-epub-reader",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "node stage.mjs && tauri build",
+    "dev": "node stage.mjs && tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}
