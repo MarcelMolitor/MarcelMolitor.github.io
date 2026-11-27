@@ -429,7 +429,7 @@
       }
       return read();
     }).then(function (buf) {
-      if (request !== openRequest || reader.hidden) return;
+      if (request !== openRequest || reader.hidden || !buf) return;
       var path = u.pathname;
       var libEntry = LIBRARY.some(function (b) { return LIB_BASE + b.file === path; });
       return openBook(buf, { name: decodeURIComponent(path.split('/').pop() || 'buch.epub'), libUrl: libEntry ? path : null, storeRecent: !libEntry });
@@ -715,9 +715,9 @@
   function goRight() { if (S && S.rtl) goBack(); else goForward(); }
 
   function onKey(e) {
-    if (!S || reader.hidden) return;
+    if (!S || reader.hidden || e.defaultPrevented || e.isComposing || document.querySelector('dialog[open]')) return;
     if (e.key === 'Escape') { if (closeOverlays()) e.preventDefault && e.preventDefault(); return; }
-    if (!drawer.hidden || isTyping(e.target)) return;
+    if (!drawer.hidden || !settingsBox.hidden || isTyping(e.target) || (e.target && e.target.closest && e.target.closest('button,a,[role="button"]'))) return;
     if (e.altKey || e.ctrlKey || e.metaKey || e.defaultPrevented || e.isComposing) return;
     switch (e.key) {
       case 'ArrowLeft': goLeft(); break;
