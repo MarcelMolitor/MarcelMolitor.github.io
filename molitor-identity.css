@@ -10,3 +10,6 @@
 .molitor-identity a:focus-visible{outline:3px solid #9acbff;outline-offset:3px}
 @media(max-width:600px){.molitor-identity{width:calc(100% - 20px);padding:8px 12px}.molitor-identity .mi-links{gap:4px 12px;font-size:12px}}
 @media print{.molitor-identity{display:none!important}}
+
+/* Orbit signature: shared navigation across products. */
+.molitor-identity{border-radius:16px;border-color:#334a69;background:linear-gradient(115deg,#0b1628,#14283f);box-shadow:0 4px 16px #0b162812}.molitor-identity .mi-mark{background:linear-gradient(145deg,#2563eb,#1d4ed8);border-radius:8px}.molitor-identity .mi-download{border-radius:10px}.molitor-identity:after{content:"";position:absolute;bottom:0;left:18px;right:18px;height:2px;background:linear-gradient(90deg,#2563eb,#38bdf8,#a78bfa);border-radius:2px;pointer-events:none}
