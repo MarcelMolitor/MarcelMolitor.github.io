@@ -412,7 +412,22 @@
     setLoading(true, uiText("Buch wird geladen …","Loading book …"));
     fetch(u.href, { credentials: 'same-origin', redirect: 'error' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      return res.arrayBuffer();
+      var limit = 100 * 1024 * 1024;
+      function tooLarge() { var e = new Error('EPUB_SIZE_LIMIT'); e.sizeLimit = true; return e; }
+      if (Number(res.headers.get('content-length')) > limit) { if(res.body) res.body.cancel().catch(function(){}); throw tooLarge(); }
+      if (!res.body || !res.body.getReader) return res.arrayBuffer();
+      var stream = res.body.getReader(), chunks = [], total = 0;
+      function read() {
+        if (request !== openRequest || reader.hidden) { stream.cancel().catch(function(){}); return Promise.resolve(null); }
+        return stream.read().then(function(part) {
+          if (part.done) { var bytes = new Uint8Array(total), offset = 0; chunks.forEach(function(chunk){bytes.set(chunk,offset);offset+=chunk.byteLength;}); return bytes.buffer; }
+          total += part.value.byteLength;
+          if (total > limit) { stream.cancel().catch(function(){}); throw tooLarge(); }
+          chunks.push(part.value);
+          return read();
+        });
+      }
+      return read();
     }).then(function (buf) {
       if (request !== openRequest || reader.hidden) return;
       var path = u.pathname;
@@ -420,6 +435,7 @@
       return openBook(buf, { name: decodeURIComponent(path.split('/').pop() || 'buch.epub'), libUrl: libEntry ? path : null, storeRecent: !libEntry });
     }).catch(function (e) {
       if (request !== openRequest || reader.hidden || (e && e.handled)) return;
+      if (e && e.sizeLimit) { failOpen(uiText('Bitte wähle eine EPUB-Datei bis 100 MiB.','Please choose an EPUB up to 100 MiB.')); return; }
       failOpen(uiText("Das Buch konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und versuche es erneut.","Could not load the book. Check your internet connection and try again."));
     });
   }
