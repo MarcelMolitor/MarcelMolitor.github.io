@@ -354,8 +354,8 @@
       libraryList.appendChild(bookCard({
         title: b.title, sub: b.sub, cover: b.cover,
         pct: pos ? pos.pct : null,
-        emptyText: 'Kostenlos · EPUB',
-        label: '„' + b.title + '“ im Leser öffnen',
+        emptyText: uiText('Kostenlos · EPUB','Free · EPUB'),
+        label: uiText('„','Open “') + b.title + uiText('“ im Leser öffnen','” in reader'),
         onOpen: function () { openFromUrl(url, { library: true }); }
       }));
     });
@@ -527,8 +527,8 @@
     }).catch(function (e) {
       if (my !== session) return;
       var msg = e && e.message === 'Zeitüberschreitung'
-        ? 'Das Öffnen hat zu lange gedauert. Die Datei ist möglicherweise beschädigt oder sehr groß.'
-        : 'Das EPUB konnte nicht geöffnet werden. Die Datei ist möglicherweise beschädigt oder kein gültiges E-Book.';
+        ? uiText('Das Öffnen hat zu lange gedauert. Die Datei ist möglicherweise beschädigt oder sehr groß.','Opening the book timed out. The file may be damaged or very large.')
+        : uiText('Das EPUB konnte nicht geöffnet werden. Die Datei ist möglicherweise beschädigt oder kein gültiges E-Book.','Could not open this EPUB. The file may be damaged or not a valid ebook.');
       failOpen(msg);
       var err = new Error(msg); err.handled = true; throw err;
     });
@@ -969,19 +969,19 @@
       if (token !== st.searchToken || S !== st) return;
       if (i >= items.length || total >= LIMIT) {
         searchStatus.textContent = total === 0
-          ? 'Keine Treffer für „' + q + '“.'
-          : (total >= LIMIT ? 'Mehr als ' + LIMIT + ' Treffer – die ersten ' + LIMIT + ' werden angezeigt.' : total + (total === 1 ? ' Treffer' : ' Treffer') + ' für „' + q + '“.');
+          ? uiText('Keine Treffer für „','No results for “') + q + uiText('“.','”.')
+          : (total >= LIMIT ? uiText('Mindestens ','At least ') + LIMIT + uiText(' Treffer – angezeigt werden bis zu ',' results – showing up to ') + LIMIT : total + (total === 1 ? uiText(' Treffer',' result') : uiText(' Treffer',' results')) + uiText(' für „',' for “') + q + uiText('“.','”.'));
         return;
       }
       var item = items[i++];
-      searchStatus.textContent = 'Suche läuft … (' + i + ' von ' + items.length + ')';
+      searchStatus.textContent = uiText('Suche läuft … (','Searching … (') + i + uiText(' von ',' of ') + items.length + ')';
       Promise.resolve().then(function () {
         return item.load(st.book.load.bind(st.book));
       }).then(function () {
         var found = [];
         try { found = item.find(q) || []; } catch (e) { found = []; }
         try { item.unload(); } catch (e) { /* egal */ }
-        if (token !== st.searchToken) return;
+        if (token !== st.searchToken || S !== st) return;
         var label = chapterLabel(st, item.index);
         found.forEach(function (r) {
           if (total >= LIMIT) return;
@@ -1152,7 +1152,7 @@
   function resetReaderUi() {
     clear(tocList); clear(searchResults); clear(marksList);
     searchStatus.textContent = ''; searchInput.value = '';
-    rTitle.textContent = 'Buch'; rChapter.textContent = '';
+    rTitle.textContent = uiText('Buch','Book'); rChapter.textContent = '';
     range.value = '0'; range.disabled = true; range.removeAttribute('aria-valuetext');
     progPct.textContent = '–'; progPage.textContent = '';
     btnBookmark.setAttribute('aria-pressed', 'false');
