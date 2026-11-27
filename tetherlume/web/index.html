@@ -135,6 +135,19 @@ footer{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);color:v
 @media(max-width:560px){.features{grid-template-columns:1fr}.support{grid-template-columns:1fr}.stage{height:68vh}nav a{padding:6px 8px;font-size:13px}.keys button{flex:1 1 30%}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;scroll-behavior:auto!important}}
 
+.downloads{margin-top:18px}
+.dl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.dl-tile{position:relative;display:flex;flex-direction:column;gap:8px;padding:20px;border-radius:12px;border:1px solid #36485e;overflow:hidden;background:linear-gradient(150deg,#16263c,#0e1828)}
+.dl-tile:before{content:"";position:absolute;inset:-40% -40% auto auto;width:220px;height:220px;border-radius:50%;filter:blur(60px);opacity:.35;background:var(--glow,#347ff5)}
+.dl-tile.android{--glow:#3ccf8e}.dl-tile.windows{--glow:#8a7dff}
+.dl-tile em{font-style:normal;font-size:34px;position:relative}
+.dl-tile b{font-size:19px;position:relative}
+.dl-tile span{color:#b9c5d6;font-size:14px;flex:1;position:relative}
+.dl-tile small{color:#8fa3bd;font-size:12px;position:relative}
+.dl-btn{position:relative;display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:10px;font-weight:750;text-decoration:none;color:#fff;background:#347ff5;border:1px solid #6ba5ff;transition:transform .12s,filter .12s}
+.dl-btn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.dl-tile.android .dl-btn{background:#1fa86d;border-color:#3ccf8e}
+.dl-tile.windows .dl-btn{background:#5b4fd6;border-color:#8a7dff}
 /* ===== Tetherlume OS Design ===== */
 body{background:radial-gradient(ellipse at 75% 15%,#263d5a 0,transparent 58%),#0a111c}
 main{max-width:1800px;padding:18px 24px 96px}
@@ -304,6 +317,15 @@ footer{margin-bottom:10px}
   </aside>
 </div>
 
+<section class="downloads panel" id="download" aria-label="Downloads">
+  <div class="window-title"><span><i class="dots"><b></b><b></b><b></b></i>⬇ &nbsp;Download-Center</span><small>ALLE PLATTFORMEN · KOSTENLOS</small></div>
+  <div class="dl-grid">
+    <div class="dl-tile web"><em>🌐</em><b>Tetherlume Web</b><span>Direkt im Browser. Chrome oder Edge, Handy per USB. Ohne Installation.</span><a class="dl-btn" href="#workspace">Jetzt starten →</a></div>
+    <div class="dl-tile android"><em>📲</em><b>Android-App</b><span>Bildschirm per WLAN in jeden Browser teilen, mit USB-Check und Schnellhilfe. Ab Android 8.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-android-latest/Tetherlume.apk">APK herunterladen</a><small>Test-Version · „Unbekannte Apps zulassen“ erlauben</small></div>
+    <div class="dl-tile windows"><em>🖥</em><b>Windows-App</b><span>Setup inkl. scrcpy: Live-Bild, MP4-Aufnahme, Display aus. Windows 10/11, 64 Bit.</span><a class="dl-btn" href="https://github.com/MarcelMolitor/MarcelMolitor.github.io/releases/download/tetherlume-windows-latest/Tetherlume-Setup.exe">Setup herunterladen</a><small>SmartScreen-Hinweis? „Weitere Informationen → Trotzdem ausführen“</small></div>
+  </div>
+</section>
+
 <section class="features" aria-label="Funktionen">
   <div class="feature"><em>⚡</em><b>Flüssig wie ein Video</b><span>Echtes Live-Bild mit bis zu 60 FPS, Hardware-dekodiert in deinem Browser. Basiert auf dem bewährten scrcpy.</span></div>
   <div class="feature"><em>🖱</em><b>Volle Kontrolle</b><span>Tippen, wischen, scrollen, schreiben. Zurück, Home, Lautstärke, Drehen, Mitteilungen – alles per Klick.</span></div>
@@ -344,6 +366,7 @@ footer{margin-bottom:10px}
   <a href="#workspace">▯ Smartphone</a>
   <a href="#device-center">⌁ Gerätecenter</a>
   <a href="#" data-demo>▶ Demo</a>
+  <a href="#download">⬇ Download</a>
   <a href="#faq">? Hilfe</a>
   <a class="dock-support" href="https://www.paypal.biz/molitormarcel93" target="_blank" rel="noopener noreferrer">♡ Unterstützen</a>
   <span id="clock"></span>
