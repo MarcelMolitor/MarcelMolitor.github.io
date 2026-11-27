@@ -201,13 +201,26 @@
 
   var coverUrls = [];
   function renderRecent() {
-    if (!idbOk) { recentSection.hidden = true; return Promise.resolve(); }
+    if (!idbOk) { recentSection.hidden = true; if($('resume-reading'))$('resume-reading').hidden=true; return Promise.resolve(); }
     return idbAllMeta().then(function (all) {
       coverUrls.forEach(function (u) { try { URL.revokeObjectURL(u); } catch (e) { /* egal */ } });
       coverUrls = [];
       clear(recentList);
       all = (all || []).sort(function (a, b) { return (b.time || 0) - (a.time || 0); });
       var en = new URLSearchParams(location.search).get('lang') === 'en';
+      var resume=$('resume-reading');
+      if(!resume){resume=el('section',{id:'resume-reading',class:'section'});recentSection.parentNode.insertBefore(resume,recentSection);}
+      clear(resume);
+      var latest=all.find(function(m){var p=lsGet('pos:'+m.id,null);return p&&p.cfi&&!(typeof p.pct==='number'&&p.pct>=0.99);})||all[0];
+      resume.hidden=!latest;
+      if(latest){
+        resume.style.cssText='padding:20px;border:1px solid #829bd1;border-radius:18px;background:var(--reader-accent,#3458d4);color:white';
+        resume.appendChild(el('h2',{text:en?'Continue reading':'Weiterlesen'}));
+        var title=el('p',{text:latest.title||latest.name||'EPUB'});title.style.cssText='font-size:1.2rem;font-weight:700;margin:8px 0';resume.appendChild(title);
+        var pos=lsGet('pos:'+latest.id,null);
+        if(pos&&typeof pos.pct==='number'){var p=el('progress',{max:'1',value:String(Math.max(0,Math.min(1,pos.pct))),'aria-label':en?'Reading progress':'Lesefortschritt'});p.style.cssText='width:100%;accent-color:white';resume.appendChild(p);resume.appendChild(el('p',{text:fmtPct(pos.pct)}));}
+        var go=el('button',{class:'btn',type:'button',text:en?'Open book':'Buch öffnen'});go.style.cssText='background:white;color:#17243a';go.onclick=function(){openFromRecent(latest)};resume.appendChild(go);
+      }
       var controls = $('shelf-sort');
       if (!controls) {
         controls = el('select', { id: 'shelf-sort', 'aria-label': en ? 'Sort bookshelf' : 'Bücherregal sortieren' });
