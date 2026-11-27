@@ -59,6 +59,10 @@ static void arrange_mirror(HWND launcher) {
 }
 
 static HANDLE wifiProbe;
+static HANDLE actionProcess;
+static void enable_actions(HWND w,BOOL enabled){
+    for(int id=135;id<=139;id++) EnableWindow(GetDlgItem(w,id),enabled);
+}
 #define WM_WIFI_RESULT (WM_APP+12)
 struct Probe { HWND window; wchar_t host[32]; wchar_t path[96]; };
 static BOOL german;
@@ -101,6 +105,11 @@ static void localize(HWND w) {
     SetDlgItemTextW(w,131,tr(L"SMARTPHONE VIEW",L"SMARTPHONE-ANSICHT"));
     SetDlgItemTextW(w,133,tr(L"Connect via USB to start the live view.",L"Per USB verbinden, um die Live-Ansicht zu starten."));
     SetDlgItemTextW(w,134,tr(L"QUICK ACTIONS",L"SCHNELLAKTIONEN"));
+    SetDlgItemTextW(w,135,tr(L"Back",L"Zurück"));
+    SetDlgItemTextW(w,136,tr(L"Home",L"Home"));
+    SetDlgItemTextW(w,137,tr(L"Recent apps",L"Letzte Apps"));
+    SetDlgItemTextW(w,138,L"−");
+    SetDlgItemTextW(w,139,L"+");
     CheckRadioButton(w,110,111,german?111:110);
 }
 static void status(HWND w, const wchar_t *s) { SetDlgItemTextW(w,105,s); }
@@ -192,7 +201,33 @@ static BOOL executable(wchar_t *out, DWORD size) {
     len = SearchPathW(path,L"scrcpy.exe",NULL,size,out,NULL);
     return len > 0 && len < size;
 }
+/* Use the bundled ADB with fixed key codes and USB-only selection. Never invoke a shell. */
+static void android_action(HWND w,int id){
+    if(!session || !mirrorArranged || mirrorClosing || !IsWindow(mirrorWindow) || actionProcess) return;
+    const int keys[]={4,3,187,25,24};
+    if(id<135||id>139)return;
+    wchar_t exe[32768],cmd[32768];
+    if(!executable(exe,32768))return;
+    wchar_t *slash=wcsrchr(exe,L'\\');
+    if(!slash)return;
+    size_t remaining=32768-(size_t)(slash+1-exe);
+    if(FAILED(StringCchCopyW(slash+1,remaining,L"adb.exe")) || GetFileAttributesW(exe)==INVALID_FILE_ATTRIBUTES){
+        status(w,tr(L"Bundled ADB not found.",L"Mitgeliefertes ADB nicht gefunden."));return;
+    }
+    if(FAILED(StringCchPrintfW(cmd,32768,L"\"%ls\" -d shell input keyevent %d",exe,keys[id-135])))return;
+    SECURITY_ATTRIBUTES sa={sizeof(sa),NULL,TRUE};
+    HANDLE log=CreateFileW(L"NUL",GENERIC_WRITE,FILE_SHARE_READ|FILE_SHARE_WRITE,&sa,OPEN_EXISTING,0,NULL);
+    HANDLE input=CreateFileW(L"NUL",GENERIC_READ,FILE_SHARE_READ|FILE_SHARE_WRITE,&sa,OPEN_EXISTING,0,NULL);
+    STARTUPINFOW si={0};si.cb=sizeof(si);si.dwFlags=STARTF_USESTDHANDLES;si.hStdOutput=si.hStdError=log;si.hStdInput=input;
+    PROCESS_INFORMATION pi={0};
+    BOOL ok=log!=INVALID_HANDLE_VALUE && input!=INVALID_HANDLE_VALUE && CreateProcessW(exe,cmd,NULL,NULL,TRUE,CREATE_NO_WINDOW,NULL,NULL,&si,&pi);
+    if(log!=INVALID_HANDLE_VALUE)CloseHandle(log);
+    if(input!=INVALID_HANDLE_VALUE)CloseHandle(input);
+    if(!ok){status(w,tr(L"Could not send Android command.",L"Android-Befehl konnte nicht gestartet werden."));return;}
+    CloseHandle(pi.hThread);actionProcess=pi.hProcess;enable_actions(w,FALSE);SetTimer(w,2,200,NULL);
+}
 static void refresh(HWND w) {
+    enable_actions(w,FALSE);
     wchar_t exe[32768];
     BOOL found = executable(exe,32768);
     EnableWindow(GetDlgItem(w,102),found);
@@ -239,7 +274,7 @@ static void launch(HWND w, BOOL record) {
     SetTimer(w,1,500,NULL);
 }
 static void style_buttons(HWND w) {
-    const int ids[]={102,103,104,119,120,122,123,124,128,129};
+    const int ids[]={102,103,104,119,120,122,123,124,128,129,135,136,137,138,139};
     for(size_t i=0;i<sizeof(ids)/sizeof(ids[0]);i++){
         HWND b=GetDlgItem(w,ids[i]);
         LONG_PTR style=GetWindowLongPtrW(b,GWL_STYLE);
@@ -357,6 +392,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             if (!session) refresh(w);
             return TRUE;
         }
+        case 135: case 136: case 137: case 138: case 139: android_action(w,LOWORD(wp)); return TRUE;
         case 127: {
             mirrorControls=IsDlgButtonChecked(w,127)==BST_CHECKED;
             DWORD value=mirrorControls?1:0; RegSetKeyValueW(HKEY_CURRENT_USER,settings,L"KeepControls",REG_DWORD,&value,sizeof(value)); return TRUE;
@@ -365,7 +401,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
             if(session && IsWindow(mirrorWindow) && !mirrorClosing){if(IsIconic(mirrorWindow)) ShowWindow(mirrorWindow,SW_RESTORE); SetForegroundWindow(mirrorWindow);} return TRUE;
         case 129:
             if(session && IsWindow(mirrorWindow) && !mirrorClosing && PostMessageW(mirrorWindow,WM_CLOSE,0,0)){
-                mirrorClosing=TRUE; EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE);
+                mirrorClosing=TRUE; enable_actions(w,FALSE); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE);
                 status(w,tr(L"Closing session safely…",L"Verbindung wird sicher beendet…"));
             } return TRUE;
         case 126: {
@@ -386,13 +422,20 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         case IDCANCEL: SendMessageW(w,WM_CLOSE,0,0); return TRUE;
         }
     }
-    if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_TIMEOUT) {
+    if(msg==WM_TIMER && wp==2){
+        if(actionProcess && WaitForSingleObject(actionProcess,0)==WAIT_OBJECT_0){
+            DWORD code=1;GetExitCodeProcess(actionProcess,&code);CloseHandle(actionProcess);actionProcess=NULL;KillTimer(w,2);
+            enable_actions(w,session && mirrorArranged && !mirrorClosing && IsWindow(mirrorWindow));
+            if(code) MessageBoxW(w,tr(L"Android command failed. Check USB connection and authorization.",L"Android-Befehl fehlgeschlagen. USB-Verbindung und Freigabe prüfen."),L"Tetherlume",MB_OK|MB_ICONWARNING);
+        }return TRUE;
+    }
+    if (msg==WM_TIMER && wp==1 && session && WaitForSingleObject(session,0)==WAIT_TIMEOUT) {
         arrange_mirror(w);
-        if(mirrorArranged && !mirrorClosing && IsWindow(mirrorWindow)){EnableWindow(GetDlgItem(w,128),TRUE);EnableWindow(GetDlgItem(w,129),TRUE);}
+        if(mirrorArranged && !mirrorClosing && IsWindow(mirrorWindow)){if(!actionProcess)enable_actions(w,TRUE);EnableWindow(GetDlgItem(w,128),TRUE);EnableWindow(GetDlgItem(w,129),TRUE);}
         if(mirrorArranged && !mirrorClosing) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Resize or move the device window as needed.",L"USB-Bildschirm verbunden. Gerätefenster frei verschieben oder skalieren."));
         return TRUE;
     }
-    if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
+    if (msg==WM_TIMER && wp==1 && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
         KillTimer(w,1); desktopDocked=FALSE; ShowWindow(GetDlgItem(w,133),SW_SHOW); mirrorClosing=FALSE; EnableWindow(GetDlgItem(w,127),TRUE); EnableWindow(GetDlgItem(w,128),FALSE); EnableWindow(GetDlgItem(w,129),FALSE); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,126),TRUE); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
@@ -409,6 +452,7 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         status(w,wp==200?tr(L"Local HTTP session responded. Open Wi-Fi screen to view.",L"Lokale HTTP-Sitzung antwortet. WLAN-Bildschirm öffnen.") : wp==403?tr(L"Session rejected. Copy a fresh link from the app.",L"Sitzung abgelehnt. Neuen Link aus der App kopieren.") : tr(L"No usable response. Check Wi-Fi, sharing and session link.",L"Keine nutzbare Antwort. WLAN, Freigabe und Sitzungslink prüfen."));return TRUE;
     }
     if (msg==WM_CLOSE) {
+        if(actionProcess){status(w,tr(L"Android command still running.",L"Android-Befehl läuft noch."));return TRUE;}
         if(wifiProbe){status(w,tr(L"Connection test is still running.",L"Verbindungstest läuft noch."));return TRUE;}
         if (session) { MessageBoxW(w,tr(L"Close the mirrored device window first to save any active recording.",L"Schließe zuerst das gespiegelte Gerätefenster, damit die Aufnahme gespeichert wird."),L"Tetherlume",MB_OK); return TRUE; }
         EndDialog(w,0); return TRUE;
