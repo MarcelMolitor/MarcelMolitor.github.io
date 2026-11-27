@@ -13,3 +13,6 @@
 
 /* Orbit signature: shared navigation across products. */
 .molitor-identity{border-radius:16px;border-color:#334a69;background:linear-gradient(115deg,#0b1628,#14283f);box-shadow:0 4px 16px #0b162812}.molitor-identity .mi-mark{background:linear-gradient(145deg,#2563eb,#1d4ed8);border-radius:8px}.molitor-identity .mi-download{border-radius:10px}.molitor-identity:after{content:"";position:absolute;bottom:0;left:18px;right:18px;height:2px;background:linear-gradient(90deg,#2563eb,#38bdf8,#a78bfa);border-radius:2px;pointer-events:none}
+
+/* Official shared brand mark */
+.molitor-identity .mi-mark{background:transparent url('/molitor-logo.svg') center/contain no-repeat;color:transparent;font-size:0;width:32px;height:32px;flex:none;border-radius:8px}
