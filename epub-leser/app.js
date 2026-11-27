@@ -242,6 +242,18 @@
       if(!summary){summary=el('p',{id:'shelf-summary',role:'status','aria-live':'polite'});filter.after(summary);}
       var state=$('shelf-state');
       if(!state){state=el('select',{id:'shelf-state','aria-label':en?'Reading status':'Lesestatus'});[['all',en?'All books':'Alle Bücher'],['new',en?'Not started':'Nicht begonnen'],['active',en?'Reading':'In Arbeit'],['done',en?'Completed':'Abgeschlossen']].forEach(function(p){state.appendChild(el('option',{value:p[0],text:p[1]}));});filter.after(state);state.addEventListener('change',renderRecent);}
+      var savedCollections=lsGet('shelf-collection-v1',{});
+      var collections=Object.create(null);
+      if(savedCollections&&typeof savedCollections==='object'&&!Array.isArray(savedCollections))Object.keys(savedCollections).forEach(function(k){if(typeof savedCollections[k]==='string'&&savedCollections[k].length<=60)collections[k]=savedCollections[k];});
+      var category=$('shelf-collection');
+      if(!category){category=el('select',{id:'shelf-collection'});state.after(category);category.addEventListener('change',renderRecent);}
+      var previousCategory=category.value;
+      category.setAttribute('aria-label',en?'Book collection':'Buchsammlung');
+      clear(category);
+      category.appendChild(el('option',{value:'all',text:en?'All collections':'Alle Sammlungen'}));
+      category.appendChild(el('option',{value:'none',text:en?'Uncategorized':'Ohne Sammlung'}));
+      Array.from(new Set(all.map(function(m){return collections[m.id];}).filter(Boolean))).sort(function(a,b){return a.localeCompare(b);}).forEach(function(name){category.appendChild(el('option',{value:'c:'+name,text:name}));});
+      category.value=Array.from(category.options).some(function(o){return o.value===previousCategory;})?previousCategory:'all';
       var metrics=$('shelf-metrics');
       if(!metrics){metrics=el('div',{id:'shelf-metrics',class:'shelf-metrics'});$('shelf-search').parentNode.before(metrics);}
       clear(metrics);
@@ -249,13 +261,14 @@
       var names=en?['Books','Reading','Completed','Favorites']:['Bücher','In Arbeit','Abgeschlossen','Favoriten'];
       counts.forEach(function(n,i){var tile=el('div',{});tile.appendChild(el('strong',{text:String(n)}));tile.appendChild(el('span',{text:names[i]}));metrics.appendChild(tile);});
       var reset=$('shelf-reset-filters');
-      if(!reset){reset=el('button',{id:'shelf-reset-filters',type:'button',class:'btn',text:en?'Reset filters':'Filter zurücksetzen'});state.after(reset);reset.addEventListener('click',function(){$('shelf-search').value='';controls.value='recent';state.value='all';filter.setAttribute('aria-pressed','false');renderRecent();});}
+      if(!reset){reset=el('button',{id:'shelf-reset-filters',type:'button',class:'btn',text:en?'Reset filters':'Filter zurücksetzen'});state.after(reset);reset.addEventListener('click',function(){$('shelf-search').value='';controls.value='recent';state.value='all';category.value='all';filter.setAttribute('aria-pressed','false');renderRecent();});}
       function normalizeShelf(v){return String(v).toLocaleLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss');}
       var query=normalizeShelf(($('shelf-search').value||'').trim()), terms=query.split(/\s+/).filter(Boolean);
-      reset.disabled=!query&&!only&&state.value==='all'&&controls.value==='recent';
+      reset.disabled=!query&&!only&&state.value==='all'&&controls.value==='recent'&&category.value==='all';
       var shown=0;
       all.forEach(function (m) {
         if(only && !favorites.includes(m.id))return;
+        if(category.value==='none'&&collections[m.id]||category.value.startsWith('c:')&&collections[m.id]!==category.value.slice(2))return;
         var p=progress(m);
         if(state.value==='new'&&p>0||state.value==='active'&&!(p>0&&p<1)||state.value==='done'&&p<1)return;
         if(!terms.every(function(term){return normalizeShelf((m.title||'')+' '+(m.author||'')+' '+(m.name||'')).includes(term);}))return;
@@ -287,6 +300,10 @@
         fav.style.cssText='position:relative;z-index:3;min-width:44px;min-height:44px;margin:6px;color:#3458d4;background:white;border:1px solid #d5deeb;border-radius:8px';
         fav.addEventListener('click',function(e){e.stopPropagation();var current=lsGet('shelf-favorites',[]);if(!Array.isArray(current))current=[];var next=current.includes(m.id)?current.filter(function(id){return id!==m.id;}):current.concat(m.id);if(lsSet('shelf-favorites',next))renderRecent();else homeMessage(en?'Unable to save favorite.':'Favorit konnte nicht gespeichert werden.',true);});
         card.appendChild(fav);
+        var collectionButton=el('button',{type:'button',class:'btn',text:collections[m.id]|| (en?'Add collection':'Sammlung zuweisen'),'aria-label':(en?'Edit collection for ':'Sammlung bearbeiten für ')+(m.title||m.name||'EPUB')});
+        collectionButton.style.cssText='display:block;max-width:100%;min-height:44px;margin:6px;overflow-wrap:anywhere';
+        collectionButton.onclick=function(){var name=prompt(en?'Collection name (leave empty to remove assignment):':'Sammlungsname (leer lassen, um Zuordnung zu entfernen):',collections[m.id]||'');if(name===null)return;name=name.trim().slice(0,60);var current=lsGet('shelf-collection-v1',{});var updated=Object.assign(Object.create(null),current&&typeof current==='object'&&!Array.isArray(current)?current:{});if(name)updated[m.id]=name;else delete updated[m.id];if(lsSet('shelf-collection-v1',updated))renderRecent();else homeMessage(uiText('Sammlung konnte nicht gespeichert werden.','Could not save collection.'),true);};
+        card.appendChild(collectionButton);
         recentList.appendChild(card);
         card.hidden = false;
       });
