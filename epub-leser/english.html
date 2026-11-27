@@ -67,7 +67,8 @@
       <p class="micro">Works in modern desktop and mobile browsers. No installation required.</p>
       <div class="trust"><span>Free to use</span><span>Books processed on your device</span><span>No account required</span></div>
     </section>
-    <section class="section" id="features">
+    <section id="molitor-adventure-link" aria-labelledby="adventure-link-title" style="box-sizing:border-box;max-width:1120px;margin:28px auto;padding:clamp(18px,4vw,36px);border:1px solid #7184a055;border-radius:22px;background:linear-gradient(125deg,#142c53,#244c87);color:#fff"><p style="font-size:.8rem;letter-spacing:.13em;font-weight:700;color:#c5d9ff">MOLITOR · READING ADVENTURE</p><h2 id="adventure-link-title" style="color:inherit;margin:0 0 12px">Your next chapter. Your next level.</h2><p>Discover daily and weekly reading quests, earn XP and unlock titles. Optional, free and no account required.</p><p id="adventure-local-status" hidden style="font-weight:650;color:#dbeafe"></p><a href="/epub-leser/?lang=en#reading-quests" style="display:inline-flex;min-height:44px;align-items:center;padding:10px 18px;border-radius:12px;background:#fff;color:#173e78;font-weight:750;text-decoration:none">Open Reading Adventure →</a></section><script>(()=>{const out=document.getElementById('adventure-local-status');function sync(){try{const q=JSON.parse(localStorage.getItem('epubleser:quests-v1')||'null');if(q&&q.enabled&&Number.isFinite(q.xp)&&q.xp>=0){out.textContent='Level '+(1+Math.floor(q.xp/100))+' · '+q.xp+' XP';out.hidden=false}else out.hidden=true}catch(e){out.hidden=true}}sync();window.addEventListener('pageshow',sync);window.addEventListener('storage',e=>{if(e.key==='epubleser:quests-v1'||e.key===null)sync()})})();</script>
+<section class="section" id="features">
       <h2>A calm, capable way to read</h2>
       <p class="section-lead">The reader brings useful tools together without getting between you and your book.</p>
       <div class="grid">
