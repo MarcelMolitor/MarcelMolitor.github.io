@@ -10,9 +10,11 @@ BEGIN
  LTEXT "Tetherlume",112,54,12,278,23
  LTEXT "Wi-Fi first. USB optional.",107,55,36,275,14
  LTEXT "Start screen sharing in the Android app and paste the local link below.",117,16,75,318,28
- EDITTEXT 118,16,106,318,17,ES_AUTOHSCROLL | WS_TABSTOP
- DEFPUSHBUTTON "Open Wi-Fi screen",119,16,129,207,28
- PUSHBUTTON "Android app",120,230,129,104,28
+ EDITTEXT 118,16,106,222,17,ES_AUTOHSCROLL | WS_TABSTOP
+ PUSHBUTTON "Paste link",122,244,106,90,17
+ DEFPUSHBUTTON "Open Wi-Fi screen",119,16,129,155,28
+ PUSHBUTTON "Android app",120,177,129,76,28
+ PUSHBUTTON "Wi-Fi help",123,259,129,75,28
  LTEXT "USB control (optional)",121,16,166,318,14
  LTEXT "Connect an unlocked device with USB debugging enabled.",108,16,184,318,25
  CONTROL "Turn off phone screen on launch",101,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,211,318,16
