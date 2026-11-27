@@ -103,7 +103,7 @@
   settings.fontSize = Math.max(80, Math.min(200, Number(settings.fontSize) || 100));
 
   var S = null;          // aktuelle Lesesitzung
-  var session = 0;       // Zähler, um veraltete async-Ergebnisse zu verwerfen
+  var openRequest = 0; var session = 0;       // Zähler, um veraltete async-Ergebnisse zu verwerfen
   var lastFocus = null;
 
   /* ===================== Toast & Meldungen ===================== */
@@ -372,6 +372,7 @@
       homeMessage(uiText('Bitte wähle eine EPUB-Datei mit der Endung .epub.','Please choose a file ending in .epub.'), true);
       return;
     }
+    var request = ++openRequest;
     showReader();
     setLoading(true, uiText("Datei wird gelesen …","Reading file …"));
     var p = file.arrayBuffer ? file.arrayBuffer() : new Promise(function (res, rej) {
@@ -381,11 +382,12 @@
       fr.readAsArrayBuffer(file);
     });
     p.then(function (buf) {
+      if (request !== openRequest || reader.hidden) return;
       var signature = new Uint8Array(buf, 0, Math.min(buf.byteLength, 4));
       if (signature.length < 4 || signature[0] !== 80 || signature[1] !== 75 || signature[2] !== 3 || signature[3] !== 4) throw new Error('Invalid EPUB ZIP');
       return openBook(buf, { name: name, storeRecent: true });
     })
-      .catch(function (e) { if (e && e.handled) return; failOpen(uiText('Die Datei konnte nicht gelesen werden. Prüfe, ob sie eine vollständige, DRM-freie EPUB-Datei ist.','Could not read the file. Check that it is a complete, DRM-free EPUB.')); });
+      .catch(function (e) { if (request !== openRequest || reader.hidden || (e && e.handled)) return; failOpen(uiText('Die Datei konnte nicht gelesen werden. Prüfe, ob sie eine vollständige, DRM-freie EPUB-Datei ist.','Could not read the file. Check that it is a complete, DRM-free EPUB.')); });
   }
 
   function safeUrl(raw) {
@@ -405,17 +407,19 @@
       homeMessage(uiText("Dieses Buch kann nicht geöffnet werden: Aus Sicherheitsgründen lädt der Leser nur Bücher von dieser Website.","For security, the reader only loads remote books hosted on this website."), true);
       return;
     }
+    var request = ++openRequest;
     showReader();
     setLoading(true, uiText("Buch wird geladen …","Loading book …"));
     fetch(u.href, { credentials: 'same-origin' }).then(function (res) {
       if (!res.ok) throw new Error('HTTP ' + res.status);
       return res.arrayBuffer();
     }).then(function (buf) {
+      if (request !== openRequest || reader.hidden) return;
       var path = u.pathname;
       var libEntry = LIBRARY.some(function (b) { return LIB_BASE + b.file === path; });
       return openBook(buf, { name: decodeURIComponent(path.split('/').pop() || 'buch.epub'), libUrl: libEntry ? path : null, storeRecent: !libEntry });
     }).catch(function (e) {
-      if (e && e.handled) return;
+      if (request !== openRequest || reader.hidden || (e && e.handled)) return;
       failOpen(uiText("Das Buch konnte nicht geladen werden. Bitte prüfe deine Internetverbindung und versuche es erneut.","Could not load the book. Check your internet connection and try again."));
     });
   }
@@ -1174,6 +1178,7 @@
     resetReaderUi();
   }
   function closeBook(opts) {
+    openRequest++;
     opts = opts || {};
     destroySession();
     if (fsElement()) { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) { /* egal */ } }
