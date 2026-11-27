@@ -507,7 +507,7 @@
           if (my !== session) return;
           buildToc(st, (nav && nav.toc) || []);
           if (st.location) markCurrentChapter(st, st.location);
-        }).catch(function () { tocList.appendChild(el('li', { class: 'pane-note', text: uiText('Dieses Buch hat kein Inhaltsverzeichnis.','This book has no table of contents.') })); });
+        }).catch(function () { if(my!==session)return; tocList.appendChild(el('li', { class: 'pane-note', text: uiText('Dieses Buch hat kein Inhaltsverzeichnis.','This book has no table of contents.') })); });
 
         renderMarks(st);
         updateBookmarkButton(st);
@@ -1192,7 +1192,7 @@
     // ?book= entfernen, damit ein Neuladen nicht erneut öffnet
     try {
       var u = new URL(location.href);
-      if (u.searchParams.has('book')) { u.searchParams.delete('book'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); }
+      if (u.searchParams.has('book') || u.searchParams.has('edition')) { u.searchParams.delete('book'); u.searchParams.delete('edition'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); }
     } catch (e) { /* egal */ }
     if (!opts.fromPop) {
       try { if (history.state && history.state.epubReader) { ignorePop = true; history.back(); } } catch (e) { /* egal */ }
@@ -1378,5 +1378,5 @@
 
   var param = null;
   try { param = new URL(location.href).searchParams.get('book'); } catch (e) { param = null; }
-  var edition=new URLSearchParams(location.search).get('edition');if(edition&&window.molitorBuildEnglishEpub){window.molitorBuildEnglishEpub(edition).then(function(blob){openFile(new File([blob],edition+'-en.epub',{type:'application/epub+zip'}));}).catch(function(){homeMessage(uiText('Die Ausgabe konnte nicht geladen werden.','Could not load the edition.'),true);});}else if (param) openFromUrl(param);
+  var edition=new URLSearchParams(location.search).get('edition');if(edition){try{var cleanUrl=new URL(location.href);cleanUrl.searchParams.delete('edition');history.replaceState(history.state,'',cleanUrl.pathname+cleanUrl.search+cleanUrl.hash);}catch(e){}if(typeof window.molitorBuildEnglishEpub==='function'&&['ecs-grundlagen','ecs-darm','ecs-rezeptoren'].indexOf(edition)!==-1){var editionRequest=++openRequest;showReader();setLoading(true,uiText('EPUB wird vorbereitet …','Preparing EPUB …'));Promise.resolve().then(function(){return window.molitorBuildEnglishEpub(edition);}).then(function(blob){if(editionRequest!==openRequest||reader.hidden)return;openFile(new File([blob],edition+'-en.epub',{type:'application/epub+zip'}));}).catch(function(){if(editionRequest!==openRequest||reader.hidden)return;failOpen(uiText('Die Ausgabe konnte nicht geladen werden.','Could not load the edition.'));});}else homeMessage(uiText('Die Ausgabe ist nicht verfügbar.','This edition is unavailable.'),true);}else if(param)openFromUrl(param);
 })();
