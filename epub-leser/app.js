@@ -120,7 +120,7 @@
   }
 
   /* ===================== IndexedDB: Zuletzt gelesen ===================== */
-  var DB_NAME = 'molitor-epub-leser', DB_VER = 1, MAX_RECENT = 40;
+  var DB_NAME = 'molitor-epub-leser', DB_VER = 1;
   var dbPromise = null, idbOk = true;
 
   function openDB() {
@@ -172,7 +172,7 @@
     return idbTx(['meta', 'files'], 'readwrite', function (tx) {
       tx.objectStore('meta').put(meta);
       if (data) tx.objectStore('files').put({ id: meta.id, data: data });
-    }).then(pruneRecent);
+    });
   }
   function idbUpdateMeta(id, patch) {
     return idbTx(['meta'], 'readwrite', function (tx) {
@@ -193,14 +193,6 @@
       tx.objectStore('files').clear();
     });
   }
-  function pruneRecent() {
-    return idbAllMeta().then(function (all) {
-      all = (all || []).sort(function (a, b) { return (b.time || 0) - (a.time || 0); });
-      var extra = all.slice(MAX_RECENT);
-      return Promise.all(extra.map(function (m) { return idbDelete(m.id); }));
-    });
-  }
-
   var coverUrls = [];
   function renderRecent() {
     if (!idbOk) { recentSection.hidden = true; if($('resume-reading'))$('resume-reading').hidden=true; return Promise.resolve(); }
@@ -284,7 +276,8 @@
           label: (en?'Continue reading: ':'Weiterlesen: ') + (m.title || (en?'Book':'Buch')),
           onOpen: function () { openFromRecent(m); },
           onRemove: function () {
-            idbDelete(m.id).then(renderRecent).catch(function () { /* still */ });
+            if (!confirm(uiText('Dieses Buch aus deiner Bibliothek entfernen?','Remove this book from your library?'))) return;
+            idbDelete(m.id).then(renderRecent).catch(function () { homeMessage(uiText('Buch konnte nicht entfernt werden.','Could not remove book.'),true); });
           }
         });
         var fav=el('button',{type:'button',class:'btn shelf-favorite','aria-pressed':String(favorites.includes(m.id)),text:favorites.includes(m.id)?'★':'☆','aria-label':(en?'Toggle favorite: ':'Favorit umschalten: ')+(m.title||m.name||'EPUB')});
@@ -1257,6 +1250,7 @@
     if (f) openFile(f);
   });
   recentClear.addEventListener('click', function () {
+    if (!confirm(uiText('Alle lokal gespeicherten Bücher entfernen? Deine Originaldateien bleiben erhalten.','Remove all locally saved books? Your original files will remain unchanged.'))) return;
     idbClear().then(function () {
       renderRecent();
       homeMessage(uiText("Die Liste „Zuletzt gelesen“ wurde geleert.","Recently read list cleared."));
