@@ -116,3 +116,29 @@ header{background:#fff;color:var(--ink);border-bottom:1px solid var(--line)}
 @media(prefers-reduced-motion:reduce){.project-family .projects .card{transition:none}}
 .ecs-news li{background:white;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin:10px 0}.ecs-topic,.support-projects{box-shadow:0 4px 20px #203b6408}
 @media(max-width:600px){.nav .navlinks a{padding:0 4px;min-height:44px}.home-intro .button{min-height:48px}}
+
+/* MOLITOR Prism — distinctive light, compact, responsive brand experience */
+:root{--paper:#f7f8fc;--ink:#17243a;--brand-blue:#3458d4;--line:#e1e6f1}
+body{background:radial-gradient(ellipse at 50% 0,#e9edff 0,transparent 35rem),var(--paper)}
+header{background:#ffffffed;backdrop-filter:blur(16px);position:sticky;top:0;z-index:5}
+.logo:before{border-radius:11px;background:linear-gradient(145deg,#3458d4,#7258d7 70%,#a55ecb);box-shadow:0 3px 10px #3458d42b}
+.logo{letter-spacing:.11em;font-weight:850}
+.home-intro{border-radius:26px;background:radial-gradient(ellipse at 90% 15%,#dcd7ff 0,transparent 46%),radial-gradient(ellipse at 85% 90%,#c2e9fa 0,transparent 48%),linear-gradient(120deg,#fff 20%,#f0f3ff);padding:clamp(24px,4vw,48px)}
+.home-intro h1{letter-spacing:-.055em;font-weight:800}.home-intro h1 em{color:#3458d4}
+.home-intro:after{inset:0 0 0 48%;background:repeating-radial-gradient(ellipse at 85% 50%,transparent 0 22px,#6555bd20 23px 24px,transparent 25px 39px);mask-image:linear-gradient(to right,transparent,#000)}
+.home-intro:before{height:4px;background:linear-gradient(90deg,#3458d4,#7756d8,#d28ab9,#39b9d1)}
+.home-intro .button{border-radius:12px;background:#3458d4;box-shadow:0 3px 8px #3458d420}.home-intro .button.secondary{box-shadow:none;background:#fff9}
+.section-top{border-top:0;padding:16px 0}.section-top h2{font-size:clamp(28px,3vw,38px)}
+.project-family .family-heading{border-bottom:0;font-size:21px;padding-bottom:4px}
+.project-family .family-heading:before{width:7px;height:7px;border-radius:50%;box-shadow:0 0 0 4px #3458d414}
+.projects{gap:20px}.projects .card[data-family]{border-radius:20px;padding:8px;background:#fff;box-shadow:0 3px 10px #192c5410}
+.projects .card[data-family] .visual{border-radius:13px;border:0;height:150px;background:radial-gradient(ellipse at 100% 0,#6276d5,transparent 70%),linear-gradient(135deg,#233568,#3f4fa4)}
+.projects .card[data-family="research"] .visual{background:radial-gradient(ellipse at 100% 0,#329d92,transparent 70%),linear-gradient(135deg,#153f4d,#176e67)}
+.projects .card[data-family="other"] .visual{background:radial-gradient(ellipse at 100% 0,#9a75c3,transparent 70%),linear-gradient(135deg,#383758,#69528d)}
+.projects .card[data-family] .visual:after{background:repeating-radial-gradient(ellipse at 100% 100%,transparent 0 18px,#ffffff20 19px 20px,transparent 21px 34px)}
+.projects .card[data-family] .body{padding:16px 13px 10px}.projects .card[data-family] h4{letter-spacing:-.035em;font-weight:750}
+.projects .card[data-family] .cardlink{border-radius:11px}.projects .card[data-family] .cardlink+.cardlink{background:#fff;color:#34445c;border-color:var(--line)}
+#bibliothek .book-card{border-radius:20px;padding:10px}#bibliothek .book-card .button{border-radius:11px}
+#projekte,#bibliothek,#ecs-news,#android-apps,#windows-apps,#unterstuetzen{scroll-margin-top:110px}
+@media(min-width:1000px){#android-apps .projects{grid-template-columns:repeat(3,minmax(0,1fr))}#android-apps .card{grid-column:span 2;display:grid;grid-template-columns:1fr 1fr;gap:8px}#android-apps .card .visual{height:auto;min-height:180px}}
+@media(max-width:760px){header{position:relative;backdrop-filter:none}.home-intro{border-radius:20px}.projects{gap:14px}.projects .card[data-family] .visual{height:138px}#projekte,#bibliothek,#ecs-news,#android-apps,#windows-apps,#unterstuetzen{scroll-margin-top:16px}}
