@@ -28,7 +28,7 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebApplication","name":"MOLITOR EPUB-Leser","url":"https://marcelmolitor.github.io/epub-leser/","applicationCategory":"BookReaderApplication","operatingSystem":"Browser","inLanguage":"de","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"},"author":{"@type":"Person","name":"Marcel Molitor"}}
 </script>
-<link rel="stylesheet" href="/molitor-identity.css"></head>
+<link rel="stylesheet" href="/molitor-identity.css"><style id="reader-prism-v2">body:not(.reading),.home{background:#f4f7fc;color:#17243a;color-scheme:light}.home .topbar{background:#fff;border-color:#dce4ef}.home .brand,.home .brand-sub{color:#17243a}.home a,.home .back,.home .link-btn{color:#2948ad}.home .wrap{max-width:1180px}.home .hero{background:linear-gradient(125deg,#fff 25%,#e9edff);color:#17243a;border-color:#dce4ef;box-shadow:0 12px 40px #17243a0d}.home .hero h1 span,.home .eyebrow{color:#3458d4}.home .lead,.home .section-lead,.home .privacy p,.home .book-meta .sub,.home .feature-grid span{color:#526278}.home .dropzone{background:#ffffffa8;border-color:#a9b9df}.home .dropzone:hover,.home .dropzone.over{background:#edf1ff}.home .dropzone svg,.home .book-meta .pct{color:#3458d4}.home .dropzone>span{color:#526278}.home .dropzone .btn{background:#3458d4;color:white}.home .book-card,.home .feature-grid li{background:white;border-color:#dce4ef;box-shadow:0 4px 16px #17243a08}.home .book-card:hover{box-shadow:0 8px 24px #17243a14}.home .bar{background:#dce4ef}.home .bar i{background:#3458d4}.home .footer{color:#526278;border-color:#dce4ef}.home .msg{color:#2948ad}.home .msg.err{color:#a32b25}.home .support{background:#173354}.home .support-btn{color:#17243a}.reader{z-index:1000}.reader .r-top,.reader .r-bottom{padding-inline:max(12px,env(safe-area-inset-left));gap:8px}.reader .r-title strong{font-size:1rem}.reader .r-title span{margin-top:3px}.reader .icon-btn{border-radius:12px}.reader .settings{border-radius:20px;padding:20px}.reader .drawer{border-right:1px solid var(--line)}.reader .progress input{cursor:pointer}.reader .r-stage{min-width:0}.reader.focus-reading .r-top,.reader.focus-reading .r-bottom{display:none}.reader .focus-exit{display:none;position:absolute;z-index:10;right:12px;top:max(12px,env(safe-area-inset-top));border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--fg);padding:10px 16px;font:650 13px system-ui;min-height:44px}.reader.focus-reading .focus-exit{display:block}.reader.focus-reading .viewer{padding-top:56px}.library-links{display:flex;flex-wrap:wrap;gap:10px;margin:12px 0 20px}.library-links a{border:1px solid #dce4ef;background:white;border-radius:10px;padding:10px 15px;text-decoration:none;font-weight:650}@media(max-width:600px){.reader .r-top{flex-wrap:wrap;gap:2px;padding-inline:8px}.reader .r-title{min-width:calc(100% - 60px)}.reader .r-actions{width:100%;justify-content:space-evenly}.reader .r-bottom{padding-inline:8px}.home .hero{padding:24px}.home .wrap{padding-inline:14px}.reader .settings{top:calc(105px + env(safe-area-inset-top))}}</style></head>
 <body data-theme="hell"><div class="molitor-identity" role="navigation" aria-label="MOLITOR"><a class="mi-brand" href="/de.html"><span class="mi-mark" aria-hidden="true">M</span>MOLITOR</a><div class="mi-links"><a href="/de.html#projekte">Projekte</a><a class="mi-download" href="/downloads/">Downloads</a><a href="/ueber-mich/">Über mich</a></div></div>
 
 <!-- ===================== STARTSEITE ===================== -->
@@ -67,7 +67,7 @@
         <h2 id="lib-h">Bibliothek: Kostenlose Bücher von Marcel Molitor</h2>
       </div>
       <p class="section-lead">Drei kurze Bücher aus der <a href="/ecs-lesereihe/">ECS-Lesereihe</a> – mit einem Tipp direkt hier im Leser öffnen.</p>
-      <ul id="library-list" class="shelf"></ul>
+      <div class="library-links"><a href="/ecs-lesereihe/">🇩🇪 Deutsche Bibliothek</a><a href="/ecs-lesereihe/en.html" lang="en">🌍 English library</a></div><ul id="library-list" class="shelf"></ul>
     </section>
 
     <section class="section features" aria-labelledby="feat-h">
@@ -110,7 +110,7 @@
       <strong id="r-book-title">Buch</strong>
       <span id="r-chapter"></span>
     </div>
-    <div class="r-actions">
+    <div class="r-actions"><button id="btn-focus-mode" class="icon-btn" type="button" aria-label="Fokusmodus aktivieren" title="Fokusmodus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h8"/></svg></button>
       <button id="btn-toc" class="icon-btn" type="button" aria-label="Inhaltsverzeichnis" title="Inhalt">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
       </button>
@@ -129,7 +129,7 @@
     </div>
   </header>
 
-  <div class="r-stage">
+  <div class="r-stage"><button type="button" id="focus-exit" class="focus-exit">Fokus beenden</button>
     <button id="btn-prev-side" class="side-nav left" type="button" aria-label="Vorherige Seite" tabindex="-1">‹</button>
     <div id="viewer" class="viewer" aria-label="Buchinhalt"></div>
     <button id="btn-next-side" class="side-nav right" type="button" aria-label="Nächste Seite" tabindex="-1">›</button>
@@ -206,5 +206,5 @@
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 <script src="app.js"></script>
-</body>
+<script>(()=>{const r=document.getElementById('reader'),b=document.getElementById('btn-focus-mode'),e=document.getElementById('focus-exit');function set(v){r.classList.toggle('focus-reading',v);b.setAttribute('aria-pressed',String(v));requestAnimationFrame(()=>window.dispatchEvent(new Event('resize')));(v?e:b).focus()}b.addEventListener('click',()=>set(true));e.addEventListener('click',()=>set(false));document.addEventListener('keydown',x=>{if(x.key==='Escape'&&r.classList.contains('focus-reading'))set(false)});document.getElementById('btn-close').addEventListener('click',()=>r.classList.remove('focus-reading'));})();</script></body>
 </html>
