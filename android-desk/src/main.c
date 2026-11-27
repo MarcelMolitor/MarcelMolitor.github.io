@@ -11,6 +11,36 @@
 
 static const wchar_t *settings = L"Software\\Molitor\\AndroidDesk";
 static HANDLE session;
+static BOOL mirrorArranged;
+static BOOL mirrorRecord;
+static HWND mirrorWindow;
+static BOOL CALLBACK find_mirror(HWND hwnd, LPARAM arg) {
+    DWORD pid=0; GetWindowThreadProcessId(hwnd,&pid);
+    if(pid!=(DWORD)arg || !IsWindowVisible(hwnd) || GetWindow(hwnd,GW_OWNER)) return TRUE;
+    wchar_t title[128]; GetWindowTextW(hwnd,title,128);
+    if(wcscmp(title,L"Tetherlume")!=0) return TRUE;
+    mirrorWindow=hwnd; return FALSE;
+}
+static void arrange_mirror(HWND launcher) {
+    if(!session || mirrorArranged) return;
+    mirrorWindow=NULL; EnumWindows(find_mirror,(LPARAM)GetProcessId(session));
+    if(!mirrorWindow) return;
+    RECT client,frame; GetClientRect(mirrorWindow,&client); GetWindowRect(mirrorWindow,&frame);
+    int cw=client.right, ch=client.bottom;
+    if(cw<1 || ch<1) return;
+    MONITORINFO mi={sizeof(mi)};
+    if(!GetMonitorInfoW(MonitorFromWindow(launcher,MONITOR_DEFAULTTONEAREST),&mi)) return;
+    RECT a=mi.rcWork; int aw=a.right-a.left, ah=a.bottom-a.top;
+    int borderW=frame.right-frame.left-cw, borderH=frame.bottom-frame.top-ch;
+    int h=ah-borderH-48, width=MulDiv(h,cw,ch);
+    if(width>aw-borderW-48){width=aw-borderW-48;h=MulDiv(width,ch,cw);}
+    if(width<100||h<100) return;
+    width+=borderW;h+=borderH;
+    SetWindowPos(mirrorWindow,NULL,a.left+(aw-width)/2,a.top+(ah-h)/2,width,h,SWP_NOZORDER|SWP_NOACTIVATE);
+    mirrorArranged=TRUE;
+    ShowWindow(launcher,SW_MINIMIZE);
+}
+
 static HANDLE wifiProbe;
 #define WM_WIFI_RESULT (WM_APP+12)
 struct Probe { HWND window; wchar_t host[32]; wchar_t path[96]; };
@@ -167,7 +197,7 @@ static void launch(HWND w, BOOL record) {
     if (log!=INVALID_HANDLE_VALUE) CloseHandle(log);
     if (input!=INVALID_HANDLE_VALUE) CloseHandle(input);
     if (!ok) { status(w,tr(L"Could not launch scrcpy.",L"scrcpy konnte nicht gestartet werden.")); return; }
-    CloseHandle(pi.hThread); session=pi.hProcess;
+    CloseHandle(pi.hThread); session=pi.hProcess; mirrorArranged=FALSE; mirrorRecord=record;
     EnableWindow(GetDlgItem(w,102),FALSE); EnableWindow(GetDlgItem(w,103),FALSE);
     EnableWindow(GetDlgItem(w,110),FALSE); EnableWindow(GetDlgItem(w,111),FALSE);
     status(w, record ? tr(L"Recording started. Close the device window to finalize the MP4 file.",L"Aufnahme gestartet. Schließe das Gerätefenster, um die MP4-Datei fertigzustellen.") :
@@ -297,9 +327,14 @@ static INT_PTR CALLBACK dialog(HWND w,UINT msg,WPARAM wp,LPARAM lp) {
         case IDCANCEL: SendMessageW(w,WM_CLOSE,0,0); return TRUE;
         }
     }
+    if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_TIMEOUT) {
+        arrange_mirror(w);
+        if(mirrorArranged) status(w,mirrorRecord?tr(L"Recording active. Close the device window to save MP4.",L"Aufnahme aktiv. Gerätefenster schließen, um MP4 zu speichern."):tr(L"USB screen connected. Resize or move the device window as needed.",L"USB-Bildschirm verbunden. Gerätefenster frei verschieben oder skalieren."));
+        return TRUE;
+    }
     if (msg==WM_TIMER && session && WaitForSingleObject(session,0)==WAIT_OBJECT_0) {
         DWORD code=1; GetExitCodeProcess(session,&code); CloseHandle(session); session=NULL;
-        KillTimer(w,1); EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
+        KillTimer(w,1); mirrorWindow=NULL; if(mirrorArranged && IsIconic(w)) ShowWindow(w,SW_RESTORE); mirrorArranged=FALSE; EnableWindow(GetDlgItem(w,110),TRUE); EnableWindow(GetDlgItem(w,111),TRUE); refresh(w);
         if (code) {
             wchar_t detail[768];
             StringCchPrintfW(detail,768,tr(L"Connection ended (exit code %lu). Unlock the phone, approve USB debugging, use a data cable and close other ADB tools.",L"Verbindung beendet (Fehlercode %lu). Handy entsperren, USB-Debugging bestätigen, Datenkabel nutzen und andere ADB-Programme schließen."),(unsigned long)code);
